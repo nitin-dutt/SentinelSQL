@@ -1,0 +1,20 @@
+{
+  "_comment": "Governance policy data. sensitive_tables: access requires Human-in-the-Loop approval (HIGH risk); names are matched case-insensitively against the bare and schema-qualified table name and may use * wildcards. blocked_functions: any query calling one is rejected outright (file/OS access, time-based blind injection, remote connections). Edit this file, not the code. Override its location with SENSITIVITY_CONFIG.",
+  "sensitive_tables": [
+    "salaries", "salary", "compensation", "payroll", "employees", "employee",
+    "credit_card", "credit_cards", "payment_cards", "passwords", "secret", "secrets",
+    "credentials", "user_credentials", "api_keys",
+    "auth_tokens", "secret_tokens", "access_tokens", "session_tokens", "refresh_tokens",
+    "audit_log", "audit_logs", "audit", "golden_queries",
+    "sqlite_master", "sqlite_schema", "sqlite_temp_master", "sqlite_temp_schema", "sqlite_sequence",
+    "information_schema", "information_schema.*", "pg_catalog", "pg_catalog.*", "pg_*",
+    "mysql", "mysql.*", "performance_schema.*", "sys.*"
+  ],
+  "blocked_functions": [
+    "load_extension", "readfile", "writefile", "edit", "fts3_tokenizer",
+    "pg_sleep", "pg_sleep_for", "pg_sleep_until", "sleep", "benchmark",
+    "dblink", "dblink_exec", "dblink_connect", "dblink_send_query",
+    "pg_read_file", "pg_read_binary_file", "pg_ls_dir", "pg_stat_file", "lo_import", "lo_export",
+    "load_file", "xp_cmdshell", "sp_executesql", "sys_exec", "sys_eval"
+  ]
+}

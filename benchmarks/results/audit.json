@@ -1,0 +1,179 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-10-09T19:26:27Z",
+    "git_head": "f0ff979",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 51,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {},
+    "base_events": 300,
+    "attacks": 12
+  },
+  "summary": {
+    "detected_previous": {
+      "k": 8,
+      "n": 12,
+      "rate": 66.67,
+      "lo": 39.06,
+      "hi": 86.19
+    },
+    "detected_current": {
+      "k": 9,
+      "n": 12,
+      "rate": 75.0,
+      "lo": 46.77,
+      "hi": 91.11
+    },
+    "detected_with_anchor": {
+      "k": 12,
+      "n": 12,
+      "rate": 100.0,
+      "lo": 75.75,
+      "hi": 100.0
+    }
+  },
+  "matrix": [
+    {
+      "attack": "edit_sql_of_a_row",
+      "what": "change the recorded SQL of one event",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "row contents do not match their hash (row was edited)",
+      "anchored_reason": "row contents do not match their hash (row was edited)"
+    },
+    {
+      "attack": "edit_approver",
+      "what": "change who approved a query",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "row contents do not match their hash (row was edited)",
+      "anchored_reason": "row contents do not match their hash (row was edited)"
+    },
+    {
+      "attack": "edit_timestamp",
+      "what": "back-date an event",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "row contents do not match their hash (row was edited)",
+      "anchored_reason": "row contents do not match their hash (row was edited)"
+    },
+    {
+      "attack": "overwrite_hash",
+      "what": "overwrite a stored hash",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "row contents do not match their hash (row was edited)",
+      "anchored_reason": "row contents do not match their hash (row was edited)"
+    },
+    {
+      "attack": "delete_middle_row",
+      "what": "remove one event from the middle",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "chain link broken (a row was removed or reordered)",
+      "anchored_reason": "chain link broken (a row was removed or reordered)"
+    },
+    {
+      "attack": "reorder_two_rows",
+      "what": "swap the order of two events",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "chain link broken (a row was removed or reordered)",
+      "anchored_reason": "chain link broken (a row was removed or reordered)"
+    },
+    {
+      "attack": "duplicate_a_row",
+      "what": "replay an old event as a new one",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "chain link broken (a row was removed or reordered)",
+      "anchored_reason": "chain link broken (a row was removed or reordered)"
+    },
+    {
+      "attack": "forge_row_without_hash",
+      "what": "insert an event with no hash",
+      "detected_previous": false,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "an unhashed row appears after the chain started (forged or tampered entry)",
+      "anchored_reason": "an unhashed row appears after the chain started (forged or tampered entry)"
+    },
+    {
+      "attack": "forge_row_with_bad_hash",
+      "what": "insert an event with an invented hash",
+      "detected_previous": true,
+      "detected_current": true,
+      "detected_with_anchor": true,
+      "current_reason": "chain link broken (a row was removed or reordered)",
+      "anchored_reason": "chain link broken (a row was removed or reordered)"
+    },
+    {
+      "attack": "delete_newest_rows",
+      "what": "truncate the most recent events",
+      "detected_previous": false,
+      "detected_current": false,
+      "detected_with_anchor": true,
+      "current_reason": null,
+      "anchored_reason": "the anchored entry is missing: newer rows were truncated or the chain was rewritten"
+    },
+    {
+      "attack": "delete_oldest_rows",
+      "what": "remove the oldest events",
+      "detected_previous": false,
+      "detected_current": false,
+      "detected_with_anchor": true,
+      "current_reason": null,
+      "anchored_reason": "the anchored entry moved from position 300 to 295: older rows were removed"
+    },
+    {
+      "attack": "rewrite_whole_chain",
+      "what": "alter an event and recompute every hash after it",
+      "detected_previous": false,
+      "detected_current": false,
+      "detected_with_anchor": true,
+      "current_reason": null,
+      "anchored_reason": "the anchored entry is missing: newer rows were truncated or the chain was rewritten"
+    }
+  ],
+  "undetectable_without_anchor": [
+    "delete_newest_rows",
+    "delete_oldest_rows",
+    "rewrite_whole_chain"
+  ],
+  "undetectable_even_with_anchor": [],
+  "performance": {
+    "write_latency": {
+      "n": 2000,
+      "mean_ms": 2.855,
+      "p50_ms": 2.803,
+      "p90_ms": 3.361,
+      "p95_ms": 3.548,
+      "p99_ms": 3.943,
+      "min_ms": 2.095,
+      "max_ms": 12.17
+    },
+    "writes_per_second_sequential": 350.3,
+    "verify_rows": 10000,
+    "verify_valid": true,
+    "verify_total_ms": 87.7,
+    "verify_rows_per_second": 113966
+  }
+}

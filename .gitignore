@@ -1,5 +1,3 @@
-.env
-Interview_points.txt
 # Python
 __pycache__/
 *.pyc
@@ -20,3 +18,77 @@ node_modules/
 dist/
 build/
 *.egg-info/
+
+# Databases & Vector Cache
+*.db
+.schema_vectors.json
+.pytest_cache/
+
+# Secrets & local config (never commit)
+.env
+.env.*
+!.env.example
+
+# Generated caches & vector indexes (may contain query results / embeddings)
+.semantic_cache.json
+.golden_vectors.json
+.dictionary_vectors.json
+.schema_vectors.json
+.eval_*
+
+# Benchmark scratch output
+benchmarks/results/security_raw_log.jsonl
+
+# Frontend build output
+sentinel-frontend/dist/
+
+# SQLite sidecar files and the persistent HITL run store
+*.db-wal
+*.db-shm
+*.db-journal
+hitl_runs.db*
+
+# ---- Working notes and planning docs (author-only; README.md is the public doc) ----
+/alignment_plan.md
+/PHASE_*.md
+/ROADMAP.md
+/BENCHMARK_REPORT.md
+/README.previous.md
+/Interview_points.txt
+sentinel-frontend/README.md
+
+# ---- Local tooling and logs ----
+.claude/
+logs/
+*.log
+
+# ---- Benchmarks: large downloads, scratch output, retired simulated runners ----
+benchmarks/.work/
+benchmarks/data/spider/
+benchmarks/legacy_simulated/
+benchmarks/results/*.partial.json
+benchmarks/results/*dry_run*
+# old simulated result files from before the harness rewrite
+benchmarks/results/ablation_study_results.json
+benchmarks/results/caching_latency_results.json
+benchmarks/results/latest_benchmark_master.json
+benchmarks/results/pii_audit_results.json
+benchmarks/results/security_eval_results.json
+benchmarks/results/spider_live_eval_results.json
+benchmarks/results/spider_official_results.json
+# one-off debugging scripts
+benchmarks/check_sample_distribution.py
+benchmarks/find_failed_attack.py
+benchmarks/fix_all_wta1.py
+benchmarks/fix_wta1_encoding.py
+benchmarks/inspect_all_corruptions.py
+benchmarks/inspect_spider_dev.py
+benchmarks/scratch_encoding_fix.py
+scripts/evaluate_benchmarks.py
+
+# ---- Editors / OS ----
+.DS_Store
+Thumbs.db
+*.swp
+.coverage
+htmlcov/

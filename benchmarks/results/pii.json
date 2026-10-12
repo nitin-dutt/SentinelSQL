@@ -1,0 +1,1449 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-10-09T19:23:43Z",
+    "git_head": "f0ff979",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 51,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {},
+    "seed": 20261010,
+    "probe_rows": 48,
+    "queries": 93,
+    "rules_fingerprint_current": "1b9c3b461c8e"
+  },
+  "before": {
+    "label": "before: masking/policy as first benchmarked",
+    "span_recall_masking_only": {
+      "k": 3997,
+      "n": 4075,
+      "rate": 98.09,
+      "lo": 97.62,
+      "hi": 98.46
+    },
+    "span_recall_end_to_end": {
+      "k": 3997,
+      "n": 4075,
+      "rate": 98.09,
+      "lo": 97.62,
+      "hi": 98.46
+    },
+    "recall_by_type_masking_only": {
+      "card": {
+        "k": 955,
+        "n": 1018,
+        "rate": 93.81,
+        "lo": 92.16,
+        "hi": 95.13
+      },
+      "email": {
+        "k": 1079,
+        "n": 1079,
+        "rate": 100.0,
+        "lo": 99.65,
+        "hi": 100.0
+      },
+      "phone": {
+        "k": 972,
+        "n": 972,
+        "rate": 100.0,
+        "lo": 99.61,
+        "hi": 100.0
+      },
+      "ssn": {
+        "k": 991,
+        "n": 1006,
+        "rate": 98.51,
+        "lo": 97.55,
+        "hi": 99.09
+      }
+    },
+    "recall_by_technique_masking_only": {
+      "aggregate_max": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "alias": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "case": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "coalesce": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "concat": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "cte": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "direct": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "group_concat": {
+        "k": 33,
+        "n": 33,
+        "rate": 100.0,
+        "lo": 89.57,
+        "hi": 100.0
+      },
+      "replace": {
+        "k": 238,
+        "n": 268,
+        "rate": 88.81,
+        "lo": 84.47,
+        "hi": 92.05
+      },
+      "self_join": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "subquery": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "substr_head": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "trim_lower": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "union": {
+        "k": 286,
+        "n": 290,
+        "rate": 98.62,
+        "lo": 96.51,
+        "hi": 99.46
+      },
+      "upper": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "window": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      }
+    },
+    "recall_by_technique_end_to_end": {
+      "aggregate_max": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "alias": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "case": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "coalesce": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "concat": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "cte": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "direct": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "group_concat": {
+        "k": 33,
+        "n": 33,
+        "rate": 100.0,
+        "lo": 89.57,
+        "hi": 100.0
+      },
+      "replace": {
+        "k": 238,
+        "n": 268,
+        "rate": 88.81,
+        "lo": 84.47,
+        "hi": 92.05
+      },
+      "self_join": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "subquery": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "substr_head": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "trim_lower": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "union": {
+        "k": 286,
+        "n": 290,
+        "rate": 98.62,
+        "lo": 96.51,
+        "hi": 99.46
+      },
+      "upper": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      },
+      "window": {
+        "k": 264,
+        "n": 268,
+        "rate": 98.51,
+        "lo": 96.23,
+        "hi": 99.42
+      }
+    },
+    "precision": {
+      "k": 2098,
+      "n": 2290,
+      "rate": 91.62,
+      "lo": 90.41,
+      "hi": 92.68
+    },
+    "over_mask_rate_on_harmless_cells": {
+      "k": 192,
+      "n": 697,
+      "rate": 27.55,
+      "lo": 24.36,
+      "hi": 30.98
+    },
+    "over_masked_by_column": {
+      "order_ref": {
+        "k": 48,
+        "n": 48,
+        "rate": 100.0,
+        "lo": 92.59,
+        "hi": 100.0
+      },
+      "tracking_no": {
+        "k": 48,
+        "n": 48,
+        "rate": 100.0,
+        "lo": 92.59,
+        "hi": 100.0
+      },
+      "sku": {
+        "k": 48,
+        "n": 48,
+        "rate": 100.0,
+        "lo": 92.59,
+        "hi": 100.0
+      },
+      "token_count": {
+        "k": 48,
+        "n": 48,
+        "rate": 100.0,
+        "lo": 92.59,
+        "hi": 100.0
+      }
+    },
+    "over_masked_examples": [
+      {
+        "column": "order_ref",
+        "original": "ORD-905-42-6396",
+        "output": "ORD-***-**-6396"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-900-37-3379",
+        "output": "ORD-***-**-3379"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-901-34-7901",
+        "output": "ORD-***-**-7901"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-979-66-7514",
+        "output": "ORD-***-**-7514"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-932-31-3253",
+        "output": "ORD-***-**-3253"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-963-47-2582",
+        "output": "ORD-***-**-2582"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-903-47-1719",
+        "output": "ORD-***-**-1719"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-910-96-1407",
+        "output": "ORD-***-**-1407"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-954-59-3530",
+        "output": "ORD-***-**-3530"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-938-47-8046",
+        "output": "ORD-***-**-8046"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-962-39-1019",
+        "output": "ORD-***-**-1019"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-997-62-5816",
+        "output": "ORD-***-**-5816"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-920-32-6845",
+        "output": "ORD-***-**-6845"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-974-25-3995",
+        "output": "ORD-***-**-3995"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-953-84-8065",
+        "output": "ORD-***-**-8065"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-954-16-7271",
+        "output": "ORD-***-**-7271"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-952-36-3333",
+        "output": "ORD-***-**-3333"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-954-89-8380",
+        "output": "ORD-***-**-8380"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-914-68-1172",
+        "output": "ORD-***-**-1172"
+      },
+      {
+        "column": "order_ref",
+        "original": "ORD-948-27-9030",
+        "output": "ORD-***-**-9030"
+      }
+    ],
+    "fragment_exposure": {
+      "alias": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "case": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "coalesce": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "concat": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "cte": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "direct": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "replace": {
+        "k": 31,
+        "n": 130,
+        "rate": 23.85,
+        "lo": 17.34,
+        "hi": 31.86
+      },
+      "self_join": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "subquery": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "substr_head": {
+        "k": 68,
+        "n": 130,
+        "rate": 52.31,
+        "lo": 43.78,
+        "hi": 60.7
+      },
+      "trim_lower": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "union": {
+        "k": 0,
+        "n": 142,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.63
+      },
+      "upper": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "window": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      }
+    },
+    "fragment_exposure_all": {
+      "k": 99,
+      "n": 1832,
+      "rate": 5.4,
+      "lo": 4.46,
+      "hi": 6.54
+    },
+    "queries_stopped_by_policy": [],
+    "leak_examples": [
+      {
+        "technique": "direct",
+        "type": "card",
+        "sql": "SELECT id, notes FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "direct",
+        "type": "card",
+        "sql": "SELECT id, notes FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card ****-***",
+        "gated": false
+      },
+      {
+        "technique": "direct",
+        "type": "card",
+        "sql": "SELECT id, notes FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "direct",
+        "type": "card",
+        "sql": "SELECT id, notes FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Call back on ***-***-8767 af",
+        "gated": false
+      },
+      {
+        "technique": "alias",
+        "type": "card",
+        "sql": "SELECT id, notes AS harmless_label FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "alias",
+        "type": "card",
+        "sql": "SELECT id, notes AS harmless_label FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card ****-***",
+        "gated": false
+      },
+      {
+        "technique": "alias",
+        "type": "card",
+        "sql": "SELECT id, notes AS harmless_label FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "alias",
+        "type": "card",
+        "sql": "SELECT id, notes AS harmless_label FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Call back on ***-***-8767 af",
+        "gated": false
+      },
+      {
+        "technique": "upper",
+        "type": "card",
+        "sql": "SELECT id, UPPER(notes) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "CUSTOMER CALLED ABOUT A DELAYED DELIVERY. REFUND SENT TO CARD 37828224",
+        "gated": false
+      },
+      {
+        "technique": "upper",
+        "type": "card",
+        "sql": "SELECT id, UPPER(notes) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "CUSTOMER CALLED ABOUT A DELAYED DELIVERY. REFUND SENT TO CARD ****-***",
+        "gated": false
+      },
+      {
+        "technique": "upper",
+        "type": "card",
+        "sql": "SELECT id, UPPER(notes) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "CUSTOMER CALLED ABOUT A DELAYED DELIVERY. REFUND SENT TO CARD 37828224",
+        "gated": false
+      },
+      {
+        "technique": "upper",
+        "type": "card",
+        "sql": "SELECT id, UPPER(notes) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "CUSTOMER CALLED ABOUT A DELAYED DELIVERY. CALL BACK ON ***-***-8767 AF",
+        "gated": false
+      },
+      {
+        "technique": "trim_lower",
+        "type": "card",
+        "sql": "SELECT id, LOWER(TRIM(notes)) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "customer called about a delayed delivery. refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "trim_lower",
+        "type": "card",
+        "sql": "SELECT id, LOWER(TRIM(notes)) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "customer called about a delayed delivery. refund sent to card ****-***",
+        "gated": false
+      },
+      {
+        "technique": "trim_lower",
+        "type": "card",
+        "sql": "SELECT id, LOWER(TRIM(notes)) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "customer called about a delayed delivery. refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "trim_lower",
+        "type": "card",
+        "sql": "SELECT id, LOWER(TRIM(notes)) AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "customer called about a delayed delivery. call back on ***-***-8767 af",
+        "gated": false
+      },
+      {
+        "technique": "concat",
+        "type": "card",
+        "sql": "SELECT id, notes || '' AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "concat",
+        "type": "card",
+        "sql": "SELECT id, notes || '' AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card ****-***",
+        "gated": false
+      },
+      {
+        "technique": "concat",
+        "type": "card",
+        "sql": "SELECT id, notes || '' AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Refund sent to card 37828224",
+        "gated": false
+      },
+      {
+        "technique": "concat",
+        "type": "card",
+        "sql": "SELECT id, notes || '' AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customer called about a delayed delivery. Call back on ***-***-8767 af",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5105105105105100",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "963-90-3461",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN963903461.C",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5105105105105100",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.I",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "974-78-6733",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.I",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4111111111111111",
+        "output": "C***6@example.netonceresolved.Refundsenttocard4111111111111111.",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "970-48-2378",
+        "output": "C***1@e***0@example.netonceresolved.IdentityverifiedwithSSN970482378.",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4111111111111111",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4111111111111111.I",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "970-27-2459",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4111111111111111.I",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4012888888881881",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4012888888881881.",
+        "gated": false
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "983-35-6893",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN983356893.",
+        "gated": false
+      }
+    ],
+    "n_leaks_masking_only": 78,
+    "n_leaks_end_to_end": 78,
+    "query_errors": []
+  },
+  "after": {
+    "label": "after: current",
+    "span_recall_masking_only": {
+      "k": 4043,
+      "n": 4075,
+      "rate": 99.21,
+      "lo": 98.89,
+      "hi": 99.44
+    },
+    "span_recall_end_to_end": {
+      "k": 4075,
+      "n": 4075,
+      "rate": 100.0,
+      "lo": 99.91,
+      "hi": 100.0
+    },
+    "recall_by_type_masking_only": {
+      "card": {
+        "k": 1003,
+        "n": 1018,
+        "rate": 98.53,
+        "lo": 97.58,
+        "hi": 99.11
+      },
+      "email": {
+        "k": 1077,
+        "n": 1079,
+        "rate": 99.81,
+        "lo": 99.33,
+        "hi": 99.95
+      },
+      "phone": {
+        "k": 972,
+        "n": 972,
+        "rate": 100.0,
+        "lo": 99.61,
+        "hi": 100.0
+      },
+      "ssn": {
+        "k": 991,
+        "n": 1006,
+        "rate": 98.51,
+        "lo": 97.55,
+        "hi": 99.09
+      }
+    },
+    "recall_by_technique_masking_only": {
+      "aggregate_max": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "alias": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "case": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "coalesce": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "concat": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "cte": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "direct": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "group_concat": {
+        "k": 33,
+        "n": 33,
+        "rate": 100.0,
+        "lo": 89.57,
+        "hi": 100.0
+      },
+      "replace": {
+        "k": 236,
+        "n": 268,
+        "rate": 88.06,
+        "lo": 83.63,
+        "hi": 91.41
+      },
+      "self_join": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "subquery": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "substr_head": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "trim_lower": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "union": {
+        "k": 290,
+        "n": 290,
+        "rate": 100.0,
+        "lo": 98.69,
+        "hi": 100.0
+      },
+      "upper": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "window": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      }
+    },
+    "recall_by_technique_end_to_end": {
+      "aggregate_max": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "alias": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "case": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "coalesce": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "concat": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "cte": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "direct": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "group_concat": {
+        "k": 33,
+        "n": 33,
+        "rate": 100.0,
+        "lo": 89.57,
+        "hi": 100.0
+      },
+      "replace": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "self_join": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "subquery": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "substr_head": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "trim_lower": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "union": {
+        "k": 290,
+        "n": 290,
+        "rate": 100.0,
+        "lo": 98.69,
+        "hi": 100.0
+      },
+      "upper": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      },
+      "window": {
+        "k": 268,
+        "n": 268,
+        "rate": 100.0,
+        "lo": 98.59,
+        "hi": 100.0
+      }
+    },
+    "precision": {
+      "k": 2107,
+      "n": 2107,
+      "rate": 100.0,
+      "lo": 99.82,
+      "hi": 100.0
+    },
+    "over_mask_rate_on_harmless_cells": {
+      "k": 0,
+      "n": 697,
+      "rate": 0.0,
+      "lo": 0.0,
+      "hi": 0.55
+    },
+    "over_masked_by_column": {},
+    "over_masked_examples": [],
+    "fragment_exposure": {
+      "alias": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "case": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "coalesce": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "concat": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "cte": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "direct": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "replace": {
+        "k": 31,
+        "n": 130,
+        "rate": 23.85,
+        "lo": 17.34,
+        "hi": 31.86
+      },
+      "self_join": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "subquery": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "substr_head": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "trim_lower": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "union": {
+        "k": 0,
+        "n": 142,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.63
+      },
+      "upper": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      },
+      "window": {
+        "k": 0,
+        "n": 130,
+        "rate": 0.0,
+        "lo": 0.0,
+        "hi": 2.87
+      }
+    },
+    "fragment_exposure_all": {
+      "k": 31,
+      "n": 1832,
+      "rate": 1.69,
+      "lo": 1.19,
+      "hi": 2.39
+    },
+    "queries_stopped_by_policy": [
+      {
+        "technique": "replace",
+        "column": "notes",
+        "reason": "Character-stripping function applied to free-text column(s) notes: possible attempt to def"
+      }
+    ],
+    "leak_examples": [
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5105105105105100",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "963-90-3461",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN963903461.C",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5105105105105100",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "974-78-6733",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5105105105105100.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4111111111111111",
+        "output": "C***6@example.netonceresolved.Refundsenttocard4111111111111111.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "email",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "contact610@example.net",
+        "output": "C***1@example.netonceresolved.Replytocontact610@example.netonceresolve",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "970-48-2378",
+        "output": "C***1@example.netonceresolved.Replytocontact610@example.netonceresolve",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4111111111111111",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4111111111111111.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "970-27-2459",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4111111111111111.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4012888888881881",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard4012888888881881.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "983-35-6893",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN983356893.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard378282246310005.Ca",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "925-93-5476",
+        "output": "C***8@example.netonceresolved.IdentityverifiedwithSSN925935476.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5555555555554444",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5555555555554444.R",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5555555555554444.R",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard378282246310005.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "378282246310005",
+        "output": "Customercalledaboutadelayeddelivery.Callbackon(369)0108767after5pm.Cal",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "970-55-8774",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN970558774.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "910-34-3519",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN970558774.I",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "956-42-8560",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN956428560.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5555555555554444",
+        "output": "Customercalledaboutadelayeddelivery.Refundsenttocard5555555555554444.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "978-64-1346",
+        "output": "Customercalledaboutadelayeddelivery.Callbackon(566)0104778after5pm.Ide",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "914-19-4192",
+        "output": "Customercalledaboutadelayeddelivery.Callbackon(566)0104778after5pm.Ide",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "979-36-6972",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN979366972.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "945-20-7967",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN945207967.C",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "991-33-7134",
+        "output": "C***8@example.netonceresolved.IdentityverifiedwithSSN991337134.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "4012888888881881",
+        "output": "C***0@example.netonceresolved.Refundsenttocard4012888888881881.",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "email",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "contact357@example.net",
+        "output": "C***5@example.netonceresolved.Replytocontact357@example.netonceresolve",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "card",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "5555555555554444",
+        "output": "C***5@example.netonceresolved.Replytocontact357@example.netonceresolve",
+        "gated": true
+      },
+      {
+        "technique": "replace",
+        "type": "ssn",
+        "sql": "SELECT id, REPLACE(REPLACE(notes, '-', ''), ' ', '') AS v FROM pii_probe",
+        "original": "917-78-2758",
+        "output": "Customercalledaboutadelayeddelivery.IdentityverifiedwithSSN917782758.R",
+        "gated": true
+      }
+    ],
+    "n_leaks_masking_only": 32,
+    "n_leaks_end_to_end": 0,
+    "query_errors": []
+  }
+}

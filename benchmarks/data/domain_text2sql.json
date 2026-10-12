@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "name": "SentinelSQL Enterprise Domain Text-to-SQL Validation Suite",
+  "database": "sentinel.db",
+  "total_queries": 15,
+  "tiers": ["Easy", "Medium", "Hard / Enterprise"],
+  "queries": [
+    {
+      "id": "DOM-001",
+      "tier": "Easy",
+      "question": "Show customers in the North region",
+      "ground_truth_sql": "SELECT customer_id, name, email FROM customers WHERE region = 'North' LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+    {
+      "id": "DOM-002",
+      "tier": "Easy",
+      "question": "Show customers in the West region",
+      "ground_truth_sql": "SELECT customer_id, name, email FROM customers WHERE region = 'West' LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+    {
+      "id": "DOM-003",
+      "tier": "Easy",
+      "question": "Count the total number of products in stock",
+      "ground_truth_sql": "SELECT COUNT(*) as product_count FROM products LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+    {
+      "id": "DOM-004",
+      "tier": "Easy",
+      "question": "Show orders placed after January 10th 2025",
+      "ground_truth_sql": "SELECT order_id, order_date, amount FROM orders WHERE order_date >= '2025-01-10' LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+    {
+      "id": "DOM-005",
+      "tier": "Easy",
+      "question": "Find products in the Electronics category",
+      "ground_truth_sql": "SELECT product_id, name, price FROM products WHERE category = 'Electronics' LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+
+    {
+      "id": "DOM-006",
+      "tier": "Medium",
+      "question": "What is the total spending per customer?",
+      "ground_truth_sql": "SELECT customer_id, SUM(amount) as total_spent FROM orders GROUP BY customer_id LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-007",
+      "tier": "Medium",
+      "question": "Show customer names alongside their order amounts",
+      "ground_truth_sql": "SELECT c.name, o.amount FROM customers c JOIN orders o ON c.customer_id = o.customer_id LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-008",
+      "tier": "Medium",
+      "question": "Find total order sales revenue by region",
+      "ground_truth_sql": "SELECT c.region, SUM(o.amount) as regional_sales FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.region LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-009",
+      "tier": "Medium",
+      "question": "Count the number of orders placed in each region",
+      "ground_truth_sql": "SELECT c.region, COUNT(o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.region LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-010",
+      "tier": "Medium",
+      "question": "Calculate the average product price in each category",
+      "ground_truth_sql": "SELECT category, AVG(price) as avg_price FROM products GROUP BY category LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": false
+    },
+
+    {
+      "id": "DOM-011",
+      "tier": "Hard / Enterprise",
+      "question": "What is our Average Order Value (AOV)?",
+      "ground_truth_sql": "SELECT AVG(amount) as aov FROM orders LIMIT 100;",
+      "requires_dictionary": true,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-012",
+      "tier": "Hard / Enterprise",
+      "question": "Identify VIP Customers who have spent 1000 or more in cumulative orders",
+      "ground_truth_sql": "SELECT customer_id, SUM(amount) as total_spent FROM orders GROUP BY customer_id HAVING SUM(amount) >= 1000 LIMIT 100;",
+      "requires_dictionary": true,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-013",
+      "tier": "Hard / Enterprise",
+      "question": "Find customers who placed orders above the average order amount",
+      "ground_truth_sql": "SELECT DISTINCT c.customer_id, c.name FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.amount > (SELECT AVG(amount) FROM orders) LIMIT 100;",
+      "requires_dictionary": true,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-014",
+      "tier": "Hard / Enterprise",
+      "question": "Calculate highest order amount and lowest order amount by region",
+      "ground_truth_sql": "SELECT c.region, MAX(o.amount) as max_amt, MIN(o.amount) as min_amt FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.region LIMIT 100;",
+      "requires_dictionary": false,
+      "requires_rag": true
+    },
+    {
+      "id": "DOM-015",
+      "tier": "Hard / Enterprise",
+      "question": "Find regions where total order revenue exceeds 3000 dollars",
+      "ground_truth_sql": "SELECT c.region, SUM(o.amount) as total_rev FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.region HAVING SUM(o.amount) > 3000 LIMIT 100;",
+      "requires_dictionary": true,
+      "requires_rag": true
+    }
+  ]
+}
