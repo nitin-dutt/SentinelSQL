@@ -1,0 +1,456 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-10-11T11:06:17Z",
+    "git_head": "f0ff979",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 51,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {
+      "benchmarks/data/spider/spider/dev.json": "30d64a3fccde493226df79687aed9e4a1c0129525baf44f29c0573d914d758a4",
+      "benchmarks/data/spider/spider/tables.json": "61bb20aa401f03164e2d7f3b16509b7b5f79cc9c943ca7bd159046df1159e2ed"
+    },
+    "status": "complete",
+    "pools_requested": [
+      "dev"
+    ],
+    "k_sweep": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8
+    ],
+    "product_k": 3
+  },
+  "pools": {
+    "dev": {
+      "pool": "dev",
+      "n_databases": 20,
+      "n_tables": 81,
+      "n_questions": 200,
+      "newly_embedded_tables": 81,
+      "product_default_top3_plus_fk_closure": {
+        "all_gold_tables_retrieved": {
+          "k": 199,
+          "n": 200,
+          "rate": 99.5,
+          "lo": 97.22,
+          "hi": 99.91
+        },
+        "single_table_questions": {
+          "k": 94,
+          "n": 95,
+          "rate": 98.95,
+          "lo": 94.28,
+          "hi": 99.81
+        },
+        "multi_table_questions": {
+          "k": 105,
+          "n": 105,
+          "rate": 100.0,
+          "lo": 96.47,
+          "hi": 100.0
+        },
+        "by_hardness": {
+          "easy": {
+            "k": 49,
+            "n": 50,
+            "rate": 98.0,
+            "lo": 89.5,
+            "hi": 99.65
+          },
+          "extra": {
+            "k": 50,
+            "n": 50,
+            "rate": 100.0,
+            "lo": 92.86,
+            "hi": 100.0
+          },
+          "hard": {
+            "k": 50,
+            "n": 50,
+            "rate": 100.0,
+            "lo": 92.86,
+            "hi": 100.0
+          },
+          "medium": {
+            "k": 50,
+            "n": 50,
+            "rate": 100.0,
+            "lo": 92.86,
+            "hi": 100.0
+          }
+        },
+        "mean_tables_in_prompt": 4.84,
+        "fraction_of_pool_in_prompt_pct": 5.98,
+        "retrieval_modes": {
+          "vector": 200
+        }
+      },
+      "tokens": {
+        "tokenizer": "gemini-api",
+        "full_schema_tokens": 3930,
+        "retrieved_prompt_tokens_mean": 192.4,
+        "sample_size": 30,
+        "reduction_pct": 95.1
+      },
+      "sweep_embedding_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 169,
+            "n": 200,
+            "rate": 84.5,
+            "lo": 78.84,
+            "hi": 88.86
+          },
+          "mean_table_recall": 90.92,
+          "mean_tables_in_prompt": 2.38
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 195,
+            "n": 200,
+            "rate": 97.5,
+            "lo": 94.28,
+            "hi": 98.93
+          },
+          "mean_table_recall": 97.88,
+          "mean_tables_in_prompt": 3.56
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 199,
+            "n": 200,
+            "rate": 99.5,
+            "lo": 97.22,
+            "hi": 99.91
+          },
+          "mean_table_recall": 99.5,
+          "mean_tables_in_prompt": 4.84
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 199,
+            "n": 200,
+            "rate": 99.5,
+            "lo": 97.22,
+            "hi": 99.91
+          },
+          "mean_table_recall": 99.5,
+          "mean_tables_in_prompt": 6.37
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 199,
+            "n": 200,
+            "rate": 99.5,
+            "lo": 97.22,
+            "hi": 99.91
+          },
+          "mean_table_recall": 99.5,
+          "mean_tables_in_prompt": 7.93
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 199,
+            "n": 200,
+            "rate": 99.5,
+            "lo": 97.22,
+            "hi": 99.91
+          },
+          "mean_table_recall": 99.5,
+          "mean_tables_in_prompt": 9.67
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 200,
+            "n": 200,
+            "rate": 100.0,
+            "lo": 98.12,
+            "hi": 100.0
+          },
+          "mean_table_recall": 100.0,
+          "mean_tables_in_prompt": 13.03
+        }
+      },
+      "sweep_embedding_no_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 82,
+            "n": 200,
+            "rate": 41.0,
+            "lo": 34.42,
+            "hi": 47.92
+          },
+          "mean_table_recall": 64.37,
+          "mean_tables_in_prompt": 1.0
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 149,
+            "n": 200,
+            "rate": 74.5,
+            "lo": 68.04,
+            "hi": 80.04
+          },
+          "mean_table_recall": 87.5,
+          "mean_tables_in_prompt": 2.0
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 182,
+            "n": 200,
+            "rate": 91.0,
+            "lo": 86.22,
+            "hi": 94.23
+          },
+          "mean_table_recall": 95.62,
+          "mean_tables_in_prompt": 3.0
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 192,
+            "n": 200,
+            "rate": 96.0,
+            "lo": 92.31,
+            "hi": 97.96
+          },
+          "mean_table_recall": 97.92,
+          "mean_tables_in_prompt": 4.0
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 197,
+            "n": 200,
+            "rate": 98.5,
+            "lo": 95.68,
+            "hi": 99.49
+          },
+          "mean_table_recall": 99.08,
+          "mean_tables_in_prompt": 5.0
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 198,
+            "n": 200,
+            "rate": 99.0,
+            "lo": 96.43,
+            "hi": 99.73
+          },
+          "mean_table_recall": 99.25,
+          "mean_tables_in_prompt": 6.0
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 199,
+            "n": 200,
+            "rate": 99.5,
+            "lo": 97.22,
+            "hi": 99.91
+          },
+          "mean_table_recall": 99.75,
+          "mean_tables_in_prompt": 8.0
+        }
+      },
+      "sweep_tfidf_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 148,
+            "n": 200,
+            "rate": 74.0,
+            "lo": 67.51,
+            "hi": 79.59
+          },
+          "mean_table_recall": 80.88,
+          "mean_tables_in_prompt": 2.37
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 178,
+            "n": 200,
+            "rate": 89.0,
+            "lo": 83.91,
+            "hi": 92.62
+          },
+          "mean_table_recall": 89.0,
+          "mean_tables_in_prompt": 3.83
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 181,
+            "n": 200,
+            "rate": 90.5,
+            "lo": 85.64,
+            "hi": 93.83
+          },
+          "mean_table_recall": 90.5,
+          "mean_tables_in_prompt": 5.25
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 187,
+            "n": 200,
+            "rate": 93.5,
+            "lo": 89.2,
+            "hi": 96.16
+          },
+          "mean_table_recall": 93.5,
+          "mean_tables_in_prompt": 6.96
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 190,
+            "n": 200,
+            "rate": 95.0,
+            "lo": 91.04,
+            "hi": 97.26
+          },
+          "mean_table_recall": 95.33,
+          "mean_tables_in_prompt": 8.89
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 190,
+            "n": 200,
+            "rate": 95.0,
+            "lo": 91.04,
+            "hi": 97.26
+          },
+          "mean_table_recall": 95.33,
+          "mean_tables_in_prompt": 10.57
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 192,
+            "n": 200,
+            "rate": 96.0,
+            "lo": 92.31,
+            "hi": 97.96
+          },
+          "mean_table_recall": 96.33,
+          "mean_tables_in_prompt": 13.66
+        }
+      },
+      "sweep_random_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 3,
+            "n": 200,
+            "rate": 1.5,
+            "lo": 0.51,
+            "hi": 4.32
+          },
+          "mean_table_recall": 1.75,
+          "mean_tables_in_prompt": 2.44
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 2,
+            "n": 200,
+            "rate": 1.0,
+            "lo": 0.27,
+            "hi": 3.57
+          },
+          "mean_table_recall": 2.92,
+          "mean_tables_in_prompt": 4.82
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 13,
+            "n": 200,
+            "rate": 6.5,
+            "lo": 3.84,
+            "hi": 10.8
+          },
+          "mean_table_recall": 8.29,
+          "mean_tables_in_prompt": 7.1
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 22,
+            "n": 200,
+            "rate": 11.0,
+            "lo": 7.38,
+            "hi": 16.09
+          },
+          "mean_table_recall": 11.75,
+          "mean_tables_in_prompt": 9.47
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 34,
+            "n": 200,
+            "rate": 17.0,
+            "lo": 12.43,
+            "hi": 22.82
+          },
+          "mean_table_recall": 18.67,
+          "mean_tables_in_prompt": 11.81
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 30,
+            "n": 200,
+            "rate": 15.0,
+            "lo": 10.71,
+            "hi": 20.61
+          },
+          "mean_table_recall": 17.17,
+          "mean_tables_in_prompt": 13.7
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 30,
+            "n": 200,
+            "rate": 15.0,
+            "lo": 10.71,
+            "hi": 20.61
+          },
+          "mean_table_recall": 18.42,
+          "mean_tables_in_prompt": 18.46
+        }
+      },
+      "vector_search_latency": {
+        "n": 200,
+        "mean_ms": 5.736,
+        "p50_ms": 5.734,
+        "p90_ms": 5.832,
+        "p95_ms": 5.914,
+        "p99_ms": 6.304,
+        "min_ms": 5.468,
+        "max_ms": 7.576
+      },
+      "failures_sample": [
+        {
+          "question": "How many different loser names are there?",
+          "gold": [
+            "wta_1__matches"
+          ],
+          "retrieved": [
+            "network_1__friend",
+            "network_1__highschooler",
+            "network_1__likes",
+            "poker_player__people",
+            "poker_player__poker_player",
+            "voter_1__contestants",
+            "voter_1__votes"
+          ]
+        }
+      ],
+      "embedding_backend": "gemini:models/gemini-embedding-001@768"
+    }
+  }
+}

@@ -4,8 +4,8 @@ type Props = {
   sql: string;
   reason: string;
   runId?: string;
-  onApprove: () => void;
-  onEdit: (editedSql: string) => void;
+  onApprove: (saveAsTemplate: boolean) => void;
+  onEdit: (editedSql: string, saveAsTemplate: boolean) => void;
   onReject: () => void;
   loading: boolean;
 };
@@ -21,6 +21,7 @@ export default function SQLReview({
 }: Props) {
   const [editedSql, setEditedSql] = useState(sql);
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
 
   const isEditMode = mode === "edit";
 
@@ -29,36 +30,40 @@ export default function SQLReview({
       style={{
         marginBottom: 32,
         padding: 32,
-        border: "2px solid #f6ad55",
+        border: "1px solid var(--warning)",
         borderRadius: 12,
-        background: "#fffaf0",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.07)",
+        background: "rgba(245, 158, 11, 0.1)",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
       }}
     >
-      <h2 style={{ marginTop: 0, color: "#c05621", fontSize: 24, display: "flex", alignItems: "center", gap: 8 }}>⚠️ Human Approval Required</h2>
+      <h2 style={{ marginTop: 0, color: "var(--warning)", fontSize: 24, display: "flex", alignItems: "center", gap: 8 }}>
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        Human Approval Required
+      </h2>
 
-      <p style={{ color: "#744210", marginBottom: 8, lineHeight: 1.6 }}>
+      <p style={{ color: "var(--text-main)", marginBottom: 8, lineHeight: 1.6 }}>
         This query was flagged as potentially risky and requires explicit human
         approval before execution.
       </p>
 
-      <p style={{ fontSize: 14, color: "#5a3a1a", marginBottom: 8 }}>
-        <strong>Reason:</strong> {reason}
+      <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 8 }}>
+        <strong style={{ color: "var(--text-main)" }}>Reason:</strong> {reason}
       </p>
 
       {runId && (
-        <p style={{ fontSize: 13, color: "#744210", marginBottom: 0 }}>
-          <strong>Run ID:</strong> <code style={{ background: "#fff5e6", padding: "2px 6px", borderRadius: 3 }}>{runId}</code>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 0 }}>
+          <strong style={{ color: "var(--text-main)" }}>Run ID:</strong> <code style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: 3 }}>{runId}</code>
         </p>
       )}
 
-      <hr style={{ margin: 16, border: "none", borderTop: "1px solid #f6d5b8" }} />
+      <hr style={{ margin: 16, border: "none", borderTop: "1px solid rgba(245, 158, 11, 0.2)" }} />
 
       <label
         style={{
           display: "block",
           fontWeight: 600,
           marginBottom: 6,
+          color: "var(--text-main)"
         }}
       >
         SQL to be executed
@@ -72,54 +77,94 @@ export default function SQLReview({
         style={{
           width: "100%",
           fontFamily: "monospace",
-          fontSize: "13px",
-          background: isEditMode ? "#fff" : "#f4f4f4",
-          border: "1px solid #ccc",
-          padding: "10px",
-          borderRadius: "4px",
+          fontSize: "14px",
+          background: isEditMode ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.2)",
+          border: isEditMode ? "1px solid var(--accent)" : "1px solid var(--border)",
+          color: isEditMode ? "#fff" : "var(--accent-hover)",
+          padding: "12px",
+          borderRadius: "8px",
+          outline: "none",
+          resize: "vertical"
         }}
       />
+
+      {/* ⭐ Approach 1: Explicit Business Template Opt-In Checkbox */}
+      <div
+        style={{
+          marginTop: 14,
+          padding: "10px 14px",
+          background: "rgba(255, 255, 255, 0.04)",
+          borderRadius: 8,
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <input
+          type="checkbox"
+          id={`save-template-${runId || "default"}`}
+          checked={saveAsTemplate}
+          onChange={(e) => setSaveAsTemplate(e.target.checked)}
+          style={{ cursor: "pointer", width: 16, height: 16, accentColor: "var(--accent)" }}
+        />
+        <label
+          htmlFor={`save-template-${runId || "default"}`}
+          style={{
+            cursor: "pointer",
+            fontSize: 13,
+            color: "var(--text-main)",
+            userSelect: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span>⭐</span>
+          <span>Save as verified business template for future reference (Few-Shot Memory)</span>
+        </label>
+      </div>
 
       <div
         style={{
           marginTop: 20,
           display: "flex",
-          gap: 10,
+          gap: 12,
           flexWrap: "wrap",
           alignItems: "center",
         }}
       >
         {!isEditMode && (
-          <button onClick={onApprove} disabled={loading} style={{ background: "#48bb78", color: "white", padding: "10px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, transition: "background-color 0.2s" }} onMouseOver={(e) => !loading && (e.currentTarget.style.background = "#38a169")} onMouseOut={(e) => !loading && (e.currentTarget.style.background = "#48bb78")}>
-            ✅ Approve & Execute
+          <button className="primary" onClick={() => onApprove(saveAsTemplate)} disabled={loading} style={{ background: "var(--success)", borderColor: "var(--success)" }}>
+            Approve & Execute
           </button>
         )}
 
         {!isEditMode && (
-          <button onClick={() => setMode("edit")} disabled={loading} style={{ background: "#4299e1", color: "white", padding: "10px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, transition: "background-color 0.2s" }} onMouseOver={(e) => !loading && (e.currentTarget.style.background = "#3182ce")} onMouseOut={(e) => !loading && (e.currentTarget.style.background = "#4299e1")}>
-            ✏️ Edit SQL
+          <button onClick={() => setMode("edit")} disabled={loading}>
+            Edit SQL
           </button>
         )}
 
         {isEditMode && (
-          <button onClick={() => onEdit(editedSql)} disabled={loading || !editedSql.trim()} style={{ background: !editedSql.trim() ? "#cbd5e0" : "#48bb78", color: "white", padding: "10px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 6, cursor: loading || !editedSql.trim() ? "not-allowed" : "pointer", opacity: loading || !editedSql.trim() ? 0.6 : 1, transition: "background-color 0.2s" }}>
-            ▶ Execute Edited SQL
+          <button className="primary" onClick={() => onEdit(editedSql, saveAsTemplate)} disabled={loading || !editedSql.trim()}>
+            Execute Edited SQL
           </button>
         )}
 
         {isEditMode && (
-          <button onClick={() => { setEditedSql(sql); setMode("view"); }} disabled={loading} style={{ background: "#718096", color: "white", padding: "10px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}>
-            ↩ Cancel
+          <button onClick={() => { setEditedSql(sql); setMode("view"); }} disabled={loading}>
+            Cancel
           </button>
         )}
 
-        <button onClick={onReject} disabled={loading} style={{ marginLeft: "auto", background: "#f56565", color: "white", padding: "10px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, transition: "background-color 0.2s" }} onMouseOver={(e) => !loading && (e.currentTarget.style.background = "#e53e3e")} onMouseOut={(e) => !loading && (e.currentTarget.style.background = "#f56565")}>
-          ❌ Reject
+        <button onClick={onReject} disabled={loading} style={{ marginLeft: "auto", background: "transparent", color: "var(--error)", borderColor: "var(--error)" }}>
+          Reject
         </button>
       </div>
 
       {loading && (
-        <p style={{ marginTop: 12, fontSize: 14, color: "#744210" }}>
+        <p style={{ marginTop: 12, fontSize: 14, color: "var(--accent)" }}>
           ⏳ Awaiting execution…
         </p>
       )}

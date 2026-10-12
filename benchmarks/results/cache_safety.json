@@ -1,0 +1,1295 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-10-11T11:02:08Z",
+    "git_head": "f0ff979",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 51,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {
+      "benchmarks/data/cache_pairs.py": "25a5c2823a0a55f8efea4bacf78c691cb6847603622a8c7546d23422da20882f"
+    },
+    "status": "complete",
+    "embedding_backend": "gemini:models/gemini-embedding-001@768"
+  },
+  "embedding_backend": "gemini:models/gemini-embedding-001@768",
+  "n_pairs": 62,
+  "n_paraphrases": 24,
+  "n_must_not_hit": 38,
+  "at_production_threshold": {
+    "threshold": 0.92,
+    "similarity_only": {
+      "wrong_hit_rate": {
+        "k": 24,
+        "n": 38,
+        "rate": 63.16,
+        "lo": 47.28,
+        "hi": 76.62
+      },
+      "legit_hit_rate": {
+        "k": 21,
+        "n": 24,
+        "rate": 87.5,
+        "lo": 69.0,
+        "hi": 95.66
+      }
+    },
+    "guarded": {
+      "wrong_hit_rate": {
+        "k": 1,
+        "n": 38,
+        "rate": 2.63,
+        "lo": 0.47,
+        "hi": 13.5
+      },
+      "legit_hit_rate": {
+        "k": 13,
+        "n": 24,
+        "rate": 54.17,
+        "lo": 35.07,
+        "hi": 72.11
+      }
+    }
+  },
+  "threshold_sweep": [
+    {
+      "threshold": 0.8,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 38,
+          "n": 38,
+          "rate": 100.0,
+          "lo": 90.82,
+          "hi": 100.0
+        },
+        "legit_hit_rate": {
+          "k": 24,
+          "n": 24,
+          "rate": 100.0,
+          "lo": 86.2,
+          "hi": 100.0
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 4,
+          "n": 38,
+          "rate": 10.53,
+          "lo": 4.17,
+          "hi": 24.13
+        },
+        "legit_hit_rate": {
+          "k": 14,
+          "n": 24,
+          "rate": 58.33,
+          "lo": 38.83,
+          "hi": 75.53
+        }
+      }
+    },
+    {
+      "threshold": 0.85,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 37,
+          "n": 38,
+          "rate": 97.37,
+          "lo": 86.5,
+          "hi": 99.53
+        },
+        "legit_hit_rate": {
+          "k": 24,
+          "n": 24,
+          "rate": 100.0,
+          "lo": 86.2,
+          "hi": 100.0
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 3,
+          "n": 38,
+          "rate": 7.89,
+          "lo": 2.72,
+          "hi": 20.8
+        },
+        "legit_hit_rate": {
+          "k": 14,
+          "n": 24,
+          "rate": 58.33,
+          "lo": 38.83,
+          "hi": 75.53
+        }
+      }
+    },
+    {
+      "threshold": 0.88,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 36,
+          "n": 38,
+          "rate": 94.74,
+          "lo": 82.71,
+          "hi": 98.54
+        },
+        "legit_hit_rate": {
+          "k": 23,
+          "n": 24,
+          "rate": 95.83,
+          "lo": 79.76,
+          "hi": 99.26
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 3,
+          "n": 38,
+          "rate": 7.89,
+          "lo": 2.72,
+          "hi": 20.8
+        },
+        "legit_hit_rate": {
+          "k": 14,
+          "n": 24,
+          "rate": 58.33,
+          "lo": 38.83,
+          "hi": 75.53
+        }
+      }
+    },
+    {
+      "threshold": 0.9,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 33,
+          "n": 38,
+          "rate": 86.84,
+          "lo": 72.67,
+          "hi": 94.25
+        },
+        "legit_hit_rate": {
+          "k": 22,
+          "n": 24,
+          "rate": 91.67,
+          "lo": 74.15,
+          "hi": 97.68
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 2,
+          "n": 38,
+          "rate": 5.26,
+          "lo": 1.46,
+          "hi": 17.29
+        },
+        "legit_hit_rate": {
+          "k": 14,
+          "n": 24,
+          "rate": 58.33,
+          "lo": 38.83,
+          "hi": 75.53
+        }
+      }
+    },
+    {
+      "threshold": 0.92,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 24,
+          "n": 38,
+          "rate": 63.16,
+          "lo": 47.28,
+          "hi": 76.62
+        },
+        "legit_hit_rate": {
+          "k": 21,
+          "n": 24,
+          "rate": 87.5,
+          "lo": 69.0,
+          "hi": 95.66
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 1,
+          "n": 38,
+          "rate": 2.63,
+          "lo": 0.47,
+          "hi": 13.5
+        },
+        "legit_hit_rate": {
+          "k": 13,
+          "n": 24,
+          "rate": 54.17,
+          "lo": 35.07,
+          "hi": 72.11
+        }
+      }
+    },
+    {
+      "threshold": 0.94,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 14,
+          "n": 38,
+          "rate": 36.84,
+          "lo": 23.38,
+          "hi": 52.72
+        },
+        "legit_hit_rate": {
+          "k": 15,
+          "n": 24,
+          "rate": 62.5,
+          "lo": 42.71,
+          "hi": 78.84
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 0,
+          "n": 38,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 9.18
+        },
+        "legit_hit_rate": {
+          "k": 9,
+          "n": 24,
+          "rate": 37.5,
+          "lo": 21.16,
+          "hi": 57.29
+        }
+      }
+    },
+    {
+      "threshold": 0.96,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 11,
+          "n": 38,
+          "rate": 28.95,
+          "lo": 17.0,
+          "hi": 44.76
+        },
+        "legit_hit_rate": {
+          "k": 4,
+          "n": 24,
+          "rate": 16.67,
+          "lo": 6.68,
+          "hi": 35.85
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 0,
+          "n": 38,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 9.18
+        },
+        "legit_hit_rate": {
+          "k": 4,
+          "n": 24,
+          "rate": 16.67,
+          "lo": 6.68,
+          "hi": 35.85
+        }
+      }
+    },
+    {
+      "threshold": 0.98,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 3,
+          "n": 38,
+          "rate": 7.89,
+          "lo": 2.72,
+          "hi": 20.8
+        },
+        "legit_hit_rate": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 13.8
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 0,
+          "n": 38,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 9.18
+        },
+        "legit_hit_rate": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 13.8
+        }
+      }
+    }
+  ],
+  "wrong_hits_by_difference_kind": {
+    "aggregate": {
+      "n": 4,
+      "similarity_only_wrong_hits": 2,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.921
+    },
+    "comparison": {
+      "n": 4,
+      "similarity_only_wrong_hits": 3,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.937
+    },
+    "date": {
+      "n": 4,
+      "similarity_only_wrong_hits": 4,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.953
+    },
+    "entity": {
+      "n": 5,
+      "similarity_only_wrong_hits": 3,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.93
+    },
+    "entity_lowercase": {
+      "n": 3,
+      "similarity_only_wrong_hits": 0,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.894
+    },
+    "negation": {
+      "n": 4,
+      "similarity_only_wrong_hits": 2,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.918
+    },
+    "number": {
+      "n": 4,
+      "similarity_only_wrong_hits": 4,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.97
+    },
+    "ranking": {
+      "n": 3,
+      "similarity_only_wrong_hits": 2,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.927
+    },
+    "relative_time": {
+      "n": 3,
+      "similarity_only_wrong_hits": 3,
+      "guarded_wrong_hits": 0,
+      "mean_similarity": 0.981
+    },
+    "subject": {
+      "n": 4,
+      "similarity_only_wrong_hits": 1,
+      "guarded_wrong_hits": 1,
+      "mean_similarity": 0.888
+    }
+  },
+  "paraphrases_lost_to_guards": [
+    {
+      "id": "P01",
+      "a": "How many customers do we have?",
+      "b": "What is the total number of customers?",
+      "similarity": 0.9508
+    },
+    {
+      "id": "P05",
+      "a": "Which customers have never placed an order?",
+      "b": "Customers with no orders",
+      "similarity": 0.945
+    },
+    {
+      "id": "P10",
+      "a": "Show the top 5 customers by revenue",
+      "b": "Who are our five biggest customers by revenue?",
+      "similarity": 0.9423
+    },
+    {
+      "id": "P17",
+      "a": "Count the products in each category",
+      "b": "How many products are in each category?",
+      "similarity": 0.9471
+    },
+    {
+      "id": "P19",
+      "a": "What is the maximum order amount?",
+      "b": "Largest order amount",
+      "similarity": 0.9202
+    },
+    {
+      "id": "P21",
+      "a": "How many high priority tickets are open?",
+      "b": "Count open tickets with high priority",
+      "similarity": 0.9422
+    },
+    {
+      "id": "P23",
+      "a": "What is the total refund amount?",
+      "b": "Sum of all refunds",
+      "similarity": 0.9347
+    },
+    {
+      "id": "P24",
+      "a": "Which products cost more than 100?",
+      "b": "Products priced above 100",
+      "similarity": 0.9539
+    }
+  ],
+  "wrong_hits_with_similarity_only": [
+    {
+      "id": "N01",
+      "kind": "number",
+      "a": "Show the top 5 customers by revenue",
+      "b": "Show the top 10 customers by revenue",
+      "similarity": 0.9845
+    },
+    {
+      "id": "N02",
+      "kind": "number",
+      "a": "List orders above 1000",
+      "b": "List orders above 2000",
+      "similarity": 0.9646
+    },
+    {
+      "id": "N03",
+      "kind": "number",
+      "a": "Revenue for the last 3 months",
+      "b": "Revenue for the last 6 months",
+      "similarity": 0.9694
+    },
+    {
+      "id": "N04",
+      "kind": "number",
+      "a": "Which products cost more than 50?",
+      "b": "Which products cost more than 500?",
+      "similarity": 0.9621
+    },
+    {
+      "id": "N05",
+      "kind": "date",
+      "a": "How many orders were placed in 2024?",
+      "b": "How many orders were placed in 2025?",
+      "similarity": 0.9673
+    },
+    {
+      "id": "N06",
+      "kind": "date",
+      "a": "Revenue in January",
+      "b": "Revenue in March",
+      "similarity": 0.9325
+    },
+    {
+      "id": "N07",
+      "kind": "date",
+      "a": "Show sales for Q1",
+      "b": "Show sales for Q2",
+      "similarity": 0.9635
+    },
+    {
+      "id": "N08",
+      "kind": "date",
+      "a": "What is the total budget for 2023?",
+      "b": "What is the total budget for 2024?",
+      "similarity": 0.9478
+    },
+    {
+      "id": "N09",
+      "kind": "comparison",
+      "a": "Customers with more than 3 orders",
+      "b": "Customers with fewer than 3 orders",
+      "similarity": 0.9207
+    },
+    {
+      "id": "N10",
+      "kind": "comparison",
+      "a": "Orders above the average amount",
+      "b": "Orders below the average amount",
+      "similarity": 0.9447
+    },
+    {
+      "id": "N11",
+      "kind": "comparison",
+      "a": "Shipments delivered before February",
+      "b": "Shipments delivered after February",
+      "similarity": 0.9655
+    },
+    {
+      "id": "N14",
+      "kind": "aggregate",
+      "a": "What is the maximum order amount?",
+      "b": "What is the minimum order amount?",
+      "similarity": 0.9397
+    },
+    {
+      "id": "N15",
+      "kind": "aggregate",
+      "a": "Count the orders per customer",
+      "b": "Sum the order amounts per customer",
+      "similarity": 0.9276
+    },
+    {
+      "id": "N17",
+      "kind": "entity",
+      "a": "How many customers are in the North region?",
+      "b": "How many customers are in the South region?",
+      "similarity": 0.9649
+    },
+    {
+      "id": "N19",
+      "kind": "entity",
+      "a": "List shipments delivered by UPS",
+      "b": "List shipments delivered by FedEx",
+      "similarity": 0.9316
+    },
+    {
+      "id": "N21",
+      "kind": "entity",
+      "a": "Show all orders for Alice",
+      "b": "Show all orders for Bob",
+      "similarity": 0.941
+    },
+    {
+      "id": "N25",
+      "kind": "negation",
+      "a": "Show orders that have shipped",
+      "b": "Show orders that have not shipped",
+      "similarity": 0.9364
+    },
+    {
+      "id": "N28",
+      "kind": "negation",
+      "a": "Products that were returned",
+      "b": "Products that were never returned",
+      "similarity": 0.9297
+    },
+    {
+      "id": "N30",
+      "kind": "ranking",
+      "a": "Top customers by spend",
+      "b": "Bottom customers by spend",
+      "similarity": 0.9366
+    },
+    {
+      "id": "N31",
+      "kind": "ranking",
+      "a": "Show the newest orders",
+      "b": "Show the oldest orders",
+      "similarity": 0.9251
+    },
+    {
+      "id": "N32",
+      "kind": "relative_time",
+      "a": "Orders from this month",
+      "b": "Orders from last month",
+      "similarity": 0.98
+    },
+    {
+      "id": "N33",
+      "kind": "relative_time",
+      "a": "Tickets opened today",
+      "b": "Tickets opened yesterday",
+      "similarity": 0.9893
+    },
+    {
+      "id": "N34",
+      "kind": "relative_time",
+      "a": "Revenue this year",
+      "b": "Revenue last year",
+      "similarity": 0.9722
+    },
+    {
+      "id": "N38",
+      "kind": "subject",
+      "a": "Count orders per customer",
+      "b": "Count tickets per customer",
+      "similarity": 0.9218
+    }
+  ],
+  "wrong_hits_with_guards": [
+    {
+      "id": "N38",
+      "kind": "subject",
+      "a": "Count orders per customer",
+      "b": "Count tickets per customer",
+      "similarity": 0.9218
+    }
+  ],
+  "similarity_stats": {
+    "paraphrase_mean": 0.939,
+    "must_not_hit_mean": 0.932
+  },
+  "end_to_end_agreement": {
+    "checked": 62,
+    "disagreements": [
+      {
+        "id": "P02",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9346
+      },
+      {
+        "id": "P03",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9307
+      },
+      {
+        "id": "P04",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9611
+      },
+      {
+        "id": "P07",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9552
+      },
+      {
+        "id": "P09",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9699
+      },
+      {
+        "id": "P12",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9296
+      },
+      {
+        "id": "P13",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9466
+      },
+      {
+        "id": "P14",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9679
+      },
+      {
+        "id": "P15",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9401
+      },
+      {
+        "id": "P16",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9239
+      },
+      {
+        "id": "P18",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9446
+      },
+      {
+        "id": "P20",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9576
+      },
+      {
+        "id": "P22",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9682
+      },
+      {
+        "id": "N38",
+        "served": false,
+        "expected": true,
+        "similarity": 0.9218
+      }
+    ]
+  },
+  "pairs": [
+    {
+      "id": "P01",
+      "kind": "paraphrase",
+      "a": "How many customers do we have?",
+      "b": "What is the total number of customers?",
+      "should_hit": true,
+      "similarity": 0.9508,
+      "guards_ok": false
+    },
+    {
+      "id": "P02",
+      "kind": "paraphrase",
+      "a": "Show total revenue by customer",
+      "b": "What is each customer's total revenue?",
+      "should_hit": true,
+      "similarity": 0.9346,
+      "guards_ok": true
+    },
+    {
+      "id": "P03",
+      "kind": "paraphrase",
+      "a": "List the products in the Electronics category",
+      "b": "Show me all Electronics products",
+      "should_hit": true,
+      "similarity": 0.9307,
+      "guards_ok": true
+    },
+    {
+      "id": "P04",
+      "kind": "paraphrase",
+      "a": "What is the average order amount?",
+      "b": "Average amount per order",
+      "should_hit": true,
+      "similarity": 0.9611,
+      "guards_ok": true
+    },
+    {
+      "id": "P05",
+      "kind": "paraphrase",
+      "a": "Which customers have never placed an order?",
+      "b": "Customers with no orders",
+      "should_hit": true,
+      "similarity": 0.945,
+      "guards_ok": false
+    },
+    {
+      "id": "P06",
+      "kind": "paraphrase",
+      "a": "Count support tickets by priority",
+      "b": "How many tickets are there for each priority level?",
+      "should_hit": true,
+      "similarity": 0.8706,
+      "guards_ok": false
+    },
+    {
+      "id": "P07",
+      "kind": "paraphrase",
+      "a": "Show open invoices",
+      "b": "List the invoices that are still open",
+      "should_hit": true,
+      "similarity": 0.9552,
+      "guards_ok": true
+    },
+    {
+      "id": "P08",
+      "kind": "paraphrase",
+      "a": "Total quantity sold per product",
+      "b": "How many units of each product were sold?",
+      "should_hit": true,
+      "similarity": 0.8826,
+      "guards_ok": false
+    },
+    {
+      "id": "P09",
+      "kind": "paraphrase",
+      "a": "Which suppliers are located in Germany?",
+      "b": "List the suppliers based in Germany",
+      "should_hit": true,
+      "similarity": 0.9699,
+      "guards_ok": true
+    },
+    {
+      "id": "P10",
+      "kind": "paraphrase",
+      "a": "Show the top 5 customers by revenue",
+      "b": "Who are our five biggest customers by revenue?",
+      "should_hit": true,
+      "similarity": 0.9423,
+      "guards_ok": false
+    },
+    {
+      "id": "P11",
+      "kind": "paraphrase",
+      "a": "Orders placed in 2025",
+      "b": "Show me the orders from 2025",
+      "should_hit": true,
+      "similarity": 0.9138,
+      "guards_ok": true
+    },
+    {
+      "id": "P12",
+      "kind": "paraphrase",
+      "a": "List shipments delivered by UPS",
+      "b": "Which shipments did UPS deliver?",
+      "should_hit": true,
+      "similarity": 0.9296,
+      "guards_ok": true
+    },
+    {
+      "id": "P13",
+      "kind": "paraphrase",
+      "a": "How many returns were there for each reason?",
+      "b": "Number of returns per reason",
+      "should_hit": true,
+      "similarity": 0.9466,
+      "guards_ok": true
+    },
+    {
+      "id": "P14",
+      "kind": "paraphrase",
+      "a": "What is the total budget for 2024?",
+      "b": "Total budget in 2024",
+      "should_hit": true,
+      "similarity": 0.9679,
+      "guards_ok": true
+    },
+    {
+      "id": "P15",
+      "kind": "paraphrase",
+      "a": "Show payments by method",
+      "b": "Payments grouped by payment method",
+      "should_hit": true,
+      "similarity": 0.9401,
+      "guards_ok": true
+    },
+    {
+      "id": "P16",
+      "kind": "paraphrase",
+      "a": "What are the names of all departments?",
+      "b": "List every department name",
+      "should_hit": true,
+      "similarity": 0.9239,
+      "guards_ok": true
+    },
+    {
+      "id": "P17",
+      "kind": "paraphrase",
+      "a": "Count the products in each category",
+      "b": "How many products are in each category?",
+      "should_hit": true,
+      "similarity": 0.9471,
+      "guards_ok": false
+    },
+    {
+      "id": "P18",
+      "kind": "paraphrase",
+      "a": "Which customers are in the North region?",
+      "b": "Show customers from the North region",
+      "should_hit": true,
+      "similarity": 0.9446,
+      "guards_ok": true
+    },
+    {
+      "id": "P19",
+      "kind": "paraphrase",
+      "a": "What is the maximum order amount?",
+      "b": "Largest order amount",
+      "should_hit": true,
+      "similarity": 0.9202,
+      "guards_ok": false
+    },
+    {
+      "id": "P20",
+      "kind": "paraphrase",
+      "a": "List the campaigns and their budgets",
+      "b": "Show every campaign with its budget",
+      "should_hit": true,
+      "similarity": 0.9576,
+      "guards_ok": true
+    },
+    {
+      "id": "P21",
+      "kind": "paraphrase",
+      "a": "How many high priority tickets are open?",
+      "b": "Count open tickets with high priority",
+      "should_hit": true,
+      "similarity": 0.9422,
+      "guards_ok": false
+    },
+    {
+      "id": "P22",
+      "kind": "paraphrase",
+      "a": "Show the number of orders per customer",
+      "b": "How many orders has each customer placed?",
+      "should_hit": true,
+      "similarity": 0.9682,
+      "guards_ok": true
+    },
+    {
+      "id": "P23",
+      "kind": "paraphrase",
+      "a": "What is the total refund amount?",
+      "b": "Sum of all refunds",
+      "should_hit": true,
+      "similarity": 0.9347,
+      "guards_ok": false
+    },
+    {
+      "id": "P24",
+      "kind": "paraphrase",
+      "a": "Which products cost more than 100?",
+      "b": "Products priced above 100",
+      "should_hit": true,
+      "similarity": 0.9539,
+      "guards_ok": false
+    },
+    {
+      "id": "N01",
+      "kind": "number",
+      "a": "Show the top 5 customers by revenue",
+      "b": "Show the top 10 customers by revenue",
+      "should_hit": false,
+      "similarity": 0.9845,
+      "guards_ok": false
+    },
+    {
+      "id": "N02",
+      "kind": "number",
+      "a": "List orders above 1000",
+      "b": "List orders above 2000",
+      "should_hit": false,
+      "similarity": 0.9646,
+      "guards_ok": false
+    },
+    {
+      "id": "N03",
+      "kind": "number",
+      "a": "Revenue for the last 3 months",
+      "b": "Revenue for the last 6 months",
+      "should_hit": false,
+      "similarity": 0.9694,
+      "guards_ok": false
+    },
+    {
+      "id": "N04",
+      "kind": "number",
+      "a": "Which products cost more than 50?",
+      "b": "Which products cost more than 500?",
+      "should_hit": false,
+      "similarity": 0.9621,
+      "guards_ok": false
+    },
+    {
+      "id": "N05",
+      "kind": "date",
+      "a": "How many orders were placed in 2024?",
+      "b": "How many orders were placed in 2025?",
+      "should_hit": false,
+      "similarity": 0.9673,
+      "guards_ok": false
+    },
+    {
+      "id": "N06",
+      "kind": "date",
+      "a": "Revenue in January",
+      "b": "Revenue in March",
+      "should_hit": false,
+      "similarity": 0.9325,
+      "guards_ok": false
+    },
+    {
+      "id": "N07",
+      "kind": "date",
+      "a": "Show sales for Q1",
+      "b": "Show sales for Q2",
+      "should_hit": false,
+      "similarity": 0.9635,
+      "guards_ok": false
+    },
+    {
+      "id": "N08",
+      "kind": "date",
+      "a": "What is the total budget for 2023?",
+      "b": "What is the total budget for 2024?",
+      "should_hit": false,
+      "similarity": 0.9478,
+      "guards_ok": false
+    },
+    {
+      "id": "N09",
+      "kind": "comparison",
+      "a": "Customers with more than 3 orders",
+      "b": "Customers with fewer than 3 orders",
+      "should_hit": false,
+      "similarity": 0.9207,
+      "guards_ok": false
+    },
+    {
+      "id": "N10",
+      "kind": "comparison",
+      "a": "Orders above the average amount",
+      "b": "Orders below the average amount",
+      "should_hit": false,
+      "similarity": 0.9447,
+      "guards_ok": false
+    },
+    {
+      "id": "N11",
+      "kind": "comparison",
+      "a": "Shipments delivered before February",
+      "b": "Shipments delivered after February",
+      "should_hit": false,
+      "similarity": 0.9655,
+      "guards_ok": false
+    },
+    {
+      "id": "N12",
+      "kind": "comparison",
+      "a": "Products priced over 100",
+      "b": "Products priced under 100",
+      "should_hit": false,
+      "similarity": 0.9189,
+      "guards_ok": false
+    },
+    {
+      "id": "N13",
+      "kind": "aggregate",
+      "a": "Show the average order amount",
+      "b": "Show the total order amount",
+      "should_hit": false,
+      "similarity": 0.8965,
+      "guards_ok": false
+    },
+    {
+      "id": "N14",
+      "kind": "aggregate",
+      "a": "What is the maximum order amount?",
+      "b": "What is the minimum order amount?",
+      "should_hit": false,
+      "similarity": 0.9397,
+      "guards_ok": false
+    },
+    {
+      "id": "N15",
+      "kind": "aggregate",
+      "a": "Count the orders per customer",
+      "b": "Sum the order amounts per customer",
+      "should_hit": false,
+      "similarity": 0.9276,
+      "guards_ok": false
+    },
+    {
+      "id": "N16",
+      "kind": "aggregate",
+      "a": "Average ticket count per customer",
+      "b": "Total ticket count per customer",
+      "should_hit": false,
+      "similarity": 0.9194,
+      "guards_ok": false
+    },
+    {
+      "id": "N17",
+      "kind": "entity",
+      "a": "How many customers are in the North region?",
+      "b": "How many customers are in the South region?",
+      "should_hit": false,
+      "similarity": 0.9649,
+      "guards_ok": false
+    },
+    {
+      "id": "N18",
+      "kind": "entity",
+      "a": "Which suppliers are located in Germany?",
+      "b": "Which suppliers are located in France?",
+      "should_hit": false,
+      "similarity": 0.9058,
+      "guards_ok": false
+    },
+    {
+      "id": "N19",
+      "kind": "entity",
+      "a": "List shipments delivered by UPS",
+      "b": "List shipments delivered by FedEx",
+      "should_hit": false,
+      "similarity": 0.9316,
+      "guards_ok": false
+    },
+    {
+      "id": "N20",
+      "kind": "entity",
+      "a": "List the products in the Electronics category",
+      "b": "List the products in the Furniture category",
+      "should_hit": false,
+      "similarity": 0.9067,
+      "guards_ok": false
+    },
+    {
+      "id": "N21",
+      "kind": "entity",
+      "a": "Show all orders for Alice",
+      "b": "Show all orders for Bob",
+      "should_hit": false,
+      "similarity": 0.941,
+      "guards_ok": false
+    },
+    {
+      "id": "N22",
+      "kind": "entity_lowercase",
+      "a": "customers in the north region",
+      "b": "customers in the south region",
+      "should_hit": false,
+      "similarity": 0.9196,
+      "guards_ok": false
+    },
+    {
+      "id": "N23",
+      "kind": "entity_lowercase",
+      "a": "tickets with high priority",
+      "b": "tickets with low priority",
+      "should_hit": false,
+      "similarity": 0.9011,
+      "guards_ok": false
+    },
+    {
+      "id": "N24",
+      "kind": "entity_lowercase",
+      "a": "shipments by ups",
+      "b": "shipments by dhl",
+      "should_hit": false,
+      "similarity": 0.8609,
+      "guards_ok": false
+    },
+    {
+      "id": "N25",
+      "kind": "negation",
+      "a": "Show orders that have shipped",
+      "b": "Show orders that have not shipped",
+      "should_hit": false,
+      "similarity": 0.9364,
+      "guards_ok": false
+    },
+    {
+      "id": "N26",
+      "kind": "negation",
+      "a": "Customers with orders",
+      "b": "Customers without orders",
+      "should_hit": false,
+      "similarity": 0.9188,
+      "guards_ok": false
+    },
+    {
+      "id": "N27",
+      "kind": "negation",
+      "a": "Show open tickets",
+      "b": "Show closed tickets",
+      "should_hit": false,
+      "similarity": 0.8886,
+      "guards_ok": false
+    },
+    {
+      "id": "N28",
+      "kind": "negation",
+      "a": "Products that were returned",
+      "b": "Products that were never returned",
+      "should_hit": false,
+      "similarity": 0.9297,
+      "guards_ok": false
+    },
+    {
+      "id": "N29",
+      "kind": "ranking",
+      "a": "Show the highest paid orders",
+      "b": "Show the lowest paid orders",
+      "should_hit": false,
+      "similarity": 0.918,
+      "guards_ok": false
+    },
+    {
+      "id": "N30",
+      "kind": "ranking",
+      "a": "Top customers by spend",
+      "b": "Bottom customers by spend",
+      "should_hit": false,
+      "similarity": 0.9366,
+      "guards_ok": false
+    },
+    {
+      "id": "N31",
+      "kind": "ranking",
+      "a": "Show the newest orders",
+      "b": "Show the oldest orders",
+      "should_hit": false,
+      "similarity": 0.9251,
+      "guards_ok": false
+    },
+    {
+      "id": "N32",
+      "kind": "relative_time",
+      "a": "Orders from this month",
+      "b": "Orders from last month",
+      "should_hit": false,
+      "similarity": 0.98,
+      "guards_ok": false
+    },
+    {
+      "id": "N33",
+      "kind": "relative_time",
+      "a": "Tickets opened today",
+      "b": "Tickets opened yesterday",
+      "should_hit": false,
+      "similarity": 0.9893,
+      "guards_ok": false
+    },
+    {
+      "id": "N34",
+      "kind": "relative_time",
+      "a": "Revenue this year",
+      "b": "Revenue last year",
+      "should_hit": false,
+      "similarity": 0.9722,
+      "guards_ok": false
+    },
+    {
+      "id": "N35",
+      "kind": "subject",
+      "a": "How many customers do we have?",
+      "b": "How many suppliers do we have?",
+      "should_hit": false,
+      "similarity": 0.889,
+      "guards_ok": true
+    },
+    {
+      "id": "N36",
+      "kind": "subject",
+      "a": "List all departments",
+      "b": "List all campaigns",
+      "should_hit": false,
+      "similarity": 0.8412,
+      "guards_ok": true
+    },
+    {
+      "id": "N37",
+      "kind": "subject",
+      "a": "Show the budget by department",
+      "b": "Show the budget by campaign",
+      "should_hit": false,
+      "similarity": 0.9016,
+      "guards_ok": true
+    },
+    {
+      "id": "N38",
+      "kind": "subject",
+      "a": "Count orders per customer",
+      "b": "Count tickets per customer",
+      "should_hit": false,
+      "similarity": 0.9218,
+      "guards_ok": true
+    }
+  ],
+  "usage": {
+    "live_texts": 117,
+    "cache_hits": 0,
+    "live_requests": 3
+  }
+}

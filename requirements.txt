@@ -9,3 +9,13 @@ uvicorn
 pydantic
 sqlalchemy
 python-dotenv
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+mcp>=1.0.0
+sqlglot>=25.0.0
+langchain-google-genai>=2.0.0
+psycopg2-binary>=2.9.0
+mysql-connector-python>=8.0.0
+numpy>=1.26

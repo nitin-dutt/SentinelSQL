@@ -1,0 +1,3401 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-10-11T11:48:42Z",
+    "git_head": "f0ff979",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 51,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {
+      "benchmarks/data/spider/spider/dev.json": "30d64a3fccde493226df79687aed9e4a1c0129525baf44f29c0573d914d758a4"
+    },
+    "status": "paused: daily quota (progress cached; re-run to resume)",
+    "seed": 42,
+    "per_tier": 50,
+    "usage": {},
+    "duration_s": 735
+  },
+  "comparator_controls": {
+    "gold_vs_gold": 200,
+    "select_1": 0,
+    "n": 200
+  },
+  "analysis": {
+    "n": 147,
+    "raw_model": {
+      "easy": {
+        "k": 50,
+        "n": 50,
+        "rate": 100.0,
+        "lo": 92.86,
+        "hi": 100.0
+      },
+      "medium": {
+        "k": 47,
+        "n": 50,
+        "rate": 94.0,
+        "lo": 83.78,
+        "hi": 97.94
+      },
+      "hard": {
+        "k": 42,
+        "n": 47,
+        "rate": 89.36,
+        "lo": 77.41,
+        "hi": 95.37
+      },
+      "ALL_unweighted": {
+        "k": 139,
+        "n": 147,
+        "rate": 94.56,
+        "lo": 89.63,
+        "hi": 97.22
+      },
+      "ALL_dev_weighted": 79.57
+    },
+    "governed_as_shipped": {
+      "easy": {
+        "k": 45,
+        "n": 50,
+        "rate": 90.0,
+        "lo": 78.64,
+        "hi": 95.65
+      },
+      "medium": {
+        "k": 45,
+        "n": 50,
+        "rate": 90.0,
+        "lo": 78.64,
+        "hi": 95.65
+      },
+      "hard": {
+        "k": 37,
+        "n": 47,
+        "rate": 78.72,
+        "lo": 65.1,
+        "hi": 88.01
+      },
+      "ALL_unweighted": {
+        "k": 127,
+        "n": 147,
+        "rate": 86.39,
+        "lo": 79.92,
+        "hi": 91.02
+      },
+      "ALL_dev_weighted": 73.65
+    },
+    "governed_logic_only": {
+      "easy": {
+        "k": 45,
+        "n": 50,
+        "rate": 90.0,
+        "lo": 78.64,
+        "hi": 95.65
+      },
+      "medium": {
+        "k": 46,
+        "n": 50,
+        "rate": 92.0,
+        "lo": 81.16,
+        "hi": 96.85
+      },
+      "hard": {
+        "k": 39,
+        "n": 47,
+        "rate": 82.98,
+        "lo": 69.86,
+        "hi": 91.11
+      },
+      "ALL_unweighted": {
+        "k": 130,
+        "n": 147,
+        "rate": 88.44,
+        "lo": 82.26,
+        "hi": 92.65
+      },
+      "ALL_dev_weighted": 75.23
+    },
+    "governed_outcomes": {
+      "executed": 145,
+      "held_for_review": 1,
+      "blocked_by_policy": 1
+    },
+    "paired_raw_vs_governed_as_shipped": {
+      "raw_only_correct": 15,
+      "governed_only_correct": 3,
+      "mcnemar_p": 0.00754
+    },
+    "raw_correct_but_governed_lost": {
+      "different_sql_from_two_stage_prompt": 11,
+      "held_for_review": 1,
+      "row_limit_applied": 2,
+      "blocked_by_policy": 1
+    },
+    "top_policy_reasons": [
+      [
+        "Query accesses sensitive table '..' (confidential table). Mandatory Hu",
+        1
+      ],
+      [
+        "SELECT * is not allowed: list the columns you need explicitly (the sch",
+        1
+      ]
+    ],
+    "tables_that_triggered_review": [
+      [
+        "employee",
+        1
+      ]
+    ],
+    "raw_failure_modes": {
+      "wrong_result": 8
+    }
+  },
+  "records": [
+    {
+      "index": 1,
+      "db_id": "concert_singer",
+      "hardness": "easy",
+      "question": "What is the total number of singers?",
+      "gold": "SELECT count(*) FROM singer",
+      "raw": {
+        "sql": "SELECT count(*) FROM singer",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(Singer_ID) FROM singer LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT count(Singer_ID) FROM singer;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 55,
+      "db_id": "pets_1",
+      "hardness": "easy",
+      "question": "Find the number of distinct type of pets.",
+      "gold": "SELECT count(DISTINCT pettype) FROM pets",
+      "raw": {
+        "sql": "SELECT count(DISTINCT PetType) FROM Pets",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT PetType) FROM Pets LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT PetType) FROM Pets;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 56,
+      "db_id": "pets_1",
+      "hardness": "easy",
+      "question": "How many different types of pet are there?",
+      "gold": "SELECT count(DISTINCT pettype) FROM pets",
+      "raw": {
+        "sql": "SELECT count(DISTINCT PetType) FROM Pets",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT PetType) FROM Pets LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT PetType) FROM Pets;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 87,
+      "db_id": "car_1",
+      "hardness": "easy",
+      "question": "How many continents are there?",
+      "gold": "SELECT count(*) FROM CONTINENTS;",
+      "raw": {
+        "sql": "SELECT count(*) FROM continents",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(continents.ContId) FROM continents LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT count(continents.ContId) FROM continents;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 153,
+      "db_id": "car_1",
+      "hardness": "easy",
+      "question": "In which years cars were produced weighing no less than 3000 and no more than 4000 ?",
+      "gold": "select distinct year from cars_data where weight between 3000 and 4000;",
+      "raw": {
+        "sql": "SELECT DISTINCT Year FROM cars_data WHERE Weight BETWEEN 3000 AND 4000",
+        "correct": true,
+        "error": null,
+        "n_rows": 13
+      },
+      "governed": {
+        "sql": "SELECT Year FROM cars_data WHERE Weight >= 3000 AND Weight <= 4000 LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT Year FROM cars_data WHERE Weight >= 3000 AND Weight <= 4000;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 154,
+      "db_id": "car_1",
+      "hardness": "easy",
+      "question": "What are the different years in which there were cars produced that weighed less than 4000 and also cars that weighted more than 3000 ?",
+      "gold": "select distinct year from cars_data where weight between 3000 and 4000;",
+      "raw": {
+        "sql": "SELECT DISTINCT Year FROM cars_data WHERE Weight < 4000\nINTERSECT\nSELECT DISTINCT Year FROM cars_data WHERE Weight > 3000",
+        "correct": true,
+        "error": null,
+        "n_rows": 13
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Year FROM cars_data AS T1 WHERE T1.Weight < 4000 INTERSECT SELECT DISTINCT T2.Year FROM cars_data AS T2 WHERE T2.Weight > 3000 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.Year FROM cars_data AS T1 WHERE T1.Weight < 4000 INTERSECT SELECT DISTINCT T2.Year FROM cars_data AS T2 WHERE T2.Weight > 3000;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 179,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "Which country does Airline \"JetBlue Airways\" belong to?",
+      "gold": "SELECT Country FROM AIRLINES WHERE Airline  =  \"JetBlue Airways\"",
+      "raw": {
+        "sql": "SELECT Country FROM airlines WHERE Airline = 'JetBlue Airways'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Country FROM airlines WHERE Airline = 'JetBlue Airways' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Country FROM airlines WHERE Airline = 'JetBlue Airways';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 181,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "What is the abbreviation of Airline \"JetBlue Airways\"?",
+      "gold": "SELECT Abbreviation FROM AIRLINES WHERE Airline  =  \"JetBlue Airways\"",
+      "raw": {
+        "sql": "SELECT Abbreviation FROM airlines WHERE Airline = 'JetBlue Airways'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Abbreviation FROM airlines WHERE Airline = 'JetBlue Airways' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Abbreviation FROM airlines WHERE Airline = 'JetBlue Airways';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 192,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "Return the number of flights.",
+      "gold": "SELECT count(*) FROM FLIGHTS",
+      "raw": {
+        "sql": "SELECT count(*) FROM flights",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(*) FROM flights LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(*) FROM flights;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 196,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "Return the number of airlines in the USA.",
+      "gold": "SELECT count(*) FROM AIRLINES WHERE Country  =  \"USA\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM airlines WHERE Country = 'USA'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(airlines.uid) FROM airlines WHERE airlines.Country = 'USA' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(airlines.uid) FROM airlines WHERE airlines.Country = 'USA';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 199,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "What is the airport name for airport 'AKO'?",
+      "gold": "SELECT AirportName FROM AIRPORTS WHERE AirportCode  =  \"AKO\"",
+      "raw": {
+        "sql": "SELECT AirportName FROM airports WHERE AirportCode = 'AKO'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AirportName FROM airports WHERE AirportCode = 'AKO' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AirportName FROM airports WHERE AirportCode = 'AKO';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 249,
+      "db_id": "flight_2",
+      "hardness": "easy",
+      "question": "What are flight numbers of flights arriving at Airport \"APG\"?",
+      "gold": "SELECT FlightNo FROM FLIGHTS WHERE DestAirport  =  \"APG\"",
+      "raw": {
+        "sql": "SELECT FlightNo FROM flights WHERE DestAirport = 'APG'",
+        "correct": true,
+        "error": null,
+        "n_rows": 0
+      },
+      "governed": {
+        "sql": "SELECT FlightNo FROM flights WHERE DestAirport = 'APG' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT FlightNo FROM flights WHERE DestAirport = 'APG';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 262,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "easy",
+      "question": "List the names of employees and sort in ascending order of age.",
+      "gold": "SELECT name FROM employee ORDER BY age",
+      "raw": {
+        "sql": "SELECT Name FROM employee ORDER BY Age ASC",
+        "correct": true,
+        "error": null,
+        "n_rows": 10
+      },
+      "governed": {
+        "sql": null,
+        "outcome": "held_for_review",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT Name FROM employee ORDER BY Age ASC;",
+        "policy_reason": "Query accesses sensitive table 'employee' (confidential table). Mandatory Human-in-the-Loop review required.",
+        "tables": [
+          "employee"
+        ]
+      }
+    },
+    {
+      "index": 289,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "easy",
+      "question": "What is total bonus given in all evaluations?",
+      "gold": "SELECT sum(bonus) FROM evaluation",
+      "raw": {
+        "sql": "SELECT SUM(Bonus) FROM evaluation",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT SUM(evaluation.Bonus) FROM evaluation LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT SUM(evaluation.Bonus) FROM evaluation;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 290,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "easy",
+      "question": "Find the total amount of bonus given in all the evaluations.",
+      "gold": "SELECT sum(bonus) FROM evaluation",
+      "raw": {
+        "sql": "SELECT SUM(Bonus) FROM evaluation",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT SUM(evaluation.Bonus) FROM evaluation LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT SUM(evaluation.Bonus) FROM evaluation;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 292,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "easy",
+      "question": "What is all the information about hiring?",
+      "gold": "SELECT * FROM hiring",
+      "raw": {
+        "sql": "SELECT * FROM hiring",
+        "correct": true,
+        "error": null,
+        "n_rows": 7
+      },
+      "governed": {
+        "sql": "SELECT Shop_ID, Employee_ID, Start_from, Is_full_time FROM hiring LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Shop_ID, Employee_ID, Start_from, Is_full_time FROM hiring;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 297,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "easy",
+      "question": "How many documents do we have?",
+      "gold": "SELECT count(*) FROM Documents",
+      "raw": {
+        "sql": "SELECT count(*) FROM Documents",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(Document_ID) FROM Documents LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(Document_ID) FROM Documents;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 321,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "easy",
+      "question": "Show all distinct template type codes for all templates.",
+      "gold": "SELECT DISTINCT template_type_code FROM Templates",
+      "raw": {
+        "sql": "SELECT DISTINCT Template_Type_Code FROM Templates",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT Template_Type_Code FROM Templates LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT Template_Type_Code FROM Templates;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 322,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "easy",
+      "question": "What are the different template type codes?",
+      "gold": "SELECT DISTINCT template_type_code FROM Templates",
+      "raw": {
+        "sql": "SELECT DISTINCT Template_Type_Code FROM Ref_Template_Types",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT Ref_Template_Types.Template_Type_Code FROM Ref_Template_Types LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT Ref_Template_Types.Template_Type_Code FROM Ref_Template_Types;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 381,
+      "db_id": "course_teach",
+      "hardness": "easy",
+      "question": "How many teachers are there?",
+      "gold": "SELECT count(*) FROM teacher",
+      "raw": {
+        "sql": "SELECT count(*) FROM teacher",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(Teacher_ID) FROM teacher LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(Teacher_ID) FROM teacher;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 382,
+      "db_id": "course_teach",
+      "hardness": "easy",
+      "question": "What is the total count of teachers?",
+      "gold": "SELECT count(*) FROM teacher",
+      "raw": {
+        "sql": "SELECT count(*) FROM teacher",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(Teacher_ID) FROM teacher LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT count(Teacher_ID) FROM teacher;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 443,
+      "db_id": "wta_1",
+      "hardness": "easy",
+      "question": "Find the number of distinct name of losers.",
+      "gold": "SELECT count(DISTINCT loser_name) FROM matches",
+      "raw": {
+        "sql": "SELECT count(DISTINCT loser_name) FROM matches",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT loser_name) FROM matches LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT loser_name) FROM matches;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 444,
+      "db_id": "wta_1",
+      "hardness": "easy",
+      "question": "How many different loser names are there?",
+      "gold": "SELECT count(DISTINCT loser_name) FROM matches",
+      "raw": {
+        "sql": "SELECT count(DISTINCT loser_name) FROM matches",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT matches.loser_name) FROM matches LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT matches.loser_name) FROM matches;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 495,
+      "db_id": "battle_death",
+      "hardness": "easy",
+      "question": "What is the average number of injuries caused each time?",
+      "gold": "SELECT avg(injured) FROM death",
+      "raw": {
+        "sql": "SELECT avg(injured) FROM death",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(injured) FROM death LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AVG(injured) FROM death;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 546,
+      "db_id": "student_transcripts_tracking",
+      "hardness": "easy",
+      "question": "What are the names of all courses that have some students enrolled?",
+      "gold": "SELECT DISTINCT T1.course_name FROM Courses AS T1 JOIN Student_Enrolment_Courses AS T2 ON T1.course_id  =  T2.course_id",
+      "raw": {
+        "sql": "SELECT DISTINCT T1.course_name \nFROM Courses AS T1\nJOIN Student_Enrolment_Courses AS T2 ON T1.course_id = T2.course_id",
+        "correct": true,
+        "error": null,
+        "n_rows": 10
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.course_name FROM Courses AS T1 JOIN Student_Enrolment_Courses AS T2 ON T1.course_id = T2.course_id LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.course_name FROM Courses AS T1 JOIN Student_Enrolment_Courses AS T2 ON T1.course_id = T2.course_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 580,
+      "db_id": "student_transcripts_tracking",
+      "hardness": "easy",
+      "question": "What other details can you tell me about students in reverse alphabetical order?",
+      "gold": "SELECT other_student_details FROM Students ORDER BY other_student_details DESC",
+      "raw": {
+        "sql": "SELECT other_student_details FROM Students ORDER BY other_student_details DESC",
+        "correct": true,
+        "error": null,
+        "n_rows": 15
+      },
+      "governed": {
+        "sql": "SELECT student_id, current_address_id, permanent_address_id, first_name, middle_name, last_name, cell_mobile_number, email_address, ssn, date_first_registered, date_left, other_student_details FROM Students ORDER BY other_student_details DESC LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT student_id, current_address_id, permanent_address_id, first_name, middle_name, last_name, cell_mobile_number, email_address, ssn, date_first_registered, date_left, other_student_details FROM Students ORDER BY other_student_details DESC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 586,
+      "db_id": "tvshow",
+      "hardness": "easy",
+      "question": "What are the titles of the cartoons sorted alphabetically?",
+      "gold": "SELECT Title FROM Cartoon ORDER BY title",
+      "raw": {
+        "sql": "SELECT Title FROM Cartoon ORDER BY Title ASC",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT Title FROM Cartoon ORDER BY Title ASC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Title FROM Cartoon ORDER BY Title ASC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 601,
+      "db_id": "tvshow",
+      "hardness": "easy",
+      "question": "What is the Package Option of TV Channel with serial name \"Sky Radio\"?",
+      "gold": "SELECT Package_Option FROM TV_Channel WHERE series_name = \"Sky Radio\";",
+      "raw": {
+        "sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 602,
+      "db_id": "tvshow",
+      "hardness": "easy",
+      "question": "What are the Package Options of the TV Channels whose series names are Sky Radio?",
+      "gold": "SELECT Package_Option FROM TV_Channel WHERE series_name = \"Sky Radio\";",
+      "raw": {
+        "sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Package_Option FROM TV_Channel WHERE series_name = 'Sky Radio';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 613,
+      "db_id": "tvshow",
+      "hardness": "easy",
+      "question": "List the Episode of all TV series sorted by rating.",
+      "gold": "SELECT Episode FROM TV_series ORDER BY rating",
+      "raw": {
+        "sql": "SELECT Episode FROM TV_series ORDER BY Rating",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT Episode FROM TV_series ORDER BY Rating LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Episode FROM TV_series ORDER BY Rating;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 648,
+      "db_id": "poker_player",
+      "hardness": "easy",
+      "question": "Count the number of poker players.",
+      "gold": "SELECT count(*) FROM poker_player",
+      "raw": {
+        "sql": "SELECT count(*) FROM poker_player",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(poker_player.Poker_Player_ID) FROM poker_player LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(poker_player.Poker_Player_ID) FROM poker_player;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 653,
+      "db_id": "poker_player",
+      "hardness": "easy",
+      "question": "What is the average earnings of poker players?",
+      "gold": "SELECT avg(Earnings) FROM poker_player",
+      "raw": {
+        "sql": "SELECT AVG(Earnings) FROM poker_player",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(Earnings) FROM poker_player LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AVG(Earnings) FROM poker_player;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 678,
+      "db_id": "poker_player",
+      "hardness": "easy",
+      "question": "Return the nationalities for which there are two or more people.",
+      "gold": "SELECT Nationality FROM people GROUP BY Nationality HAVING COUNT(*)  >=  2",
+      "raw": {
+        "sql": "SELECT Nationality FROM people GROUP BY Nationality HAVING count(*)  >=  2",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Nationality FROM people GROUP BY Nationality HAVING COUNT(People_ID) >= 2 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Nationality FROM people GROUP BY Nationality HAVING COUNT(People_ID) >= 2;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 687,
+      "db_id": "voter_1",
+      "hardness": "easy",
+      "question": "How many states are there?",
+      "gold": "SELECT count(*) FROM area_code_state",
+      "raw": {
+        "sql": "SELECT count(state) FROM AREA_CODE_STATE",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT state) FROM AREA_CODE_STATE LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT COUNT(DISTINCT state) FROM AREA_CODE_STATE;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 691,
+      "db_id": "voter_1",
+      "hardness": "easy",
+      "question": "What is last date created of votes from the state 'CA'?",
+      "gold": "SELECT max(created) FROM votes WHERE state  =  'CA'",
+      "raw": {
+        "sql": "SELECT MAX(created) FROM VOTES WHERE state = 'CA'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT MAX(VOTES.created) FROM VOTES WHERE VOTES.state = 'CA' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT MAX(VOTES.created) FROM VOTES WHERE VOTES.state = 'CA';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 704,
+      "db_id": "world_1",
+      "hardness": "easy",
+      "question": "How many countries have a republic as their form of government?",
+      "gold": "SELECT count(*) FROM country WHERE GovernmentForm  =  \"Republic\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM country WHERE GovernmentForm = 'Republic'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(country.Code) FROM country WHERE country.GovernmentForm LIKE '%Republic%' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT COUNT(country.Code) FROM country WHERE country.GovernmentForm LIKE '%Republic%';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 709,
+      "db_id": "world_1",
+      "hardness": "easy",
+      "question": "What is the continent name which Anguilla belongs to?",
+      "gold": "SELECT Continent FROM country WHERE Name  =  \"Anguilla\"",
+      "raw": {
+        "sql": "SELECT Continent FROM country WHERE Name = 'Anguilla'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT country.Continent FROM country WHERE country.Name = 'Anguilla' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT country.Continent FROM country WHERE country.Name = 'Anguilla';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 718,
+      "db_id": "world_1",
+      "hardness": "easy",
+      "question": "What is the average expected life expectancy for countries in the region of Central Africa?",
+      "gold": "SELECT avg(LifeExpectancy) FROM country WHERE Region  =  \"Central Africa\"",
+      "raw": {
+        "sql": "SELECT avg(LifeExpectancy) FROM country WHERE Region = 'Central Africa'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(country.LifeExpectancy) FROM country WHERE country.Region = 'Central Africa' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AVG(country.LifeExpectancy) FROM country WHERE country.Region = 'Central Africa';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 733,
+      "db_id": "world_1",
+      "hardness": "easy",
+      "question": "What is the number of distinct languages used around the world?",
+      "gold": "SELECT count(DISTINCT LANGUAGE) FROM countrylanguage",
+      "raw": {
+        "sql": "SELECT count(DISTINCT Language) FROM countrylanguage",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT countrylanguage.Language) FROM countrylanguage LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT countrylanguage.Language) FROM countrylanguage;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 734,
+      "db_id": "world_1",
+      "hardness": "easy",
+      "question": "How many type of governments are in Africa?",
+      "gold": "SELECT count(DISTINCT GovernmentForm) FROM country WHERE Continent  =  \"Africa\"",
+      "raw": {
+        "sql": "SELECT count(DISTINCT GovernmentForm) FROM country WHERE Continent = 'Africa'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT country.GovernmentForm) FROM country WHERE country.Continent = 'Africa' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT country.GovernmentForm) FROM country WHERE country.Continent = 'Africa';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 823,
+      "db_id": "orchestra",
+      "hardness": "easy",
+      "question": "Count the number of conductors.",
+      "gold": "SELECT count(*) FROM conductor",
+      "raw": {
+        "sql": "SELECT count(*) FROM conductor",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(conductor.Conductor_ID) FROM conductor LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(conductor.Conductor_ID) FROM conductor;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 824,
+      "db_id": "orchestra",
+      "hardness": "easy",
+      "question": "List the names of conductors in ascending order of age.",
+      "gold": "SELECT Name FROM conductor ORDER BY Age ASC",
+      "raw": {
+        "sql": "SELECT Name FROM conductor ORDER BY Age ASC",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT Name FROM conductor ORDER BY Age ASC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name FROM conductor ORDER BY Age ASC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 829,
+      "db_id": "orchestra",
+      "hardness": "easy",
+      "question": "Return the record companies of orchestras, sorted descending by the years in which they were founded.",
+      "gold": "SELECT Record_Company FROM orchestra ORDER BY Year_of_Founded DESC",
+      "raw": {
+        "sql": "SELECT Record_Company FROM orchestra ORDER BY Year_of_Founded DESC",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT Record_Company FROM orchestra ORDER BY Year_of_Founded DESC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Record_Company FROM orchestra ORDER BY Year_of_Founded DESC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 872,
+      "db_id": "network_1",
+      "hardness": "easy",
+      "question": "Show the ID of the high schooler named Kyle.",
+      "gold": "SELECT ID FROM Highschooler WHERE name  =  \"Kyle\"",
+      "raw": {
+        "sql": "SELECT ID FROM Highschooler WHERE name = 'Kyle'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Highschooler.ID FROM Highschooler WHERE Highschooler.name = 'Kyle' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Highschooler.ID FROM Highschooler WHERE Highschooler.name = 'Kyle';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 873,
+      "db_id": "network_1",
+      "hardness": "easy",
+      "question": "What is Kyle's id?",
+      "gold": "SELECT ID FROM Highschooler WHERE name  =  \"Kyle\"",
+      "raw": {
+        "sql": "SELECT ID FROM Highschooler WHERE name = 'Kyle'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT ID FROM Highschooler WHERE name = 'Kyle' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT ID FROM Highschooler WHERE name = 'Kyle';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 966,
+      "db_id": "dog_kennels",
+      "hardness": "easy",
+      "question": "How many dogs went through any treatments?",
+      "gold": "SELECT count(DISTINCT dog_id) FROM Treatments",
+      "raw": {
+        "sql": "SELECT count(DISTINCT dog_id) FROM Treatments",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT Treatments.dog_id) FROM Treatments LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT Treatments.dog_id) FROM Treatments;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 969,
+      "db_id": "dog_kennels",
+      "hardness": "easy",
+      "question": "Find the number of professionals who have ever treated dogs.",
+      "gold": "SELECT count(DISTINCT professional_id) FROM Treatments",
+      "raw": {
+        "sql": "SELECT count(DISTINCT professional_id) FROM Treatments",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(DISTINCT T1.professional_id) FROM Professionals AS T1 JOIN Treatments AS T2 ON T1.professional_id = T2.professional_id JOIN Dogs AS T3 ON T2.dog_id = T3.dog_id LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(DISTINCT T1.professional_id) FROM Professionals AS T1 JOIN Treatments AS T2 ON T1.professional_id = T2.professional_id JOIN Dogs AS T3 ON T2.dog_id = T3.dog_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 989,
+      "db_id": "dog_kennels",
+      "hardness": "easy",
+      "question": "Tell me the age of the oldest dog.",
+      "gold": "SELECT max(age) FROM Dogs",
+      "raw": {
+        "sql": "SELECT MAX(age) FROM Dogs",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT MAX(Dogs.age) FROM Dogs LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT MAX(Dogs.age) FROM Dogs;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1003,
+      "db_id": "singer",
+      "hardness": "easy",
+      "question": "What are the names of singers ordered by ascending net worth?",
+      "gold": "SELECT Name FROM singer ORDER BY Net_Worth_Millions ASC",
+      "raw": {
+        "sql": "SELECT Name FROM singer ORDER BY Net_Worth_Millions ASC",
+        "correct": true,
+        "error": null,
+        "n_rows": 8
+      },
+      "governed": {
+        "sql": "SELECT Name FROM singer ORDER BY Net_Worth_Millions ASC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name FROM singer ORDER BY Net_Worth_Millions ASC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1006,
+      "db_id": "singer",
+      "hardness": "easy",
+      "question": "List the name of singers whose citizenship is not \"France\".",
+      "gold": "SELECT Name FROM singer WHERE Citizenship != \"France\"",
+      "raw": {
+        "sql": "SELECT Name FROM singer WHERE Citizenship != 'France'",
+        "correct": true,
+        "error": null,
+        "n_rows": 7
+      },
+      "governed": {
+        "sql": "SELECT Name FROM singer WHERE Citizenship <> 'France' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name FROM singer WHERE Citizenship != 'France';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 39,
+      "db_id": "concert_singer",
+      "hardness": "medium",
+      "question": "what is the name and nation of the singer who have a song having 'Hey' in its name?",
+      "gold": "SELECT name ,  country FROM singer WHERE song_name LIKE '%Hey%'",
+      "raw": {
+        "sql": "SELECT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 40,
+      "db_id": "concert_singer",
+      "hardness": "medium",
+      "question": "What is the name and country of origin of every singer who has a song with the word 'Hey' in its title?",
+      "gold": "SELECT name ,  country FROM singer WHERE song_name LIKE '%Hey%'",
+      "raw": {
+        "sql": "SELECT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT Name, Country FROM singer WHERE Song_Name LIKE '%Hey%';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 72,
+      "db_id": "pets_1",
+      "hardness": "medium",
+      "question": "What is the average and maximum age for each pet type?",
+      "gold": "SELECT avg(pet_age) ,  max(pet_age) ,  pettype FROM pets GROUP BY pettype",
+      "raw": {
+        "sql": "SELECT PetType, AVG(pet_age), MAX(pet_age) FROM Pets GROUP BY PetType",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT PetType, AVG(pet_age), MAX(pet_age) FROM Pets GROUP BY PetType LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT PetType, AVG(pet_age), MAX(pet_age) FROM Pets GROUP BY PetType;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 77,
+      "db_id": "pets_1",
+      "hardness": "medium",
+      "question": "Find the id of the pet owned by student whose last name is ‘Smith’.",
+      "gold": "SELECT T2.petid FROM student AS T1 JOIN has_pet AS T2 ON T1.stuid  =  T2.stuid WHERE T1.Lname  =  'Smith'",
+      "raw": {
+        "sql": "SELECT T1.PetID FROM Has_Pet AS T1 JOIN Student AS T2 ON T1.StuID = T2.StuID WHERE T2.LName = 'Smith'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Pets.PetID FROM Pets JOIN Has_Pet ON Pets.PetID = Has_Pet.PetID JOIN Student ON Has_Pet.StuID = Student.StuID WHERE Student.LName = 'Smith' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Pets.PetID FROM Pets JOIN Has_Pet ON Pets.PetID = Has_Pet.PetID JOIN Student ON Has_Pet.StuID = Student.StuID WHERE Student.LName = 'Smith';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 90,
+      "db_id": "car_1",
+      "hardness": "medium",
+      "question": "For each continent, list its id, name, and how many countries it has?",
+      "gold": "SELECT T1.ContId ,  T1.Continent ,  count(*) FROM CONTINENTS AS T1 JOIN COUNTRIES AS T2 ON T1.ContId  =  T2.Continent GROUP BY T1.ContId;",
+      "raw": {
+        "sql": "SELECT T1.ContId, T1.Continent, COUNT(T2.CountryId) FROM continents AS T1 JOIN countries AS T2 ON T1.ContId = T2.Continent GROUP BY T1.ContId, T1.Continent",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT continents.ContId, continents.Continent, COUNT(countries.CountryId) FROM continents JOIN countries ON continents.ContId = countries.Continent GROUP BY continents.ContId, continents.Continent LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT continents.ContId, continents.Continent, COUNT(countries.CountryId) FROM continents JOIN countries ON continents.ContId = countries.Continent GROUP BY continents.ContId, continents.Continent;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 94,
+      "db_id": "car_1",
+      "hardness": "medium",
+      "question": "What is the full name of each car maker, along with its id and how many models it produces?",
+      "gold": "SELECT T1.FullName ,  T1.Id ,  count(*) FROM CAR_MAKERS AS T1 JOIN MODEL_LIST AS T2 ON T1.Id  =  T2.Maker GROUP BY T1.Id;",
+      "raw": {
+        "sql": "SELECT T1.FullName, T1.Id, COUNT(T2.ModelId) FROM car_makers AS T1 JOIN model_list AS T2 ON T1.Id = T2.Maker GROUP BY T1.Id",
+        "correct": true,
+        "error": null,
+        "n_rows": 22
+      },
+      "governed": {
+        "sql": "SELECT T1.FullName, T1.Id, COUNT(T2.ModelId) FROM car_makers AS T1 JOIN model_list AS T2 ON T1.Id = T2.Maker GROUP BY T1.Id, T1.FullName LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.FullName, T1.Id, COUNT(T2.ModelId) FROM car_makers AS T1 JOIN model_list AS T2 ON T1.Id = T2.Maker GROUP BY T1.Id, T1.FullName;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 110,
+      "db_id": "car_1",
+      "hardness": "medium",
+      "question": "What is the number of car models that are produced by each maker and what is the id and full name of each maker?",
+      "gold": "SELECT Count(*) ,  T2.FullName ,  T2.id FROM MODEL_LIST AS T1 JOIN CAR_MAKERS AS T2 ON T1.Maker  =  T2.Id GROUP BY T2.id;",
+      "raw": {
+        "sql": "SELECT T1.Id, T1.FullName, COUNT(T2.ModelId) FROM car_makers AS T1 JOIN model_list AS T2 ON T1.Id = T2.Maker GROUP BY T1.Id, T1.Maker, T1.FullName",
+        "correct": true,
+        "error": null,
+        "n_rows": 22
+      },
+      "governed": {
+        "sql": "SELECT COUNT(model_list.ModelId), car_makers.Id, car_makers.FullName FROM car_makers JOIN model_list ON car_makers.Id = model_list.Maker GROUP BY car_makers.Id, car_makers.FullName LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(model_list.ModelId), car_makers.Id, car_makers.FullName FROM car_makers JOIN model_list ON car_makers.Id = model_list.Maker GROUP BY car_makers.Id, car_makers.FullName;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 128,
+      "db_id": "car_1",
+      "hardness": "medium",
+      "question": "What is the average weight and year for each year?",
+      "gold": "SELECT avg(Weight) ,  YEAR FROM CARS_DATA GROUP BY YEAR;",
+      "raw": {
+        "sql": "SELECT AVG(Weight), Year FROM cars_data GROUP BY Year",
+        "correct": true,
+        "error": null,
+        "n_rows": 13
+      },
+      "governed": {
+        "sql": "SELECT AVG(cars_data.Weight), AVG(cars_data.Year), cars_data.Year FROM cars_data GROUP BY cars_data.Year LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT AVG(cars_data.Weight), AVG(cars_data.Year), cars_data.Year FROM cars_data GROUP BY cars_data.Year;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 198,
+      "db_id": "flight_2",
+      "hardness": "medium",
+      "question": "Give the city and country for the Alton airport.",
+      "gold": "SELECT City ,  Country FROM AIRPORTS WHERE AirportName  =  \"Alton\"",
+      "raw": {
+        "sql": "SELECT City, Country FROM airports WHERE AirportName = 'Alton'",
+        "correct": true,
+        "error": null,
+        "n_rows": 0
+      },
+      "governed": {
+        "sql": "SELECT airports.City, airports.Country FROM airports WHERE airports.AirportName = 'Alton' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT airports.City, airports.Country FROM airports WHERE airports.AirportName = 'Alton';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 241,
+      "db_id": "flight_2",
+      "hardness": "medium",
+      "question": "Find all airlines that have at least 10 flights.",
+      "gold": "SELECT T1.Airline FROM AIRLINES AS T1 JOIN FLIGHTS AS T2 ON T1.uid  =  T2.Airline GROUP BY T1.Airline HAVING count(*)  >  10",
+      "raw": {
+        "sql": "SELECT T1.Airline FROM airlines AS T1 JOIN flights AS T2 ON T1.uid = T2.Airline GROUP BY T1.uid HAVING count(*) >= 10",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT T1.Airline FROM airlines AS T1 JOIN flights AS T2 ON T1.uid = T2.Airline GROUP BY T1.Airline HAVING COUNT(T2.FlightNo) >= 10 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Airline FROM airlines AS T1 JOIN flights AS T2 ON T1.uid = T2.Airline GROUP BY T1.Airline HAVING COUNT(T2.FlightNo) >= 10;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 254,
+      "db_id": "flight_2",
+      "hardness": "medium",
+      "question": "Give the flight numbers of flights arriving in Aberdeen.",
+      "gold": "SELECT T1.FlightNo FROM FLIGHTS AS T1 JOIN AIRPORTS AS T2 ON T1.DestAirport   =  T2.AirportCode WHERE T2.City  =  \"Aberdeen\"",
+      "raw": {
+        "sql": "SELECT f.FlightNo \nFROM flights f \nJOIN airports a ON f.DestAirport = a.AirportCode \nWHERE a.City = 'Aberdeen'",
+        "correct": true,
+        "error": null,
+        "n_rows": 0
+      },
+      "governed": {
+        "sql": "SELECT flights.FlightNo FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT flights.FlightNo FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 271,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "medium",
+      "question": "find the minimum and maximum number of products of all stores.",
+      "gold": "SELECT min(Number_products) ,  max(Number_products) FROM shop",
+      "raw": {
+        "sql": "SELECT min(Number_products), max(Number_products) FROM shop",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT MIN(shop.Number_products), MAX(shop.Number_products) FROM shop LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT MIN(shop.Number_products), MAX(shop.Number_products) FROM shop;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 274,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "medium",
+      "question": "Sort all the shops by number products in descending order, and return the name, location and district of each shop.",
+      "gold": "SELECT name ,  LOCATION ,  district FROM shop ORDER BY number_products DESC",
+      "raw": {
+        "sql": "SELECT Name, Location, District FROM shop ORDER BY Number_products DESC",
+        "correct": true,
+        "error": null,
+        "n_rows": 9
+      },
+      "governed": {
+        "sql": "SELECT Name, Location, District FROM shop ORDER BY Number_products DESC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name, Location, District FROM shop ORDER BY Number_products DESC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 324,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "medium",
+      "question": "Return the ids of templates that have the code PP or PPT.",
+      "gold": "SELECT template_id FROM Templates WHERE template_type_code  =  \"PP\" OR template_type_code  =  \"PPT\"",
+      "raw": {
+        "sql": "SELECT Template_ID FROM Templates WHERE Template_Type_Code = 'PP' OR Template_Type_Code = 'PPT'",
+        "correct": true,
+        "error": null,
+        "n_rows": 9
+      },
+      "governed": {
+        "sql": "SELECT Template_ID FROM Templates WHERE Template_Type_Code = 'PP' OR Template_Type_Code = 'PPT' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Template_ID FROM Templates WHERE Template_Type_Code = 'PP' OR Template_Type_Code = 'PPT';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 327,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "medium",
+      "question": "What is the version number and template type code for the template with version number later than 5?",
+      "gold": "SELECT version_number ,  template_type_code FROM Templates WHERE version_number  >  5",
+      "raw": {
+        "sql": "SELECT Version_Number, Template_Type_Code FROM Templates WHERE Version_Number > 5",
+        "correct": true,
+        "error": null,
+        "n_rows": 9
+      },
+      "governed": {
+        "sql": "SELECT Version_Number, Template_Type_Code FROM Templates WHERE Version_Number > 5 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Version_Number, Template_Type_Code FROM Templates WHERE Version_Number > 5;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 337,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "medium",
+      "question": "What is the template type code of the template used by document with the name \"Data base\"?",
+      "gold": "SELECT T1.template_type_code FROM Templates AS T1 JOIN Documents AS T2 ON T1.template_id  =  T2.template_id WHERE T2.document_name  =  \"Data base\"",
+      "raw": {
+        "sql": "SELECT T.Template_Type_Code \nFROM Templates T \nJOIN Documents D ON T.Template_ID = D.Template_ID \nWHERE D.Document_Name = 'Data base'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Template_Type_Code FROM Templates AS T1 JOIN Documents AS T2 ON T1.Template_ID = T2.Template_ID WHERE T2.Document_Name = 'Data base' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Template_Type_Code FROM Templates AS T1 JOIN Documents AS T2 ON T1.Template_ID = T2.Template_ID WHERE T2.Document_Name = 'Data base';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 347,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "medium",
+      "question": "Show all template type codes and descriptions.",
+      "gold": "SELECT template_type_code ,  template_type_description FROM Ref_template_types",
+      "raw": {
+        "sql": "SELECT Template_Type_Code, Template_Type_Description FROM Ref_Template_Types",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT Template_Type_Code, Template_Type_Description FROM Ref_Template_Types LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Template_Type_Code, Template_Type_Description FROM Ref_Template_Types;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 353,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "medium",
+      "question": "What are the distinct template type descriptions for the templates ever used by any document?",
+      "gold": "SELECT DISTINCT T1.template_type_description FROM Ref_template_types AS T1 JOIN Templates AS T2 ON T1.template_type_code  = T2.template_type_code JOIN Documents AS T3 ON T2.Template_ID  =  T3.template_ID",
+      "raw": {
+        "sql": "SELECT DISTINCT T3.Template_Type_Description \nFROM Documents AS T1 \nJOIN Templates AS T2 ON T1.Template_ID = T2.Template_ID \nJOIN Ref_Template_Types AS T3 ON T2.Template_Type_Code = T3.Template_Type_Code",
+        "correct": true,
+        "error": null,
+        "n_rows": 4
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Template_Type_Description FROM Ref_Template_Types AS T1 JOIN Templates AS T2 ON T1.Template_Type_Code = T2.Template_Type_Code JOIN Documents AS T3 ON T2.Template_ID = T3.Template_ID LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.Template_Type_Description FROM Ref_Template_Types AS T1 JOIN Templates AS T2 ON T1.Template_Type_Code = T2.Template_Type_Code JOIN Documents AS T3 ON T2.Template_ID = T3.Template_ID;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 405,
+      "db_id": "course_teach",
+      "hardness": "medium",
+      "question": "Show names of teachers and the number of courses they teach.",
+      "gold": "SELECT T2.Name ,  COUNT(*) FROM course_arrange AS T1 JOIN teacher AS T2 ON T1.Teacher_ID  =  T2.Teacher_ID GROUP BY T2.Name",
+      "raw": {
+        "sql": "SELECT T.Name, COUNT(C.Course_ID) FROM teacher AS T JOIN course_arrange AS C ON T.Teacher_ID = C.Teacher_ID GROUP BY T.Teacher_ID",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT T1.Name, COUNT(T2.Course_ID) FROM teacher AS T1 JOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID GROUP BY T1.Teacher_ID, T1.Name LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Name, COUNT(T2.Course_ID) FROM teacher AS T1 JOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID GROUP BY T1.Teacher_ID, T1.Name;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 414,
+      "db_id": "museum_visit",
+      "hardness": "medium",
+      "question": "Find the name and membership level of the visitors whose membership level is higher than 4, and sort by their age from old to young.",
+      "gold": "SELECT name ,  Level_of_membership FROM visitor WHERE Level_of_membership  >  4 ORDER BY age DESC",
+      "raw": {
+        "sql": "SELECT Name, Level_of_membership FROM visitor WHERE Level_of_membership > 4 ORDER BY Age DESC",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT visitor.Name, visitor.Level_of_membership FROM visitor WHERE visitor.Level_of_membership > 4 ORDER BY visitor.Age DESC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT visitor.Name, visitor.Level_of_membership FROM visitor WHERE visitor.Level_of_membership > 4 ORDER BY visitor.Age DESC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 417,
+      "db_id": "museum_visit",
+      "hardness": "medium",
+      "question": "What are the opening year and staff number of the museum named Plaza Museum?",
+      "gold": "SELECT Num_of_Staff ,  Open_Year FROM museum WHERE name  =  'Plaza Museum'",
+      "raw": {
+        "sql": "SELECT Open_Year, Num_of_Staff FROM museum WHERE Name = 'Plaza Museum'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT museum.Open_Year, museum.Num_of_Staff FROM museum WHERE museum.Name = 'Plaza Museum' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT museum.Open_Year, museum.Num_of_Staff FROM museum WHERE museum.Name = 'Plaza Museum';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 424,
+      "db_id": "museum_visit",
+      "hardness": "medium",
+      "question": "What are the average and maximum number of tickets bought in all visits?",
+      "gold": "SELECT avg(num_of_ticket) ,  max(num_of_ticket) FROM visit",
+      "raw": {
+        "sql": "SELECT avg(Num_of_Ticket), max(Num_of_Ticket) FROM visit",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(visit.Num_of_Ticket), MAX(visit.Num_of_Ticket) FROM visit LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AVG(visit.Num_of_Ticket), MAX(visit.Num_of_Ticket) FROM visit;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 425,
+      "db_id": "museum_visit",
+      "hardness": "medium",
+      "question": "What is the total ticket expense of the visitors whose membership level is 1?",
+      "gold": "SELECT sum(t2.Total_spent) FROM visitor AS t1 JOIN visit AS t2 ON t1.id  =  t2.visitor_id WHERE t1.Level_of_membership  =  1",
+      "raw": {
+        "sql": "SELECT SUM(T1.Total_spent) FROM visit AS T1 JOIN visitor AS T2 ON T1.visitor_ID = T2.ID WHERE T2.Level_of_membership = 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT SUM(visit.Total_spent) FROM visit JOIN visitor ON visit.visitor_ID = visitor.ID WHERE visitor.Level_of_membership = 1 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT SUM(visit.Total_spent) FROM visit JOIN visitor ON visit.visitor_ID = visitor.ID WHERE visitor.Level_of_membership = 1;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 434,
+      "db_id": "wta_1",
+      "hardness": "medium",
+      "question": "What are the first names and birth dates of players from the USA?",
+      "gold": "SELECT first_name ,  birth_date FROM players WHERE country_code  =  'USA'",
+      "raw": {
+        "sql": "SELECT first_name, birth_date FROM players WHERE country_code = 'USA'",
+        "correct": true,
+        "error": null,
+        "n_rows": 2217
+      },
+      "governed": {
+        "sql": "SELECT first_name, birth_date FROM players WHERE country_code = 'USA' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT first_name, birth_date FROM players WHERE country_code = 'USA';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 450,
+      "db_id": "wta_1",
+      "hardness": "medium",
+      "question": "How many matches were played in 2013 or 2016?",
+      "gold": "SELECT count(*) FROM matches WHERE YEAR  =  2013 OR YEAR  =  2016",
+      "raw": {
+        "sql": "SELECT count(*) FROM matches WHERE year = 2013 OR year = 2016",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(*) FROM matches WHERE year = 2013 OR year = 2016 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(*) FROM matches WHERE year = 2013 OR year = 2016;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 453,
+      "db_id": "wta_1",
+      "hardness": "medium",
+      "question": "Find the first name and country code of the oldest player.",
+      "gold": "SELECT first_name ,  country_code FROM players ORDER BY birth_date LIMIT 1",
+      "raw": {
+        "sql": "SELECT first_name, country_code \nFROM players \nWHERE birth_date IS NOT NULL \nORDER BY birth_date ASC \nLIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT players.first_name, players.country_code FROM players ORDER BY players.birth_date ASC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT players.first_name, players.country_code FROM players ORDER BY players.birth_date ASC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 525,
+      "db_id": "student_transcripts_tracking",
+      "hardness": "medium",
+      "question": "What are the names and id of courses having at most 2 sections?",
+      "gold": "SELECT T1.course_name ,  T1.course_id FROM Courses AS T1 JOIN Sections AS T2 ON T1.course_id  =  T2.course_id GROUP BY T1.course_id HAVING count(*)  <=  2",
+      "raw": {
+        "sql": "SELECT T1.course_id, T1.course_name \nFROM Courses AS T1 \nJOIN Sections AS T2 ON T1.course_id = T2.course_id \nGROUP BY T1.course_id \nHAVING COUNT(T2.section_id) <= 2",
+        "correct": true,
+        "error": null,
+        "n_rows": 11
+      },
+      "governed": {
+        "sql": "SELECT T1.course_name, T1.course_id FROM Courses AS T1 JOIN Sections AS T2 ON T1.course_id = T2.course_id GROUP BY T1.course_id, T1.course_name HAVING COUNT(T2.section_id) <= 2 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.course_name, T1.course_id FROM Courses AS T1 JOIN Sections AS T2 ON T1.course_id = T2.course_id GROUP BY T1.course_id, T1.course_name HAVING COUNT(T2.section_id) <= 2;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 532,
+      "db_id": "student_transcripts_tracking",
+      "hardness": "medium",
+      "question": "What is the department description for the one whose name has the word computer?",
+      "gold": "SELECT department_description FROM Departments WHERE department_name LIKE '%computer%'",
+      "raw": {
+        "sql": "SELECT department_description FROM Departments WHERE department_name LIKE '%computer%'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT department_description FROM Departments WHERE department_name LIKE '%computer%' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT department_description FROM Departments WHERE department_name LIKE '%computer%';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 631,
+      "db_id": "tvshow",
+      "hardness": "medium",
+      "question": "Find the package choice and series name of the TV channel that has high definition TV.",
+      "gold": "SELECT package_option ,  series_name FROM TV_Channel WHERE hight_definition_TV  =  \"yes\"",
+      "raw": {
+        "sql": "SELECT Package_Option, series_name FROM TV_Channel WHERE Hight_definition_TV IS NOT NULL",
+        "correct": false,
+        "error": null,
+        "n_rows": 15
+      },
+      "governed": {
+        "sql": "SELECT Package_Option, series_name FROM TV_Channel WHERE Hight_definition_TV = 'Yes' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT Package_Option, series_name FROM TV_Channel WHERE Hight_definition_TV = 'Yes';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 655,
+      "db_id": "poker_player",
+      "hardness": "medium",
+      "question": "What is the money rank of the poker player with the highest earnings?",
+      "gold": "SELECT Money_Rank FROM poker_player ORDER BY Earnings DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT Money_Rank FROM poker_player ORDER BY Earnings DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Money_Rank FROM poker_player ORDER BY Earnings DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Money_Rank FROM poker_player ORDER BY Earnings DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 680,
+      "db_id": "poker_player",
+      "hardness": "medium",
+      "question": "What are the names and birth dates of people, ordered by their names in alphabetical order?",
+      "gold": "SELECT Name ,  Birth_Date FROM people ORDER BY Name ASC",
+      "raw": {
+        "sql": "SELECT Name, Birth_Date FROM people ORDER BY Name ASC",
+        "correct": true,
+        "error": null,
+        "n_rows": 7
+      },
+      "governed": {
+        "sql": "SELECT Name, Birth_Date FROM people ORDER BY Name ASC LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name, Birth_Date FROM people ORDER BY Name ASC;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 717,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "What region does Angola belong to and what is its population?",
+      "gold": "SELECT Population ,  Region FROM country WHERE Name  =  \"Angola\"",
+      "raw": {
+        "sql": "SELECT Region, Population FROM country WHERE Name = 'Angola'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Region, Population FROM country WHERE Name = 'Angola' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Region, Population FROM country WHERE Name = 'Angola';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 730,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "What is the average GNP and total population in all nations whose government is US territory?",
+      "gold": "SELECT avg(GNP) ,  sum(population) FROM country WHERE GovernmentForm  =  \"US Territory\"",
+      "raw": {
+        "sql": "SELECT avg(GNP), sum(Population) FROM country WHERE GovernmentForm = 'US Territory'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(country.GNP), SUM(country.Population) FROM country WHERE country.GovernmentForm = 'US Territory' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AVG(country.GNP), SUM(country.Population) FROM country WHERE country.GovernmentForm = 'US Territory';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 739,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "How many official languages are spoken in Afghanistan?",
+      "gold": "SELECT COUNT(*) FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code  =  T2.CountryCode WHERE T1.Name  =  \"Afghanistan\" AND IsOfficial  =  \"T\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.Name = 'Afghanistan' AND countrylanguage.IsOfficial = 'T'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(countrylanguage.Language) FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.Name = 'Afghanistan' AND countrylanguage.IsOfficial = 'T' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(countrylanguage.Language) FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.Name = 'Afghanistan' AND countrylanguage.IsOfficial = 'T';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 769,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "What is the official language used in the country the name of whose head of state is Beatrix.",
+      "gold": "SELECT T2.Language FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code  =  T2.CountryCode WHERE T1.HeadOfState  =  \"Beatrix\" AND T2.IsOfficial  =  \"T\"",
+      "raw": {
+        "sql": "SELECT T1.Language FROM countrylanguage AS T1 JOIN country AS T2 ON T1.CountryCode = T2.Code WHERE T2.HeadOfState = 'Beatrix' AND T1.IsOfficial = 'T'",
+        "correct": true,
+        "error": null,
+        "n_rows": 4
+      },
+      "governed": {
+        "sql": "SELECT countrylanguage.Language FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.HeadOfState = 'Beatrix' AND countrylanguage.IsOfficial = 'T' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT countrylanguage.Language FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.HeadOfState = 'Beatrix' AND countrylanguage.IsOfficial = 'T';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 791,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "Give the name, population, and head of state for the country that has the largest area.",
+      "gold": "SELECT Name ,  population ,  HeadOfState FROM country ORDER BY SurfaceArea DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT Name, Population, HeadOfState FROM country ORDER BY SurfaceArea DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Name, Population, HeadOfState FROM country ORDER BY SurfaceArea DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name, Population, HeadOfState FROM country ORDER BY SurfaceArea DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 800,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "What are the names and areas of countries with the top 5 largest area?",
+      "gold": "SELECT Name ,  SurfaceArea FROM country ORDER BY SurfaceArea DESC LIMIT 5",
+      "raw": {
+        "sql": "SELECT Name, SurfaceArea FROM country ORDER BY SurfaceArea DESC LIMIT 5",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT Name, SurfaceArea FROM country ORDER BY SurfaceArea DESC LIMIT 5",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name, SurfaceArea FROM country ORDER BY SurfaceArea DESC LIMIT 5;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 805,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "Return the names of the 3 countries with the fewest people.",
+      "gold": "SELECT Name FROM country ORDER BY Population ASC LIMIT 3",
+      "raw": {
+        "sql": "SELECT Name FROM country ORDER BY Population ASC LIMIT 3",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT country.Name FROM country ORDER BY country.Population ASC LIMIT 3",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT country.Name FROM country ORDER BY country.Population ASC LIMIT 3;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 821,
+      "db_id": "world_1",
+      "hardness": "medium",
+      "question": "Return the codes of countries for which Spanish is the predominantly spoken language.",
+      "gold": "SELECT CountryCode ,  max(Percentage) FROM countrylanguage WHERE LANGUAGE  =  \"Spanish\" GROUP BY CountryCode",
+      "raw": {
+        "sql": "SELECT CountryCode FROM countrylanguage WHERE Language = 'Spanish' ORDER BY Percentage DESC LIMIT 1",
+        "correct": false,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT countrylanguage.CountryCode FROM countrylanguage WHERE countrylanguage.Language = 'Spanish' AND countrylanguage.Percentage = (SELECT MAX(cl2.Percentage) FROM countrylanguage AS cl2 WHERE cl2.Language = 'Spanish') LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT countrylanguage.CountryCode FROM countrylanguage WHERE countrylanguage.Language = 'Spanish' AND countrylanguage.Percentage = (SELECT MAX(cl2.Percentage) FROM countrylanguage cl2 WHERE cl2.Language = 'Spanish');",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 847,
+      "db_id": "orchestra",
+      "hardness": "medium",
+      "question": "What are the names of conductors who have conducted orchestras founded after the year 2008?",
+      "gold": "SELECT T1.Name FROM conductor AS T1 JOIN orchestra AS T2 ON T1.Conductor_ID  =  T2.Conductor_ID WHERE Year_of_Founded  >  2008",
+      "raw": {
+        "sql": "SELECT T1.Name FROM conductor AS T1 JOIN orchestra AS T2 ON T1.Conductor_ID = T2.Conductor_ID WHERE T2.Year_of_Founded > 2008",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Name FROM conductor AS T1 JOIN orchestra AS T2 ON T1.Conductor_ID = T2.Conductor_ID WHERE T2.Year_of_Founded > 2008 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.Name FROM conductor AS T1 JOIN orchestra AS T2 ON T1.Conductor_ID = T2.Conductor_ID WHERE T2.Year_of_Founded > 2008;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 848,
+      "db_id": "orchestra",
+      "hardness": "medium",
+      "question": "Please show the different record companies and the corresponding number of orchestras.",
+      "gold": "SELECT Record_Company ,  COUNT(*) FROM orchestra GROUP BY Record_Company",
+      "raw": {
+        "sql": "SELECT \"Record_Company\", count(*) FROM \"orchestra\" GROUP BY \"Record_Company\"",
+        "correct": true,
+        "error": null,
+        "n_rows": 11
+      },
+      "governed": {
+        "sql": "SELECT Record_Company, COUNT(Orchestra_ID) FROM orchestra GROUP BY Record_Company LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Record_Company, COUNT(Orchestra_ID) FROM orchestra GROUP BY Record_Company;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 877,
+      "db_id": "network_1",
+      "hardness": "medium",
+      "question": "How many high schoolers are in each grade?",
+      "gold": "SELECT grade ,  count(*) FROM Highschooler GROUP BY grade",
+      "raw": {
+        "sql": "SELECT grade, count(*) FROM Highschooler GROUP BY grade",
+        "correct": true,
+        "error": null,
+        "n_rows": 4
+      },
+      "governed": {
+        "sql": "SELECT Highschooler.grade, COUNT(Highschooler.ID) FROM Highschooler GROUP BY Highschooler.grade LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Highschooler.grade, COUNT(Highschooler.ID) FROM Highschooler GROUP BY Highschooler.grade;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 947,
+      "db_id": "dog_kennels",
+      "hardness": "medium",
+      "question": "What are the date and the operating professional's first name of each treatment?",
+      "gold": "SELECT T1.date_of_treatment ,  T2.first_name FROM Treatments AS T1 JOIN Professionals AS T2 ON T1.professional_id  =  T2.professional_id",
+      "raw": {
+        "sql": "SELECT T.date_of_treatment, P.first_name \nFROM Treatments AS T \nJOIN Professionals AS P ON T.professional_id = P.professional_id",
+        "correct": true,
+        "error": null,
+        "n_rows": 15
+      },
+      "governed": {
+        "sql": "SELECT Treatments.date_of_treatment, Professionals.first_name FROM Treatments JOIN Professionals ON Treatments.professional_id = Professionals.professional_id LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Treatments.date_of_treatment, Professionals.first_name FROM Treatments JOIN Professionals ON Treatments.professional_id = Professionals.professional_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 973,
+      "db_id": "dog_kennels",
+      "hardness": "medium",
+      "question": "Return the first name, last name and email of the owners living in a state whose name contains the substring 'North'.",
+      "gold": "SELECT first_name ,  last_name ,  email_address FROM Owners WHERE state LIKE '%North%'",
+      "raw": {
+        "sql": "SELECT first_name, last_name, email_address FROM Owners WHERE state LIKE '%North%'",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT first_name, last_name, email_address FROM Owners WHERE state LIKE '%North%' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT first_name, last_name, email_address FROM Owners WHERE state LIKE '%North%';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 998,
+      "db_id": "dog_kennels",
+      "hardness": "medium",
+      "question": "List the first name of all the professionals along with the description of the treatment they have done.",
+      "gold": "SELECT DISTINCT T1.first_name ,  T3.treatment_type_description FROM professionals AS T1 JOIN Treatments AS T2 ON T1.professional_id  =  T2.professional_id JOIN Treatment_types AS T3 ON T2.treatment_type_code  =  T3.treatment_type_code",
+      "raw": {
+        "sql": "SELECT T1.first_name, T3.treatment_type_description \nFROM Professionals AS T1 \nJOIN Treatments AS T2 ON T1.professional_id = T2.professional_id \nJOIN Treatment_Types AS T3 ON T2.treatment_type_code = T3.treatment_type_code",
+        "correct": false,
+        "error": null,
+        "n_rows": 15
+      },
+      "governed": {
+        "sql": "SELECT Professionals.first_name, Treatment_Types.treatment_type_description FROM Professionals JOIN Treatments ON Professionals.professional_id = Treatments.professional_id JOIN Treatment_Types ON Treatments.treatment_type_code = Treatment_Types.treatment_type_code LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT Professionals.first_name, Treatment_Types.treatment_type_description FROM Professionals JOIN Treatments ON Professionals.professional_id = Treatments.professional_id JOIN Treatment_Types ON Treatments.treatment_type_code = Treatment_Types.treatment_type_code;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1005,
+      "db_id": "singer",
+      "hardness": "medium",
+      "question": "What are the birth years and citizenships of the singers?",
+      "gold": "SELECT Birth_Year ,  Citizenship FROM singer",
+      "raw": {
+        "sql": "SELECT Birth_Year, Citizenship FROM singer",
+        "correct": true,
+        "error": null,
+        "n_rows": 8
+      },
+      "governed": {
+        "sql": "SELECT Birth_Year, Citizenship FROM singer LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Birth_Year, Citizenship FROM singer;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1013,
+      "db_id": "singer",
+      "hardness": "medium",
+      "question": "For each citizenship, how many singers are from that country?",
+      "gold": "SELECT Citizenship ,  COUNT(*) FROM singer GROUP BY Citizenship",
+      "raw": {
+        "sql": "SELECT Citizenship, COUNT(*) FROM singer GROUP BY Citizenship",
+        "correct": true,
+        "error": null,
+        "n_rows": 5
+      },
+      "governed": {
+        "sql": "SELECT Citizenship, COUNT(Singer_ID) FROM singer GROUP BY Citizenship LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Citizenship, COUNT(Singer_ID) FROM singer GROUP BY Citizenship;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1019,
+      "db_id": "singer",
+      "hardness": "medium",
+      "question": "What are the song titles and singer names?",
+      "gold": "SELECT T2.Title ,  T1.Name FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID  =  T2.Singer_ID",
+      "raw": {
+        "sql": "SELECT T1.Title, T2.Name FROM song AS T1 JOIN singer AS T2 ON T1.Singer_ID = T2.Singer_ID",
+        "correct": true,
+        "error": null,
+        "n_rows": 8
+      },
+      "governed": {
+        "sql": "SELECT T1.Title, T2.Name FROM song AS T1 JOIN singer AS T2 ON T1.Singer_ID = T2.Singer_ID LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Title, T2.Name FROM song AS T1 JOIN singer AS T2 ON T1.Singer_ID = T2.Singer_ID;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1023,
+      "db_id": "singer",
+      "hardness": "medium",
+      "question": "What are the names of the singers that have more than one songs?",
+      "gold": "SELECT T1.Name FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID  =  T2.Singer_ID GROUP BY T1.Name HAVING COUNT(*)  >  1",
+      "raw": {
+        "sql": "SELECT T1.Name FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID = T2.Singer_ID GROUP BY T1.Singer_ID HAVING count(*) > 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT T1.Name FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID = T2.Singer_ID GROUP BY T1.Singer_ID HAVING COUNT(T2.Song_ID) > 1 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Name FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID = T2.Singer_ID GROUP BY T1.Singer_ID HAVING COUNT(T2.Song_ID) > 1;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 1025,
+      "db_id": "singer",
+      "hardness": "medium",
+      "question": "For each singer name, what is the total sales for their songs?",
+      "gold": "SELECT T1.Name ,  sum(T2.Sales) FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID  =  T2.Singer_ID GROUP BY T1.Name",
+      "raw": {
+        "sql": "SELECT T1.Name, SUM(T2.Sales) FROM singer AS T1 JOIN song AS T2 ON T1.Singer_ID = T2.Singer_ID GROUP BY T1.Singer_ID",
+        "correct": true,
+        "error": null,
+        "n_rows": 6
+      },
+      "governed": {
+        "sql": "SELECT singer.Name, SUM(song.Sales) FROM singer JOIN song ON singer.Singer_ID = song.Singer_ID GROUP BY singer.Name LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT singer.Name, SUM(song.Sales) FROM singer JOIN song ON singer.Singer_ID = song.Singer_ID GROUP BY singer.Name;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 32,
+      "db_id": "concert_singer",
+      "hardness": "hard",
+      "question": "What are the names of all stadiums that did not have a concert in 2014?",
+      "gold": "SELECT name FROM stadium EXCEPT SELECT T2.name FROM concert AS T1 JOIN stadium AS T2 ON T1.stadium_id  =  T2.stadium_id WHERE T1.year  =  2014",
+      "raw": {
+        "sql": "SELECT Name FROM stadium WHERE Stadium_ID NOT IN (SELECT Stadium_ID FROM concert WHERE Year = '2014')",
+        "correct": true,
+        "error": null,
+        "n_rows": 6
+      },
+      "governed": {
+        "sql": "SELECT stadium.Name FROM stadium WHERE NOT stadium.Stadium_ID IN (SELECT concert.Stadium_ID FROM concert WHERE concert.Year = 2014) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT stadium.Name FROM stadium WHERE stadium.Stadium_ID NOT IN (SELECT concert.Stadium_ID FROM concert WHERE concert.Year = 2014);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 44,
+      "db_id": "concert_singer",
+      "hardness": "hard",
+      "question": "What are the number of concerts that occurred in the stadium with the largest capacity ?",
+      "gold": "select count(*) from concert where stadium_id = (select stadium_id from stadium order by capacity desc limit 1)",
+      "raw": {
+        "sql": "SELECT count(*) FROM concert WHERE Stadium_ID = (SELECT Stadium_ID FROM stadium ORDER BY Capacity DESC LIMIT 1)",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(T1.concert_ID) FROM concert AS T1 JOIN stadium AS T2 ON T1.Stadium_ID = T2.Stadium_ID WHERE T2.Capacity = (SELECT MAX(Capacity) FROM stadium) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(T1.concert_ID) FROM concert AS T1 JOIN stadium AS T2 ON T1.Stadium_ID = T2.Stadium_ID WHERE T2.Capacity = (SELECT MAX(Capacity) FROM stadium);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 54,
+      "db_id": "pets_1",
+      "hardness": "hard",
+      "question": "How many dog pets are raised by female students?",
+      "gold": "SELECT count(*) FROM student AS T1 JOIN has_pet AS T2 ON T1.stuid  =  T2.stuid JOIN pets AS T3 ON T2.petid  =  T3.petid WHERE T1.sex  =  'F' AND T3.pettype  =  'dog'",
+      "raw": {
+        "sql": "SELECT count(*) FROM Student AS T1 JOIN Has_Pet AS T2 ON T1.StuID  =  T2.StuID JOIN Pets AS T3 ON T2.PetID  =  T3.PetID WHERE T1.Sex  =  'F' AND T3.PetType  =  'dog'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(*) FROM Student JOIN Has_Pet ON Student.StuID = Has_Pet.StuID JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'dog' AND Student.Sex = 'F' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT count(*) FROM Student JOIN Has_Pet ON Student.StuID = Has_Pet.StuID JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'dog' AND Student.Sex = 'F';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 64,
+      "db_id": "pets_1",
+      "hardness": "hard",
+      "question": "What are the ids of the students who do not own cats as pets?",
+      "gold": "SELECT stuid FROM student EXCEPT SELECT T1.stuid FROM student AS T1 JOIN has_pet AS T2 ON T1.stuid  =  T2.stuid JOIN pets AS T3 ON T3.petid  =  T2.petid WHERE T3.pettype  =  'cat'",
+      "raw": {
+        "sql": "SELECT StuID FROM Student EXCEPT SELECT T1.StuID FROM Has_Pet AS T1 JOIN Pets AS T2 ON T1.PetID  =  T2.PetID WHERE T2.PetType  =  'cat'",
+        "correct": true,
+        "error": null,
+        "n_rows": 33
+      },
+      "governed": {
+        "sql": "SELECT Student.Stuid FROM Student WHERE NOT Student.StuID IN (SELECT Has_Pet.StuID FROM Has_Pet JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'cat') LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Student.Stuid FROM Student WHERE Student.StuID NOT IN (SELECT Has_Pet.StuID FROM Has_Pet JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'cat');",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 84,
+      "db_id": "pets_1",
+      "hardness": "hard",
+      "question": "What is the last name of the student who has a cat that is 3 years old?",
+      "gold": "SELECT T1.lname FROM student AS T1 JOIN has_pet AS T2 ON T1.stuid  =  T2.stuid JOIN pets AS T3 ON T3.petid  =  T2.petid WHERE T3.pet_age  =  3 AND T3.pettype  =  'cat'",
+      "raw": {
+        "sql": "SELECT T1.LName FROM Student AS T1 JOIN Has_Pet AS T2 ON T1.StuID = T2.StuID JOIN Pets AS T3 ON T2.PetID = T3.PetID WHERE T3.PetType = 'cat' AND T3.pet_age = 3",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT Student.LName FROM Student JOIN Has_Pet ON Student.StuID = Has_Pet.StuID JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'cat' AND Pets.pet_age = 3 LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT Student.LName FROM Student JOIN Has_Pet ON Student.StuID = Has_Pet.StuID JOIN Pets ON Has_Pet.PetID = Pets.PetID WHERE Pets.PetType = 'cat' AND Pets.pet_age = 3;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 105,
+      "db_id": "car_1",
+      "hardness": "hard",
+      "question": "How many car makers are there in each continents? List the continent name and the count.",
+      "gold": "SELECT T1.Continent ,  count(*) FROM CONTINENTS AS T1 JOIN COUNTRIES AS T2 ON T1.ContId  =  T2.continent JOIN car_makers AS T3 ON T2.CountryId  =  T3.Country GROUP BY T1.Continent;",
+      "raw": {
+        "sql": "SELECT T3.Continent, COUNT(T1.Id) \nFROM car_makers AS T1 \nJOIN countries AS T2 ON T1.Country = T2.CountryId \nJOIN continents AS T3 ON T2.Continent = T3.ContId \nGROUP BY T3.ContId, T3.Continent",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT T3.Continent, COUNT(T1.Id) FROM car_makers AS T1 JOIN countries AS T2 ON T1.Country = T2.CountryId JOIN continents AS T3 ON T2.Continent = T3.ContId GROUP BY T3.Continent LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T3.Continent, COUNT(T1.Id) FROM car_makers AS T1 JOIN countries AS T2 ON T1.Country  =  T2.CountryId JOIN continents AS T3 ON T2.Continent  =  T3.ContId GROUP BY T3.Continent;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 134,
+      "db_id": "car_1",
+      "hardness": "hard",
+      "question": "What is the car model with the highest mpg ?",
+      "gold": "select t1.model from car_names as t1 join cars_data as t2 on t1.makeid  =  t2.id order by t2.mpg desc limit 1;",
+      "raw": {
+        "sql": "SELECT T1.Model FROM car_names AS T1 JOIN cars_data AS T2 ON T1.MakeId = T2.Id ORDER BY CAST(T2.MPG AS REAL) DESC LIMIT 1",
+        "correct": false,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Model FROM car_names AS T1 JOIN cars_data AS T2 ON T1.MakeId  =  T2.Id ORDER BY T2.MPG DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Model FROM car_names AS T1 JOIN cars_data AS T2 ON T1.MakeId  =  T2.Id ORDER BY T2.MPG DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 211,
+      "db_id": "flight_2",
+      "hardness": "hard",
+      "question": "How many flights depart from City 'Aberdeen' and have destination City 'Ashley'?",
+      "gold": "SELECT count(*) FROM FLIGHTS AS T1 JOIN AIRPORTS AS T2 ON T1.DestAirport  =  T2.AirportCode JOIN AIRPORTS AS T3 ON T1.SourceAirport  =  T3.AirportCode WHERE T2.City  =  \"Ashley\" AND T3.City  =  \"Aberdeen\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM flights AS T1 INNER JOIN airports AS T2 ON T1.SourceAirport = T2.AirportCode INNER JOIN airports AS T3 ON T1.DestAirport = T3.AirportCode WHERE T2.City = 'Aberdeen' AND T3.City = 'Ashley'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports AS source_airport ON flights.SourceAirport = source_airport.AirportCode JOIN airports AS dest_airport ON flights.DestAirport = dest_airport.AirportCode WHERE source_airport.City = 'Aberdeen' AND dest_airport.City = 'Ashley' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports AS source_airport ON flights.SourceAirport = source_airport.AirportCode JOIN airports AS dest_airport ON flights.DestAirport = dest_airport.AirportCode WHERE source_airport.City = 'Aberdeen' AND dest_airport.City = 'Ashley';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 212,
+      "db_id": "flight_2",
+      "hardness": "hard",
+      "question": "How many flights fly from Aberdeen to Ashley?",
+      "gold": "SELECT count(*) FROM FLIGHTS AS T1 JOIN AIRPORTS AS T2 ON T1.DestAirport  =  T2.AirportCode JOIN AIRPORTS AS T3 ON T1.SourceAirport  =  T3.AirportCode WHERE T2.City  =  \"Ashley\" AND T3.City  =  \"Aberdeen\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM flights AS T1 INNER JOIN airports AS T2 ON T1.SourceAirport = T2.AirportCode INNER JOIN airports AS T3 ON T1.DestAirport = T3.AirportCode WHERE T2.City = 'Aberdeen' AND T3.City = 'Ashley'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports AS source_airport ON flights.SourceAirport = source_airport.AirportCode JOIN airports AS dest_airport ON flights.DestAirport = dest_airport.AirportCode WHERE source_airport.City = 'Aberdeen' AND dest_airport.City = 'Ashley' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports AS source_airport ON flights.SourceAirport = source_airport.AirportCode JOIN airports AS dest_airport ON flights.DestAirport = dest_airport.AirportCode WHERE source_airport.City = 'Aberdeen' AND dest_airport.City = 'Ashley';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 255,
+      "db_id": "flight_2",
+      "hardness": "hard",
+      "question": "Find the number of flights landing in the city of Aberdeen or Abilene.",
+      "gold": "SELECT count(*) FROM Flights AS T1 JOIN Airports AS T2 ON T1.DestAirport  =  T2.AirportCode WHERE T2.city  =  \"Aberdeen\" OR T2.city  =  \"Abilene\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen' OR airports.City = 'Abilene'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen' OR airports.City = 'Abilene' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen' OR airports.City = 'Abilene';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 256,
+      "db_id": "flight_2",
+      "hardness": "hard",
+      "question": "How many flights land in Aberdeen or Abilene?",
+      "gold": "SELECT count(*) FROM Flights AS T1 JOIN Airports AS T2 ON T1.DestAirport  =  T2.AirportCode WHERE T2.city  =  \"Aberdeen\" OR T2.city  =  \"Abilene\"",
+      "raw": {
+        "sql": "SELECT count(*) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City = 'Aberdeen' OR airports.City = 'Abilene'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City IN ('Aberdeen', 'Abilene') LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT COUNT(flights.FlightNo) FROM flights JOIN airports ON flights.DestAirport = airports.AirportCode WHERE airports.City IN ('Aberdeen', 'Abilene');",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 257,
+      "db_id": "flight_2",
+      "hardness": "hard",
+      "question": "Find the name of airports which do not have any flight in and out.",
+      "gold": "SELECT AirportName FROM Airports WHERE AirportCode NOT IN (SELECT SourceAirport FROM Flights UNION SELECT DestAirport FROM Flights)",
+      "raw": {
+        "sql": "SELECT AirportName \nFROM airports \nWHERE AirportCode NOT IN (\n    SELECT SourceAirport FROM flights \n    UNION \n    SELECT DestAirport FROM flights\n)",
+        "correct": true,
+        "error": null,
+        "n_rows": 100
+      },
+      "governed": {
+        "sql": "SELECT AirportName FROM airports WHERE NOT AirportCode IN (SELECT SourceAirport FROM flights UNION SELECT DestAirport FROM flights) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT AirportName FROM airports WHERE AirportCode NOT IN (SELECT SourceAirport FROM flights UNION SELECT DestAirport FROM flights);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 275,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "hard",
+      "question": "Find the names of stores whose number products is more than the average number of products.",
+      "gold": "SELECT name FROM shop WHERE number_products  >  (SELECT avg(number_products) FROM shop)",
+      "raw": {
+        "sql": "SELECT Name FROM shop WHERE Number_products > (SELECT AVG(Number_products) FROM shop)",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT Name FROM shop WHERE Number_products > (SELECT AVG(Number_products) FROM shop) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Name FROM shop WHERE Number_products > (SELECT AVG(Number_products) FROM shop);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 285,
+      "db_id": "employee_hire_evaluation",
+      "hardness": "hard",
+      "question": "Find the name of the shops that do not hire any employee.",
+      "gold": "SELECT name FROM shop WHERE shop_id NOT IN (SELECT shop_id FROM hiring)",
+      "raw": {
+        "sql": "SELECT Name FROM shop WHERE Shop_ID NOT IN (SELECT Shop_ID FROM hiring)",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": null,
+        "outcome": "blocked_by_policy",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT T1.Name FROM shop AS T1 WHERE NOT EXISTS (SELECT * FROM hiring AS T2 WHERE T1.Shop_ID = T2.Shop_ID);",
+        "policy_reason": "SELECT * is not allowed: list the columns you need explicitly (the schema tool shows the available columns)."
+      }
+    },
+    {
+      "index": 316,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "hard",
+      "question": "What are the ids for templates that are not used in any documents?",
+      "gold": "SELECT template_id FROM Templates EXCEPT SELECT template_id FROM Documents",
+      "raw": {
+        "sql": "SELECT Template_ID FROM Templates EXCEPT SELECT Template_ID FROM Documents",
+        "correct": true,
+        "error": null,
+        "n_rows": 8
+      },
+      "governed": {
+        "sql": "SELECT Template_ID FROM Templates WHERE NOT Template_ID IN (SELECT Template_ID FROM Documents) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Template_ID FROM Templates WHERE Template_ID NOT IN (SELECT Template_ID FROM Documents);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 332,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "hard",
+      "question": "Return the type code of the template type that the most templates belong to.",
+      "gold": "SELECT template_type_code FROM Templates GROUP BY template_type_code ORDER BY count(*) DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT Template_Type_Code \nFROM Templates \nGROUP BY Template_Type_Code \nORDER BY COUNT(*) DESC \nLIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Templates.Template_Type_Code \nFROM Templates \nGROUP BY Templates.Template_Type_Code \nORDER BY COUNT(Templates.Template_ID) DESC \nLIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Templates.Template_Type_Code \nFROM Templates \nGROUP BY Templates.Template_Type_Code \nORDER BY COUNT(Templates.Template_ID) DESC \nLIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 346,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "hard",
+      "question": "What are the codes of template types that are not used for any document?",
+      "gold": "SELECT template_type_code FROM Templates EXCEPT SELECT template_type_code FROM Templates AS T1 JOIN Documents AS T2 ON T1.template_id  =  T2.template_id",
+      "raw": {
+        "sql": "SELECT T1.Template_Type_Code \nFROM Ref_Template_Types AS T1\nEXCEPT\nSELECT T2.Template_Type_Code \nFROM Templates AS T2\nJOIN Documents AS T3 ON T2.Template_ID = T3.Template_ID",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Template_Type_Code FROM Ref_Template_Types EXCEPT SELECT T.Template_Type_Code FROM Templates AS T JOIN Documents AS D ON T.Template_ID = D.Template_ID LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Template_Type_Code FROM Ref_Template_Types EXCEPT SELECT T.Template_Type_Code FROM Templates AS T JOIN Documents AS D ON T.Template_ID = D.Template_ID;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 380,
+      "db_id": "cre_Doc_Template_Mgt",
+      "hardness": "hard",
+      "question": "What are the ids of documents that contain the paragraph text 'Brazil' and 'Ireland'?",
+      "gold": "SELECT document_id FROM Paragraphs WHERE paragraph_text  =  'Brazil' INTERSECT SELECT document_id FROM Paragraphs WHERE paragraph_text  =  'Ireland'",
+      "raw": {
+        "sql": "SELECT Document_ID FROM Paragraphs WHERE Paragraph_Text = 'Brazil'\nINTERSECT\nSELECT Document_ID FROM Paragraphs WHERE Paragraph_Text = 'Ireland'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Document_ID FROM Documents AS T1 JOIN Paragraphs AS T2 ON T1.Document_ID = T2.Document_ID WHERE T2.Paragraph_Text = 'Brazil' INTERSECT SELECT T1.Document_ID FROM Documents AS T1 JOIN Paragraphs AS T2 ON T1.Document_ID = T2.Document_ID WHERE T2.Paragraph_Text = 'Ireland' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Document_ID \nFROM Documents AS T1\nJOIN Paragraphs AS T2 ON T1.Document_ID = T2.Document_ID\nWHERE T2.Paragraph_Text = 'Brazil'\nINTERSECT\nSELECT T1.Document_ID \nFROM Documents AS T1\nJOIN Paragraphs AS T2 ON T1.Document_ID = T2.Document_ID\nWHERE T2.Paragraph_Text = 'Ireland';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 395,
+      "db_id": "course_teach",
+      "hardness": "hard",
+      "question": "List the most common hometown of teachers.",
+      "gold": "SELECT Hometown FROM teacher GROUP BY Hometown ORDER BY COUNT(*) DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT Hometown FROM teacher GROUP BY Hometown ORDER BY count(*) DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Hometown FROM teacher GROUP BY Hometown ORDER BY COUNT(Teacher_ID) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Hometown FROM teacher GROUP BY Hometown ORDER BY COUNT(Teacher_ID) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 403,
+      "db_id": "course_teach",
+      "hardness": "hard",
+      "question": "Show the name of the teacher for the math course.",
+      "gold": "SELECT T3.Name FROM course_arrange AS T1 JOIN course AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T3 ON T1.Teacher_ID  =  T3.Teacher_ID WHERE T2.Course  =  \"Math\"",
+      "raw": {
+        "sql": "SELECT T.Name \nFROM teacher AS T \nJOIN course_arrange AS CA ON T.Teacher_ID = CA.Teacher_ID \nJOIN course AS C ON CA.Course_ID = C.Course_ID \nWHERE C.Course = 'Math'",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Name FROM teacher AS T1 JOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID JOIN course AS T3 ON T2.Course_ID = T3.Course_ID WHERE T3.Course = 'math' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT DISTINCT T1.Name FROM teacher AS T1 JOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID JOIN course AS T3 ON T2.Course_ID = T3.Course_ID WHERE T3.Course = 'math';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 404,
+      "db_id": "course_teach",
+      "hardness": "hard",
+      "question": "What are the names of the people who teach math courses?",
+      "gold": "SELECT T3.Name FROM course_arrange AS T1 JOIN course AS T2 ON T1.Course_ID  =  T2.Course_ID JOIN teacher AS T3 ON T1.Teacher_ID  =  T3.Teacher_ID WHERE T2.Course  =  \"Math\"",
+      "raw": {
+        "sql": "SELECT T.Name FROM teacher AS T JOIN course_arrange AS CA ON T.Teacher_ID = CA.Teacher_ID JOIN course AS C ON CA.Course_ID = C.Course_ID WHERE C.Course = 'Math'",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Name FROM teacher AS T1 JOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID JOIN course AS T3 ON T2.Course_ID = T3.Course_ID WHERE T3.Course = 'math' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT DISTINCT T1.Name \nFROM teacher AS T1 \nJOIN course_arrange AS T2 ON T1.Teacher_ID = T2.Teacher_ID \nJOIN course AS T3 ON T2.Course_ID = T3.Course_ID \nWHERE T3.Course = 'math';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 409,
+      "db_id": "course_teach",
+      "hardness": "hard",
+      "question": "List the names of teachers who have not been arranged to teach courses.",
+      "gold": "SELECT Name FROM teacher WHERE Teacher_id NOT IN (SELECT Teacher_id FROM course_arrange)",
+      "raw": {
+        "sql": "SELECT Name FROM teacher WHERE Teacher_ID NOT IN (SELECT Teacher_ID FROM course_arrange)",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT teacher.Name FROM teacher WHERE NOT teacher.Teacher_ID IN (SELECT course_arrange.Teacher_ID FROM course_arrange) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT teacher.Name FROM teacher WHERE teacher.Teacher_ID NOT IN (SELECT course_arrange.Teacher_ID FROM course_arrange);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 459,
+      "db_id": "wta_1",
+      "hardness": "hard",
+      "question": "Find the first name and country code of the player who did the most number of tours.",
+      "gold": "SELECT T1.country_code ,  T1.first_name FROM players AS T1 JOIN rankings AS T2 ON T1.player_id  =  T2.player_id ORDER BY T2.tours DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT T1.first_name, T1.country_code \nFROM players AS T1 \nJOIN rankings AS T2 ON T1.player_id = T2.player_id \nGROUP BY T1.player_id \nORDER BY SUM(T2.tours) DESC \nLIMIT 1",
+        "correct": false,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT players.first_name, players.country_code FROM players JOIN rankings ON players.player_id = rankings.player_id GROUP BY players.player_id, players.first_name, players.country_code ORDER BY SUM(rankings.tours) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT players.first_name, players.country_code FROM players JOIN rankings ON players.player_id = rankings.player_id GROUP BY players.player_id, players.first_name, players.country_code ORDER BY SUM(rankings.tours) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 463,
+      "db_id": "wta_1",
+      "hardness": "hard",
+      "question": "Find the name and rank points of the winner who won the most times.",
+      "gold": "SELECT winner_name ,  winner_rank_points FROM matches GROUP BY winner_name ORDER BY count(*) DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT winner_name, winner_rank_points \nFROM matches \nGROUP BY winner_id \nORDER BY COUNT(*) DESC \nLIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT winner_name, winner_rank_points FROM matches GROUP BY winner_name, winner_rank_points ORDER BY COUNT(*) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT winner_name, winner_rank_points FROM matches GROUP BY winner_name, winner_rank_points ORDER BY COUNT(*) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 466,
+      "db_id": "wta_1",
+      "hardness": "hard",
+      "question": "What is the name of the winner with the most rank points who participated in the Australian Open tournament?",
+      "gold": "SELECT winner_name FROM matches WHERE tourney_name  =  'Australian Open' ORDER BY winner_rank_points DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT winner_name \nFROM matches \nWHERE tourney_name LIKE '%Australian Open%' \nORDER BY winner_rank_points DESC \nLIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT players.first_name, players.last_name FROM matches JOIN players ON matches.winner_id = players.player_id WHERE matches.tourney_name = 'Australian Open' ORDER BY matches.winner_rank_points DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT players.first_name, players.last_name FROM matches JOIN players ON matches.winner_id = players.player_id WHERE matches.tourney_name = 'Australian Open' ORDER BY matches.winner_rank_points DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 544,
+      "db_id": "student_transcripts_tracking",
+      "hardness": "hard",
+      "question": "What is the name of the semester with no students enrolled?",
+      "gold": "SELECT semester_name FROM Semesters WHERE semester_id NOT IN( SELECT semester_id FROM Student_Enrolment )",
+      "raw": {
+        "sql": "SELECT semester_name \nFROM Semesters \nWHERE semester_id NOT IN (\n    SELECT semester_id \n    FROM Student_Enrolment\n)",
+        "correct": true,
+        "error": null,
+        "n_rows": 6
+      },
+      "governed": {
+        "sql": "SELECT Semesters.semester_name FROM Semesters WHERE NOT Semesters.semester_id IN (SELECT semester_id FROM Student_Enrolment) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Semesters.semester_name FROM Semesters WHERE Semesters.semester_id NOT IN (SELECT semester_id FROM Student_Enrolment);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 595,
+      "db_id": "tvshow",
+      "hardness": "hard",
+      "question": "Which country has the most of TV Channels? List the country and number of TV Channels it has.",
+      "gold": "SELECT Country ,  count(*) FROM TV_Channel GROUP BY Country ORDER BY count(*) DESC LIMIT 1;",
+      "raw": {
+        "sql": "SELECT Country, count(*) FROM TV_Channel GROUP BY Country ORDER BY count(*) DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Country, COUNT(id) FROM TV_Channel GROUP BY Country ORDER BY COUNT(id) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Country, COUNT(id) FROM TV_Channel GROUP BY Country ORDER BY COUNT(id) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 635,
+      "db_id": "tvshow",
+      "hardness": "hard",
+      "question": "which countries' tv channels are not playing any cartoon written by Todd Casey?",
+      "gold": "SELECT country FROM TV_Channel EXCEPT SELECT T1.country FROM TV_Channel AS T1 JOIN cartoon AS T2 ON T1.id = T2.Channel WHERE T2.written_by  =  'Todd Casey'",
+      "raw": {
+        "sql": "SELECT Country FROM TV_Channel WHERE id NOT IN (\n    SELECT T1.Channel FROM Cartoon AS T1 WHERE T1.Written_by = 'Todd Casey'\n)",
+        "correct": false,
+        "error": null,
+        "n_rows": 13
+      },
+      "governed": {
+        "sql": "SELECT Country FROM TV_Channel WHERE NOT Country IN (SELECT TV_Channel.Country FROM TV_Channel JOIN Cartoon ON TV_Channel.id = Cartoon.Channel WHERE Cartoon.Written_by = 'Todd Casey') LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Country FROM TV_Channel WHERE Country NOT IN (SELECT TV_Channel.Country FROM TV_Channel JOIN Cartoon ON TV_Channel.id = Cartoon.Channel WHERE Cartoon.Written_by = 'Todd Casey');",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 636,
+      "db_id": "tvshow",
+      "hardness": "hard",
+      "question": "What are the countries that are not playing cartoons written by Todd Casey?",
+      "gold": "SELECT country FROM TV_Channel EXCEPT SELECT T1.country FROM TV_Channel AS T1 JOIN cartoon AS T2 ON T1.id = T2.Channel WHERE T2.written_by  =  'Todd Casey'",
+      "raw": {
+        "sql": "SELECT DISTINCT T1.Country FROM TV_Channel AS T1 WHERE T1.id NOT IN (SELECT T2.Channel FROM Cartoon AS T2 WHERE T2.Written_by = 'Todd Casey')",
+        "correct": false,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT Country FROM TV_Channel EXCEPT SELECT T1.Country FROM TV_Channel AS T1 JOIN Cartoon AS T2 ON T1.id = T2.Channel WHERE T2.Written_by = 'Todd Casey' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Country FROM TV_Channel EXCEPT SELECT T1.Country FROM TV_Channel AS T1 JOIN Cartoon AS T2 ON T1.id = T2.Channel WHERE T2.Written_by = 'Todd Casey';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 666,
+      "db_id": "poker_player",
+      "hardness": "hard",
+      "question": "Return the birth date of the poker player with the lowest earnings.",
+      "gold": "SELECT T1.Birth_Date FROM people AS T1 JOIN poker_player AS T2 ON T1.People_ID  =  T2.People_ID ORDER BY T2.Earnings ASC LIMIT 1",
+      "raw": {
+        "sql": "SELECT T1.Birth_Date FROM people AS T1 JOIN poker_player AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Earnings ASC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Birth_Date FROM people AS T1 JOIN poker_player AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Earnings ASC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Birth_Date FROM people AS T1 JOIN poker_player AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Earnings ASC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 667,
+      "db_id": "poker_player",
+      "hardness": "hard",
+      "question": "What is the money rank of the tallest poker player?",
+      "gold": "SELECT T2.Money_Rank FROM people AS T1 JOIN poker_player AS T2 ON T1.People_ID  =  T2.People_ID ORDER BY T1.Height DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT T1.Money_Rank FROM poker_player AS T1 JOIN people AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Height DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Money_Rank FROM poker_player AS T1 JOIN people AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Height DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Money_Rank FROM poker_player AS T1 JOIN people AS T2 ON T1.People_ID = T2.People_ID ORDER BY T2.Height DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 752,
+      "db_id": "world_1",
+      "hardness": "hard",
+      "question": "What are the regions that use English or Dutch?",
+      "gold": "SELECT DISTINCT T1.Region FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code  =  T2.CountryCode WHERE T2.Language  =  \"English\" OR T2.Language  =  \"Dutch\"",
+      "raw": {
+        "sql": "SELECT DISTINCT T1.Region \nFROM country AS T1 \nJOIN countrylanguage AS T2 ON T1.Code = T2.CountryCode \nWHERE T2.Language IN ('English', 'Dutch')",
+        "correct": true,
+        "error": null,
+        "n_rows": 20
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT country.Region FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE countrylanguage.Language IN ('English', 'Dutch') LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT country.Region FROM country JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE countrylanguage.Language IN ('English', 'Dutch');",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 753,
+      "db_id": "world_1",
+      "hardness": "hard",
+      "question": "Which regions speak Dutch or English?",
+      "gold": "SELECT DISTINCT T1.Region FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code  =  T2.CountryCode WHERE T2.Language  =  \"English\" OR T2.Language  =  \"Dutch\"",
+      "raw": {
+        "sql": "SELECT DISTINCT T1.Region \nFROM country AS T1 \nJOIN countrylanguage AS T2 ON T1.Code = T2.CountryCode \nWHERE T2.Language IN ('Dutch', 'English')",
+        "correct": true,
+        "error": null,
+        "n_rows": 20
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.Region FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code = T2.CountryCode WHERE T2.Language = 'Dutch' OR T2.Language = 'English' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.Region FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code = T2.CountryCode WHERE T2.Language = 'Dutch' OR T2.Language = 'English';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 779,
+      "db_id": "world_1",
+      "hardness": "hard",
+      "question": "Return the country codes for countries that do not speak English.",
+      "gold": "SELECT CountryCode FROM countrylanguage EXCEPT SELECT CountryCode FROM countrylanguage WHERE LANGUAGE  =  \"English\"",
+      "raw": {
+        "sql": "SELECT Code FROM country WHERE Code NOT IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English')",
+        "correct": false,
+        "error": null,
+        "n_rows": 179
+      },
+      "governed": {
+        "sql": "SELECT countrylanguage.CountryCode FROM countrylanguage WHERE NOT countrylanguage.CountryCode IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English') GROUP BY countrylanguage.CountryCode LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT countrylanguage.CountryCode FROM countrylanguage WHERE countrylanguage.CountryCode NOT IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English') GROUP BY countrylanguage.CountryCode;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 782,
+      "db_id": "world_1",
+      "hardness": "hard",
+      "question": "What are the codes of the countries that do not speak English and whose government forms are not Republic?",
+      "gold": "SELECT Code FROM country WHERE GovernmentForm != \"Republic\" EXCEPT SELECT CountryCode FROM countrylanguage WHERE LANGUAGE  =  \"English\"",
+      "raw": {
+        "sql": "SELECT Code FROM country WHERE GovernmentForm != 'Republic' AND Code NOT IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English')",
+        "correct": true,
+        "error": null,
+        "n_rows": 69
+      },
+      "governed": {
+        "sql": "SELECT country.Code FROM country WHERE country.GovernmentForm <> 'Republic' AND NOT country.Code IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English') GROUP BY country.Code LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT country.Code FROM country WHERE country.GovernmentForm != 'Republic' AND country.Code NOT IN (SELECT CountryCode FROM countrylanguage WHERE Language = 'English') GROUP BY country.Code;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 787,
+      "db_id": "world_1",
+      "hardness": "hard",
+      "question": "Return the different names of cities that are in Asia and for which Chinese is the official language.",
+      "gold": "SELECT DISTINCT T3.Name FROM country AS T1 JOIN countrylanguage AS T2 ON T1.Code  =  T2.CountryCode JOIN city AS T3 ON T1.Code  =  T3.CountryCode WHERE T2.IsOfficial  =  'T' AND T2.Language  =  'Chinese' AND T1.Continent  =  \"Asia\"",
+      "raw": {
+        "sql": "SELECT DISTINCT T1.Name \nFROM city AS T1\nJOIN country AS T2 ON T1.CountryCode = T2.Code\nJOIN countrylanguage AS T3 ON T2.Code = T3.CountryCode\nWHERE T2.Continent = 'Asia' \n  AND T3.Language = 'Chinese' \n  AND T3.IsOfficial = 'T'",
+        "correct": true,
+        "error": null,
+        "n_rows": 359
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT city.Name FROM city JOIN country ON city.CountryCode = country.Code JOIN countrylanguage ON country.Code = countrylanguage.CountryCode WHERE country.Continent = 'Asia' AND countrylanguage.Language = 'Chinese' AND countrylanguage.IsOfficial = 'T' LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT city.Name FROM city JOIN country ON city.CountryCode  =  country.Code JOIN countrylanguage ON country.Code  =  countrylanguage.CountryCode WHERE country.Continent  =  'Asia' AND countrylanguage.Language  =  'Chinese' AND countrylanguage.IsOfficial  =  'T';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 853,
+      "db_id": "orchestra",
+      "hardness": "hard",
+      "question": "What is the record company used by the greatest number of orchestras?",
+      "gold": "SELECT Record_Company FROM orchestra GROUP BY Record_Company ORDER BY COUNT(*) DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT Record_Company FROM orchestra GROUP BY Record_Company ORDER BY count(*) DESC LIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Record_Company FROM orchestra GROUP BY Record_Company ORDER BY COUNT(Orchestra_ID) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Record_Company FROM orchestra GROUP BY Record_Company ORDER BY COUNT(Orchestra_ID) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 854,
+      "db_id": "orchestra",
+      "hardness": "hard",
+      "question": "List the names of orchestras that have no performance.",
+      "gold": "SELECT Orchestra FROM orchestra WHERE Orchestra_ID NOT IN (SELECT Orchestra_ID FROM performance)",
+      "raw": {
+        "sql": "SELECT Orchestra FROM orchestra WHERE Orchestra_ID NOT IN (SELECT Orchestra_ID FROM performance)",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T1.Orchestra FROM orchestra AS T1 LEFT JOIN performance AS T2 ON T1.Orchestra_ID = T2.Orchestra_ID WHERE T2.Performance_ID IS NULL LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.Orchestra FROM orchestra AS T1 LEFT JOIN performance AS T2 ON T1.Orchestra_ID = T2.Orchestra_ID WHERE T2.Performance_ID IS NULL;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 879,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "Return the grade that has the greatest number of high schoolers.",
+      "gold": "SELECT grade FROM Highschooler GROUP BY grade ORDER BY count(*) DESC LIMIT 1",
+      "raw": {
+        "sql": "SELECT grade \nFROM Highschooler \nGROUP BY grade \nORDER BY count(*) DESC \nLIMIT 1",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT Highschooler.grade FROM Highschooler GROUP BY Highschooler.grade ORDER BY COUNT(Highschooler.ID) DESC LIMIT 1",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Highschooler.grade FROM Highschooler GROUP BY Highschooler.grade ORDER BY COUNT(Highschooler.ID) DESC LIMIT 1;",
+        "policy_reason": "High confidence (100%) - Validated via deterministic AST safety rules",
+        "error": null
+      }
+    },
+    {
+      "index": 890,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "Show the names of all of the high schooler Kyle's friends.",
+      "gold": "SELECT T3.name FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.student_id  =  T2.id JOIN Highschooler AS T3 ON T1.friend_id  =  T3.id WHERE T2.name  =  \"Kyle\"",
+      "raw": {
+        "sql": "SELECT T3.name \nFROM Friend AS T1 \nJOIN Highschooler AS T2 ON T1.student_id = T2.ID \nJOIN Highschooler AS T3 ON T1.friend_id = T3.ID \nWHERE T2.name = 'Kyle'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T3.name FROM Highschooler AS T1 JOIN Friend AS T2 ON T1.ID = T2.student_id JOIN Highschooler AS T3 ON T2.friend_id = T3.ID WHERE T1.name = 'Kyle' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T3.name FROM Highschooler AS T1 JOIN Friend AS T2 ON T1.ID = T2.student_id JOIN Highschooler AS T3 ON T2.friend_id = T3.ID WHERE T1.name = 'Kyle';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 891,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "Return the names of friends of the high school student Kyle.",
+      "gold": "SELECT T3.name FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.student_id  =  T2.id JOIN Highschooler AS T3 ON T1.friend_id  =  T3.id WHERE T2.name  =  \"Kyle\"",
+      "raw": {
+        "sql": "SELECT h2.name \nFROM Highschooler h1\nJOIN Friend f ON h1.ID = f.student_id\nJOIN Highschooler h2 ON f.friend_id = h2.ID\nWHERE h1.name = 'Kyle'",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT T2.name FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.friend_id = T2.ID JOIN Highschooler AS T3 ON T1.student_id = T3.ID WHERE T3.name = 'Kyle' LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T2.name FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.friend_id = T2.ID JOIN Highschooler AS T3 ON T1.student_id = T3.ID WHERE T3.name = 'Kyle';",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 894,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "Show ids of all students who do not have any friends.",
+      "gold": "SELECT id FROM Highschooler EXCEPT SELECT student_id FROM Friend",
+      "raw": {
+        "sql": "SELECT ID \nFROM Highschooler \nWHERE ID NOT IN (\n    SELECT student_id \n    FROM Friend\n)",
+        "correct": true,
+        "error": null,
+        "n_rows": 2
+      },
+      "governed": {
+        "sql": "SELECT Highschooler.ID FROM Highschooler WHERE NOT Highschooler.ID IN (SELECT Friend.student_id FROM Friend) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT Highschooler.ID FROM Highschooler WHERE Highschooler.ID NOT IN (SELECT Friend.student_id FROM Friend);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 901,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "What are the names of high schoolers who both have friends and are liked?",
+      "gold": "SELECT T2.name FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.student_id  =  T2.id INTERSECT SELECT T2.name FROM Likes AS T1 JOIN Highschooler AS T2 ON T1.liked_id  =  T2.id",
+      "raw": {
+        "sql": "SELECT DISTINCT h.name \nFROM Highschooler h\nJOIN Friend f ON h.ID = f.student_id\nJOIN Likes l ON h.ID = l.liked_id",
+        "correct": true,
+        "error": null,
+        "n_rows": 8
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.name FROM Highschooler AS T1 JOIN Friend AS T2 ON T1.ID = T2.student_id JOIN Likes AS T3 ON T1.ID = T3.liked_id LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.name FROM Highschooler AS T1 JOIN Friend AS T2 ON T1.ID = T2.student_id JOIN Likes AS T3 ON T1.ID = T3.liked_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 914,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "Find the average grade of all students who have some friends.",
+      "gold": "SELECT avg(grade) FROM Highschooler WHERE id IN (SELECT T1.student_id FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.student_id  =  T2.id)",
+      "raw": {
+        "sql": "SELECT avg(grade) FROM Highschooler WHERE ID IN (SELECT student_id FROM Friend)",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(Highschooler.grade) FROM Highschooler JOIN Friend ON Highschooler.ID = Friend.student_id LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT AVG(Highschooler.grade) FROM Highschooler JOIN Friend ON Highschooler.ID = Friend.student_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 915,
+      "db_id": "network_1",
+      "hardness": "hard",
+      "question": "What is the average grade of students who have friends?",
+      "gold": "SELECT avg(grade) FROM Highschooler WHERE id IN (SELECT T1.student_id FROM Friend AS T1 JOIN Highschooler AS T2 ON T1.student_id  =  T2.id)",
+      "raw": {
+        "sql": "SELECT avg(grade) FROM Highschooler WHERE ID IN (SELECT student_id FROM Friend)",
+        "correct": true,
+        "error": null,
+        "n_rows": 1
+      },
+      "governed": {
+        "sql": "SELECT AVG(Highschooler.grade) FROM Highschooler JOIN Friend ON Highschooler.ID = Friend.student_id LIMIT 100",
+        "outcome": "executed",
+        "correct": false,
+        "correct_limit_adjusted": false,
+        "generated_sql": "SELECT AVG(Highschooler.grade) FROM Highschooler JOIN Friend ON Highschooler.ID = Friend.student_id;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 918,
+      "db_id": "dog_kennels",
+      "hardness": "hard",
+      "question": "Which states have both owners and professionals living there?",
+      "gold": "SELECT state FROM Owners INTERSECT SELECT state FROM Professionals",
+      "raw": {
+        "sql": "SELECT state FROM Owners INTERSECT SELECT state FROM Professionals",
+        "correct": true,
+        "error": null,
+        "n_rows": 3
+      },
+      "governed": {
+        "sql": "SELECT DISTINCT T1.state FROM Owners AS T1 INNER JOIN Professionals AS T2 ON T1.state = T2.state LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT DISTINCT T1.state FROM Owners AS T1 INNER JOIN Professionals AS T2 ON T1.state = T2.state;",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    },
+    {
+      "index": 924,
+      "db_id": "dog_kennels",
+      "hardness": "hard",
+      "question": "Which dogs have not cost their owner more than 1000 for treatment ? List the dog names .",
+      "gold": "select name from dogs where dog_id not in ( select dog_id from treatments group by dog_id having sum(cost_of_treatment)  >  1000 )",
+      "raw": {
+        "sql": "SELECT name \nFROM Dogs \nWHERE dog_id NOT IN (\n    SELECT dog_id \n    FROM Treatments \n    GROUP BY dog_id \n    HAVING SUM(cost_of_treatment) > 1000\n)",
+        "correct": true,
+        "error": null,
+        "n_rows": 12
+      },
+      "governed": {
+        "sql": "SELECT T1.name FROM Dogs AS T1 JOIN Treatments AS T2 ON T1.dog_id = T2.dog_id GROUP BY T1.dog_id, T1.name HAVING SUM(T2.cost_of_treatment) <= 1000 UNION SELECT name FROM Dogs WHERE NOT dog_id IN (SELECT dog_id FROM Treatments) LIMIT 100",
+        "outcome": "executed",
+        "correct": true,
+        "correct_limit_adjusted": true,
+        "generated_sql": "SELECT T1.name FROM Dogs AS T1 JOIN Treatments AS T2 ON T1.dog_id = T2.dog_id GROUP BY T1.dog_id, T1.name HAVING SUM(T2.cost_of_treatment) <= 1000 UNION SELECT name FROM Dogs WHERE dog_id NOT IN (SELECT dog_id FROM Treatments);",
+        "policy_reason": "Validated (90%): query lacked an explicit limit, SentinelSQL injected LIMIT 100.",
+        "error": null
+      }
+    }
+  ]
+}

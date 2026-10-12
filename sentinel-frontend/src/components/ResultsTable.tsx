@@ -1,5 +1,5 @@
 type Props = {
-  results: any[];
+  results: any[] | { columns: string[]; rows: any[] };
   /** Optional: prioritize these columns first, in order */
   preferredOrder?: string[];
   /** Optional: formatters per column */
@@ -17,25 +17,30 @@ export default function ResultsTable({
   preferredOrder = [],
   formatters = {},
 }: Props) {
-  if (!results || results.length === 0) {
+  const isObjectFormat = results && !Array.isArray(results) && "rows" in results;
+  const rowsData = isObjectFormat ? (results as any).rows : results;
+  const columnsData = isObjectFormat ? (results as any).columns : null;
+
+  if (!rowsData || rowsData.length === 0) {
     return (
       <div
         style={{
           marginTop: 24,
-          padding: 16,
-          background: "#f9f9fb",
-          border: "1px solid #eef0f6",
-          borderRadius: 6,
+          padding: 24,
+          background: "rgba(255, 255, 255, 0.03)",
+          border: "1px solid var(--border)",
+          borderRadius: 8,
+          textAlign: "center",
         }}
       >
-        <h3 style={{ margin: 0 }}>📊 Results</h3>
-        <p style={{ color: "#666", marginTop: 8 }}>No results found for this query.</p>
+        <h3 style={{ margin: 0, color: "var(--text-main)" }}>📊 Results</h3>
+        <p style={{ color: "var(--text-muted)", marginTop: 8 }}>No results found for this query.</p>
       </div>
     );
   }
 
-  // derive columns from first row but ensure deterministic ordering
-  const baseColumns = Object.keys(results[0]);
+  // derive columns from explicit columns data or fallback to first row keys
+  const baseColumns: string[] = (columnsData as string[]) || (rowsData[0] ? Object.keys(rowsData[0]) : []);
 
   // common column priorities for enterprise UX
   const commonPriority = ["id", "name", "email", "user_id", "created_at", "updated_at"];
@@ -50,7 +55,7 @@ export default function ResultsTable({
     return 0; // default: sort alphabetically after priorities
   };
 
-  const columns = baseColumns.slice().sort((a, b) => {
+  const columns: string[] = baseColumns.slice().sort((a: string, b: string) => {
     const ka = orderKey(a);
     const kb = orderKey(b);
     if (ka !== kb) return ka - kb;
@@ -73,9 +78,9 @@ export default function ResultsTable({
 
   return (
     <div style={{ marginTop: 24 }}>
-      <h3>📊 Results</h3>
+      <h3 style={{ color: "var(--text-main)", marginBottom: 12 }}>📊 Results</h3>
 
-      <div style={{ overflowX: "auto", borderRadius: 8, border: "1px solid #e0e0e0" }}>
+      <div style={{ overflowX: "auto", borderRadius: 8, border: "1px solid var(--border)" }}>
         <table
           style={{
             borderCollapse: "collapse",
@@ -85,15 +90,19 @@ export default function ResultsTable({
           }}
         >
           <thead>
-            <tr style={{ background: "#2d3748", color: "white" }}>
-              {columns.map((col) => (
+            <tr style={{ background: "rgba(15, 23, 42, 0.85)" }}>
+              {columns.map((col: string) => (
                 <th
                   key={col}
                   style={{
                     textAlign: "left",
-                    padding: 12,
+                    padding: "12px 16px",
                     fontWeight: 600,
-                    borderBottom: "2px solid #1a202c",
+                    borderBottom: "1px solid var(--border)",
+                    color: "var(--text-muted)",
+                    fontSize: "12px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
                   }}
                 >
                   {col}
@@ -103,22 +112,23 @@ export default function ResultsTable({
           </thead>
 
           <tbody>
-            {results.map((row, idx) => (
+            {rowsData.map((row: any, idx: number) => (
               <tr
                 key={idx}
                 style={{
-                  background: idx % 2 === 0 ? "#f9fafb" : "#ffffff",
-                  transition: "background-color 0.2s",
+                  background: idx % 2 === 0 ? "rgba(255, 255, 255, 0.02)" : "rgba(255, 255, 255, 0.04)",
+                  transition: "background-color 0.15s ease",
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "#edf2f7" : "#f0f4f8")}
-                onMouseOut={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "#f9fafb" : "#ffffff")}
+                onMouseOver={(e) => (e.currentTarget.style.background = "rgba(59, 130, 246, 0.12)")}
+                onMouseOut={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "rgba(255, 255, 255, 0.02)" : "rgba(255, 255, 255, 0.04)")}
               >
-                {columns.map((col) => (
+                {columns.map((col: string) => (
                   <td
                     key={col}
                     style={{
-                      padding: 12,
-                      borderBottom: "1px solid #e0e0e0",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid var(--border)",
+                      color: "var(--text-main)",
                       maxWidth: 300,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
