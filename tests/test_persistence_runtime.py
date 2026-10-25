@@ -8,6 +8,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -253,6 +254,7 @@ def test_finished_runs_are_deleted_after_their_retention(run_store, monkeypatch)
     rid = run_store.save_run({"user_query": "q"})
     run_store.update_run(rid, status="completed", results={"rows": []})
     monkeypatch.setenv("HITL_FINISHED_TTL_HOURS", "0")
+    time.sleep(0.05)   # a zero TTL means "older than now"; without a pause the clock can tick the same value twice on Windows
     with pytest.raises(KeyError):
         run_store.get_run(rid)
 
@@ -261,6 +263,7 @@ def test_an_expired_run_cannot_be_approved(run_store, monkeypatch):
     client = TestClient(__import__("app.main", fromlist=["app"]).app)
     rid = run_store.save_run({"user_query": "q", "sql": "SELECT name FROM customers LIMIT 1", "user_id": "emp-1"})
     monkeypatch.setenv("HITL_PENDING_TTL_HOURS", "0")
+    time.sleep(0.05)   # same clock-tick reason as the retention test above
     r = client.post("/hitl/decision", json={"run_id": rid, "decision": "approve"}, headers=ADMIN)
     assert r.json()["status"] == "rejected" and "expired" in r.json()["reason"]
 

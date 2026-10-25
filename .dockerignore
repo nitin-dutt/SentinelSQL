@@ -1,0 +1,32 @@
+# Keep secrets, local state and the heavy / author-only folders out of the image and out of the build context.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.claude
+venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+logs
+*.log
+
+# databases and caches are created at runtime in the /data volume
+*.db
+*.db-wal
+*.db-shm
+.semantic_cache.json
+.schema_vectors.json
+.golden_vectors.json
+.dictionary_vectors.json
+
+# the benchmark harness, datasets (878 MB of Spider) and the private study manual are not part of the runtime image
+benchmarks
+study
+tests
+scripts/generate_security_cases.py
+
+# the frontend is built inside the image
+sentinel-frontend/node_modules
+sentinel-frontend/dist

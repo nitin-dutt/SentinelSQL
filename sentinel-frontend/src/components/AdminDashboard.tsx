@@ -15,12 +15,15 @@ import {
 } from "../api/sentinel";
 import SQLReview from "./SQLReview";
 import LoadingIndicator from "./LoadingIndicator";
+import ResultsTable from "./ResultsTable";
 
 interface AdminDashboardProps {
   onDecisionComplete?: (runId: string, result: any) => void;
+  /** The signed-in reviewer; requests they submitted themselves cannot be approved by them. */
+  currentUserId?: string;
 }
 
-export default function AdminDashboard({ onDecisionComplete }: AdminDashboardProps) {
+export default function AdminDashboard({ onDecisionComplete, currentUserId }: AdminDashboardProps) {
   const [queue, setQueue] = useState<any[]>([]);
   const [goldenQueries, setGoldenQueries] = useState<GoldenQuery[]>([]);
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
@@ -39,6 +42,10 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [refreshingQueue, setRefreshingQueue] = useState(false);
+  const [queueNote, setQueueNote] = useState<string | null>(null);
+  // Results of requests this reviewer approved in this visit. Salary-class values are readable here; the submitter still sees them masked.
+  const [approved, setApproved] = useState<{ run_id: string; question: string; sql: string; results: any }[]>([]);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -66,6 +73,21 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
     }
   }
 
+  // Reloads only the review queue (not the whole dashboard), so new requests appear without a page reload.
+  async function refreshQueue() {
+    setRefreshingQueue(true);
+    setQueueNote(null);
+    try {
+      const latest = await getAdminQueue();
+      setQueue(latest);
+      setQueueNote(latest.length === 0 ? "Nothing waiting." : `${latest.length} waiting.`);
+    } catch (e: any) {
+      setQueueNote(e.message || "Could not refresh the queue");
+    } finally {
+      setRefreshingQueue(false);
+    }
+  }
+
   async function handleDecision(
     runId: string,
     decision: "approve" | "edit" | "reject",
@@ -81,8 +103,12 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
         save_as_template: saveAsTemplate
       });
 
-      // Remove from queue
+      // Remove from queue, and keep the answer on screen for the reviewer
+      const decided = queue.find(item => item.run_id === runId);
       setQueue(q => q.filter(item => item.run_id !== runId));
+      if (res?.status === "completed" && res.results) {
+        setApproved(a => [{ run_id: runId, question: decided?.state?.user_query ?? "", sql: res.sql ?? "", results: res.results }, ...a]);
+      }
 
       // Refresh golden templates if saved
       if (saveAsTemplate && (decision === "approve" || decision === "edit")) {
@@ -176,9 +202,34 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
   return (
     <div className="admin-dashboard animate-fade-in" style={{ padding: 24, maxWidth: 1000, margin: "0 auto", display: "flex", flexDirection: "column", gap: 32 }}>
       <div>
-        <h2 style={{ marginTop: 0, marginBottom: 8, fontSize: 28 }}>Admin Queue</h2>
-        <p style={{ color: "var(--text-muted)", margin: 0 }}>Review and approve queries flagged by the LLM Validator.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 28 }}>Admin Queue</h2>
+            <p style={{ color: "var(--text-muted)", margin: "8px 0 0 0" }}>Review and approve queries flagged by the LLM Validator.</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {queueNote && <span style={{ color: "var(--text-muted)", fontSize: 14 }}>{queueNote}</span>}
+            <button className="primary" onClick={refreshQueue} disabled={refreshingQueue}>
+              {refreshingQueue ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {approved.map(a => (
+        <div key={a.run_id} className="glass-panel animate-fade-in" style={{ padding: 32, borderColor: "var(--success)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <h3 style={{ margin: 0, color: "var(--success)" }}>Approved and executed</h3>
+            <button onClick={() => setApproved(list => list.filter(x => x.run_id !== a.run_id))}>Dismiss</button>
+          </div>
+          <p style={{ margin: "12px 0 4px 0" }}><strong>Question:</strong> {a.question}</p>
+          <pre style={{ background: "rgba(0,0,0,0.3)", padding: 12, borderRadius: 8, overflowX: "auto", border: "1px solid var(--border)", color: "#60a5fa" }}>{a.sql}</pre>
+          <ResultsTable results={a.results} />
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 0 }}>
+            Salary figures are shown to you because you approved this query. The person who asked still sees them as [CONFIDENTIAL]; emails, SSNs and card numbers stay masked for everyone.
+          </p>
+        </div>
+      ))}
 
       {queue.length === 0 ? (
         <div className="glass-panel" style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
@@ -192,6 +243,11 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
               <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Query Intent</h3>
               <div style={{ background: "rgba(255,255,255,0.05)", padding: 16, borderRadius: 8, border: "1px solid var(--border)" }}>
                 <strong>User Question:</strong> {item.state.user_query}
+                {item.state.user_id && (
+                  <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
+                    Submitted by <code>{item.state.user_id}</code>{item.state.user_id === currentUserId ? " (you)" : ""}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -203,6 +259,9 @@ export default function AdminDashboard({ onDecisionComplete }: AdminDashboardPro
               onEdit={(edited, saveAsTemplate) => handleDecision(item.run_id, "edit", edited, saveAsTemplate)}
               onReject={() => handleDecision(item.run_id, "reject")}
               loading={processingId === item.run_id}
+              blockedReason={item.state.user_id && item.state.user_id === currentUserId
+                ? "You submitted this request, so another administrator must approve it (you can still reject it). Sign in as a different reviewer, or ask the question as the employee."
+                : undefined}
             />
           </div>
         ))

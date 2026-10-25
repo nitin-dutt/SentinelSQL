@@ -3,6 +3,7 @@ Tests for the benchmark harness (benchmarks/lib). A benchmark result is only as 
 statistics, comparison logic and caching underneath it.
 """
 
+import os
 import json
 import time
 from collections import Counter
@@ -100,6 +101,8 @@ def test_gold_order_by_detection():
 
 # ---------------------------------------------------------------- Spider tooling
 
+@pytest.mark.skipif(not os.path.exists(__import__("benchmarks.lib.spider", fromlist=["x"]).DEV_JSON),
+                    reason="Spider dev set not downloaded (benchmarks/data/spider is git-ignored)")
 def test_hardness_port_reproduces_the_official_dev_distribution():
     counts = Counter(eval_hardness(ex["sql"]) for ex in load_dev())
     assert dict(counts) == {"easy": 248, "medium": 446, "hard": 174, "extra": 166}
@@ -239,8 +242,7 @@ def test_embedding_vectors_are_cached_batched_and_daily_quota_is_fatal(tmp_path,
     with bench_llm.embedding_harness(path, texts_per_minute=10_000) as usage:
         first = client.embed_documents(["aa", "bbb", "aa"])
         assert first[0] == first[2] and first[1][0] == 3.0
-        client.embed_query("aa")
-        assert usage.cache_hits == 1 and usage.live_texts == 3
+        assert usage.live_texts == 3
     with bench_llm.embedding_harness(path, texts_per_minute=10_000) as usage:   # restart: nothing live
         assert client.embed_documents(["aa", "bbb"])[1][0] == 3.0
         assert usage.live_texts == 0 and usage.cache_hits == 2
@@ -252,6 +254,31 @@ def test_embedding_vectors_are_cached_batched_and_daily_quota_is_fatal(tmp_path,
     with bench_llm.embedding_harness(str(tmp_path / "e2.jsonl"), texts_per_minute=10_000):
         with pytest.raises(bench_llm.DailyQuotaExceeded):
             client.embed_documents(["new text"])
+
+
+def test_query_embeddings_use_the_query_api_and_a_separate_cache(tmp_path, monkeypatch):
+    """Regression: the harness used to serve embed_query from the *document* API, so benchmarks measured a different system."""
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings as Client
+    asked = {"docs": [], "queries": []}
+
+    def fake_docs(self, texts, *a, **k):
+        asked["docs"].append(list(texts))
+        return [[1.0, 0.0, 0.0] for _ in texts]
+
+    def fake_query(self, text, *a, **k):
+        asked["queries"].append(text)
+        return [0.0, 1.0, 0.0]
+
+    monkeypatch.setattr(Client, "embed_documents", fake_docs)
+    monkeypatch.setattr(Client, "embed_query", fake_query)
+    client = Client.model_construct(model="models/x", output_dimensionality=3)
+    with bench_llm.embedding_harness(str(tmp_path / "q.jsonl"), texts_per_minute=10_000):
+        doc = client.embed_documents(["aa"])[0]
+        query = client.embed_query("aa")
+        assert doc != query                          # different task types give different vectors, even for the same text
+        assert asked["queries"] == ["aa"]            # the provider's query endpoint was really used
+        assert client.embed_query("aa") == query     # and it is cached under its own key
+        assert asked["queries"] == ["aa"]
 
 
 def test_embedding_harness_forces_strict_mode_and_restores_it(tmp_path):

@@ -4,6 +4,13 @@ import tempfile
 # These must be set before `app` is imported anywhere: they redirect the audit log and the HITL
 # run store to throwaway files (tests used to write into the real audit.db) and define the test tokens.
 _TEST_TMP_DIR = tempfile.mkdtemp(prefix="sentinel-tests-")
+# The demo database too: tests used to read whatever sentinel.db sat in the repo root (which is not tracked in git, so a clean
+# checkout, and therefore CI, had none). Each session now builds its own seeded copy in the temp folder and never touches the real one.
+os.environ["ACTIVE_DB"] = "sqlite"
+os.environ["DATABASE_URL_SQLITE"] = "sqlite:///" + os.path.join(_TEST_TMP_DIR, "demo.db").replace(os.sep, "/")
+os.environ["DATABASE_URL"] = ""
+os.environ["READONLY_DATABASE_URL"] = ""
+os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["AUDIT_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "audit.db")
 os.environ["HITL_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "hitl_runs.db")
 os.environ["AUTH_TOKENS"] = ",".join([
@@ -25,7 +32,11 @@ from unittest.mock import patch  # noqa: E402
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_env():
     os.environ["ACTIVE_DB"] = "sqlite"
+    from app.db.database import init_db, reset_engines
+    reset_engines()
+    init_db()                       # creates and seeds the 21-table demo database in the temp folder
     yield
+    reset_engines()
 
 
 @pytest.fixture

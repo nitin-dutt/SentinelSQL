@@ -43,6 +43,8 @@ except ImportError:  # pragma: no cover
 import sqlglot
 from sqlglot import exp
 
+from app.db.urls import sql_dialect
+
 from app.cache.constraints import extract_constraints
 from app.rag.vector_store import EmbeddingEngine, cosine_similarity, get_embedding_engine
 from app.utils.logger import get_logger
@@ -60,7 +62,7 @@ def default_cache_version() -> str:
 def _string_literals(sql: str) -> List[str]:
     """Lower-cased string literals in the SQL (LIMIT/OFFSET excluded): the values a question must support."""
     try:
-        tree = sqlglot.parse_one(sql)
+        tree = sqlglot.parse_one(sql, read=sql_dialect())
     except Exception:
         return []
     values = []

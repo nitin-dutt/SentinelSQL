@@ -217,7 +217,10 @@ def mcp_check_status(run_id: str, requester_id: Optional[str] = None, requester_
 # ----------------------------------------------------
 
 try:
-    from mcp.server.fastmcp import FastMCP
+    try:
+        from mcp.server.fastmcp import FastMCP            # mcp 1.x
+    except ImportError:
+        from mcp.server.mcpserver import MCPServer as FastMCP   # mcp 2.x renamed it; the decorator and run() are the same
     mcp_app = FastMCP("SentinelSQL Governance Proxy")
 
     @mcp_app.tool()

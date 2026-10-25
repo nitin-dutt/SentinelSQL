@@ -143,3 +143,26 @@ option {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.3);
 }
+
+.token-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.token-input::placeholder {
+  color: var(--text-muted);
+}
+
+.token-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}

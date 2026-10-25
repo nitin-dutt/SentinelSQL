@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" font-family="Outfit, 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1b3d"/>
+      <stop offset="0.45" stop-color="#0a0f1a"/>
+      <stop offset="1" stop-color="#0a0f1a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#f59e0b"/>
+    </marker>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+
+  <text x="640" y="62" text-anchor="middle" font-size="36" font-weight="700" fill="#f1f5f9">Sentinel<tspan fill="#3b82f6">SQL</tspan>: every question passes the gateway</text>
+  <text x="640" y="96" text-anchor="middle" font-size="19" fill="#94a3b8">The model writes SQL. Deterministic code decides whether it may run.</text>
+
+  <!-- the two doors -->
+  <rect x="40" y="150" width="190" height="86" rx="14" fill="#141a28" stroke="#3b82f6" stroke-width="2"/>
+  <text x="135" y="188" text-anchor="middle" font-size="22" font-weight="700" fill="#f1f5f9">Web user</text>
+  <text x="135" y="215" text-anchor="middle" font-size="16" fill="#94a3b8">plain-English question</text>
+
+  <rect x="40" y="300" width="190" height="86" rx="14" fill="#141a28" stroke="#3b82f6" stroke-width="2"/>
+  <text x="135" y="338" text-anchor="middle" font-size="22" font-weight="700" fill="#f1f5f9">AI agent</text>
+  <text x="135" y="365" text-anchor="middle" font-size="16" fill="#94a3b8">raw SQL over MCP</text>
+
+  <!-- gateway frame -->
+  <rect x="290" y="130" width="950" height="400" rx="20" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="312" y="160" font-size="16" font-weight="700" fill="#64748b" letter-spacing="2">GATEWAY</text>
+
+  <!-- step 1: auth + cache -->
+  <rect x="320" y="185" width="190" height="96" rx="14" fill="#141a28" stroke="#475569" stroke-width="2"/>
+  <text x="415" y="222" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">1. Token + role</text>
+  <text x="415" y="250" text-anchor="middle" font-size="15" fill="#94a3b8">who is asking?</text>
+
+  <rect x="320" y="305" width="190" height="96" rx="14" fill="#141a28" stroke="#475569" stroke-width="2"/>
+  <text x="415" y="342" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">2. Semantic cache</text>
+  <text x="415" y="370" text-anchor="middle" font-size="15" fill="#94a3b8">asked before? answer now</text>
+
+  <!-- step 3: LangGraph -->
+  <rect x="560" y="185" width="260" height="216" rx="14" fill="#141a28" stroke="#3b82f6" stroke-width="2"/>
+  <text x="690" y="218" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">3. LangGraph pipeline</text>
+  <text x="690" y="252" text-anchor="middle" font-size="16" fill="#cbd5e1">understand the question</text>
+  <text x="690" y="282" text-anchor="middle" font-size="16" fill="#cbd5e1">find the right tables (RAG)</text>
+  <text x="690" y="312" text-anchor="middle" font-size="16" fill="#cbd5e1">apply company glossary</text>
+  <text x="690" y="342" text-anchor="middle" font-size="16" fill="#cbd5e1">LLM writes the SQL</text>
+  <text x="690" y="378" text-anchor="middle" font-size="14" fill="#64748b">Gemini (or local Ollama)</text>
+
+  <!-- step 4: policy -->
+  <rect x="870" y="185" width="340" height="96" rx="14" fill="#1c1a12" stroke="#f59e0b" stroke-width="2.5"/>
+  <text x="1040" y="222" text-anchor="middle" font-size="20" font-weight="700" fill="#fbbf24">4. AST policy engine</text>
+  <text x="1040" y="250" text-anchor="middle" font-size="15" fill="#cbd5e1">SELECT only, no wildcards, joins capped</text>
+  <text x="1040" y="270" text-anchor="middle" font-size="15" fill="#cbd5e1">no tautologies, LIMIT enforced</text>
+
+  <!-- human review -->
+  <rect x="870" y="305" width="340" height="96" rx="14" fill="#141a28" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="1040" y="342" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">Sensitive table only: human review</text>
+  <text x="1040" y="370" text-anchor="middle" font-size="15" fill="#94a3b8">a second admin approves (not the asker)</text>
+
+  <!-- step 5/6 bottom row -->
+  <rect x="560" y="435" width="260" height="76" rx="14" fill="#141a28" stroke="#475569" stroke-width="2"/>
+  <text x="690" y="468" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">5. Read-only database</text>
+  <text x="690" y="494" text-anchor="middle" font-size="15" fill="#94a3b8">SQLite, PostgreSQL or MySQL</text>
+
+  <rect x="320" y="435" width="190" height="76" rx="14" fill="#141a28" stroke="#10b981" stroke-width="2"/>
+  <text x="415" y="468" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">6. PII masking</text>
+  <text x="415" y="494" text-anchor="middle" font-size="15" fill="#94a3b8">emails, SSNs, salaries</text>
+
+  <!-- answer -->
+  <rect x="40" y="440" width="190" height="66" rx="14" fill="#0f2a22" stroke="#10b981" stroke-width="2"/>
+  <text x="135" y="480" text-anchor="middle" font-size="22" font-weight="700" fill="#34d399">Safe answer</text>
+
+  <!-- audit -->
+  <rect x="290" y="565" width="950" height="82" rx="16" fill="#141a28" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="765" y="603" text-anchor="middle" font-size="22" font-weight="700" fill="#c4b5fd">Hash-chained audit log</text>
+  <text x="765" y="631" text-anchor="middle" font-size="16" fill="#94a3b8">every decision recorded; editing a past row breaks the chain and verification fails</text>
+
+  <!-- arrows -->
+  <path d="M230 193 L318 233" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M230 343 C265 343 270 300 318 262" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M415 281 L415 303" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M510 353 L558 320" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M820 262 L868 240" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1040 281 L1040 303" stroke="#f59e0b" stroke-width="2.5" fill="none" marker-end="url(#arrowAmber)"/>
+  <path d="M870 262 C 842 300 842 420 822 452" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M870 380 C 850 410 840 450 822 470" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M560 473 L512 473" stroke="#94a3b8" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M320 473 L232 473" stroke="#10b981" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+  <text x="880" y="432" font-size="14" fill="#94a3b8">approved</text>
+
+  <!-- legend -->
+  <text x="40" y="690" font-size="15" fill="#64748b">Safe queries go straight to the database; queries on sensitive tables wait for a second admin. Cache hits skip steps 3 to 5. Blocked queries stop at step 4. All are audited.</text>
+</svg>

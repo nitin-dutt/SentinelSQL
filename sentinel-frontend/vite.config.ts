@@ -14,6 +14,8 @@ export default defineConfig(({ mode }) => {
         "/hitl": backend,
         "/admin": backend,
         "/auth": backend,
+        "/schema": backend,
+        "/demo": backend,
         "/dictionary": backend,
       },
     },

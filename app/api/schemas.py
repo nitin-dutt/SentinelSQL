@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List, Dict, Any
 
 
@@ -6,6 +6,14 @@ from typing import Optional, List, Dict, Any
 
 class QueryRequest(BaseModel):
     query: str
+
+    @field_validator("query")
+    @classmethod
+    def _not_blank(cls, value: str) -> str:
+        # A blank question would still be sent to the model, which then invents a query: refuse it up front.
+        if not value.strip():
+            raise ValueError("The question must not be empty")
+        return value
 
 
 class QueryResponse(BaseModel):

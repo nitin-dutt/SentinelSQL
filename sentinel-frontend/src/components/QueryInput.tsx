@@ -3,10 +3,13 @@ import { useState, useCallback, useRef, useLayoutEffect, type KeyboardEvent, typ
 interface QueryInputProps {
   onSubmit: (query: string) => void;
   loading: boolean;
+  /** When set (public demo), shows a live counter and refuses to send longer questions. */
+  maxChars?: number;
 }
 
-const QueryInput: FC<QueryInputProps> = ({ onSubmit, loading }) => {
+const QueryInput: FC<QueryInputProps> = ({ onSubmit, loading, maxChars }) => {
   const [query, setQuery] = useState('');
+  const tooLong = maxChars !== undefined && query.length > maxChars;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
@@ -20,19 +23,19 @@ const QueryInput: FC<QueryInputProps> = ({ onSubmit, loading }) => {
   const handleKeyDown = useCallback((event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      if (query.trim() && !loading) {
+      if (query.trim() && !loading && !tooLong) {
         onSubmit(query);
         setQuery('');
       }
     }
-  }, [query, loading, onSubmit]);
+  }, [query, loading, onSubmit, tooLong]);
 
   const handleSubmit = useCallback(() => {
-    if (query.trim() && !loading) {
+    if (query.trim() && !loading && !tooLong) {
       onSubmit(query);
       setQuery('');
     }
-  }, [query, loading, onSubmit]);
+  }, [query, loading, onSubmit, tooLong]);
 
   const styles = {
     container: {
@@ -94,7 +97,8 @@ const QueryInput: FC<QueryInputProps> = ({ onSubmit, loading }) => {
   };
 
   return (
-    <div style={styles.container}>
+    <>
+    <div style={{ ...styles.container, ...(tooLong ? { borderColor: '#f87171' } : {}) }}>
       <textarea
         ref={textareaRef}
         value={query}
@@ -105,10 +109,16 @@ const QueryInput: FC<QueryInputProps> = ({ onSubmit, loading }) => {
         style={styles.textarea}
         rows={1}
       />
-      <button onClick={handleSubmit} disabled={loading || !query.trim()} style={{ ...styles.button, ...((loading || !query.trim()) ? styles.buttonDisabled : {}) }} aria-label="Run query">
+      <button onClick={handleSubmit} disabled={loading || !query.trim() || tooLong} style={{ ...styles.button, ...((loading || !query.trim() || tooLong) ? styles.buttonDisabled : {}) }} aria-label="Run query">
         {loading ? <div style={styles.spinner}></div> : <span style={{ fontSize: '18px', lineHeight: 1 }}>➤</span>}
       </button>
     </div>
+    {maxChars !== undefined && (
+      <div style={{ textAlign: 'right', fontSize: '12px', marginTop: '6px', paddingRight: '8px', color: tooLong ? '#f87171' : 'var(--text-muted)' }}>
+        {tooLong ? `Too long: shorten the question by ${query.length - maxChars} characters. ` : ''}{query.length} / {maxChars}
+      </div>
+    )}
+    </>
   );
 };
 

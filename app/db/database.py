@@ -7,15 +7,19 @@ use, nothing is printed, and a connection problem raises instead of killing the 
 and resolve lazily.
 """
 
+import datetime
 import os
 import re
 import threading
 import time
+import uuid
+from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, event, text
 
+from app.db.urls import _dialect_for_url, normalize_database_url, resolve_urls, sql_dialect  # noqa: F401  (re-exported)
 from app.utils.logger import get_logger
 from app.utils.masking import apply_data_masking
 
@@ -32,25 +36,8 @@ def _truthy(value: Optional[str]) -> bool:
     return (value or "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def resolve_urls() -> Tuple[str, str, str]:
-    """Returns (active_db, primary_url, readonly_url) from the current environment."""
-    active_db = os.getenv("ACTIVE_DB", "").strip().lower()
-    if active_db in ("postgres", "postgresql"):
-        url = os.getenv("DATABASE_URL_POSTGRES") or os.getenv("DATABASE_URL") or "postgresql+psycopg2://user:password@localhost:5432/database_name"
-    elif active_db == "mysql":
-        url = os.getenv("DATABASE_URL_MYSQL") or os.getenv("DATABASE_URL") or "mysql+mysqlconnector://user:password@localhost:3307/database_name"
-    elif active_db == "sqlite":
-        url = os.getenv("DATABASE_URL_SQLITE") or os.getenv("DATABASE_URL", "sqlite:///sentinel.db")
-    else:
-        url = os.getenv("DATABASE_URL") or os.getenv("DATABASE_URL_SQLITE", "sqlite:///sentinel.db")
-
-    readonly = os.getenv("READONLY_DATABASE_URL")
-    if not readonly:
-        if url.startswith("sqlite"):
-            readonly = f"sqlite:///file:{url.replace('sqlite:///', '')}?mode=ro&uri=true"
-        else:
-            readonly = url
-    return active_db, url, readonly
+def _dialect_label_for(url: str) -> str:
+    return _dialect_for_url(url)[1]
 
 
 def _safe(url: str) -> str:
@@ -105,8 +92,11 @@ def internal_sqlite_path(env_override: str) -> str:
 
 def _build_engines() -> None:
     active_db, url, readonly_url = resolve_urls()
-    logger.info("Database mode: %s | primary: %s | read-only: %s", active_db or "default (sqlite)", _safe(url), _safe(readonly_url))
+    logger.info("Database: %s | primary: %s | read-only: %s", _dialect_label_for(url), _safe(url), _safe(readonly_url))
 
+    explicit = os.getenv("DATABASE_URL")
+    if active_db and explicit and normalize_database_url(explicit) != url:
+        logger.warning("ACTIVE_DB=%s selects its own URL and overrides DATABASE_URL; remove ACTIVE_DB to use DATABASE_URL alone.", active_db)
     primary = create_engine(url)
     if not url.startswith("sqlite") and _truthy(os.getenv("DB_FALLBACK_TO_SQLITE")):
         # Opt-in only: silently switching a configured Postgres/MySQL deployment to the demo
@@ -185,7 +175,7 @@ def get_data_version() -> str:
     A cheap token that changes when the database content changes, used to invalidate cached answers
     (alignment_plan CAC-03). For a SQLite file it is the modification time of the file (and its WAL);
     results are re-checked at most once per DATA_VERSION_CHECK_SECONDS (default 1). For PostgreSQL/MySQL
-    there is no cheap equivalent, so it returns "untracked" and the cache TTL is the only bound.
+    the server's statistics are used (see `_server_data_version`), falling back to "untracked".
     """
     global _data_version_memo
     checked_at, value = _data_version_memo
@@ -202,9 +192,35 @@ def get_data_version() -> str:
                 parts.append("0")
         value = "sqlite:" + ":".join(parts)
     else:
-        value = "untracked"
+        value = _server_data_version()
     _data_version_memo = (time.monotonic(), value)
     return value
+
+
+def _server_data_version() -> str:
+    """
+    A change token for PostgreSQL / MySQL built from the server's own statistics (rows inserted + updated + deleted,
+    or the newest table update time). It is approximate (the statistics lag slightly), so the cache TTL remains the
+    outer bound; if the statistics cannot be read the token is "untracked".
+    """
+    try:
+        dialect = get_readonly_engine().dialect.name
+        with get_readonly_engine().connect() as connection:
+            if dialect == "postgresql":
+                n = connection.execute(text("SELECT COALESCE(SUM(n_tup_ins + n_tup_upd + n_tup_del), 0) FROM pg_stat_user_tables")).scalar()
+                return f"postgresql:{n}"
+            if dialect == "mysql":
+                try:
+                    connection.execute(text("SET SESSION information_schema_stats_expiry = 0"))   # MySQL 8 caches these statistics for a day by default
+                except Exception:
+                    pass
+                row = connection.execute(text(
+                    "SELECT COALESCE(MAX(UPDATE_TIME), '0'), COALESCE(SUM(TABLE_ROWS), 0) "
+                    "FROM information_schema.tables WHERE table_schema = DATABASE()")).fetchone()
+                return f"mysql:{row[0]}:{row[1]}"
+    except Exception as e:
+        logger.debug("Data version unavailable (%s); cache relies on its TTL", e)
+    return "untracked"
 
 
 # --------------------------------------------------------------------------- initialisation / seeding
@@ -360,7 +376,34 @@ def _arm_statement_timeout(connection, seconds: float):
     return lambda: None
 
 
-def execute_readonly_query(sql_query: str) -> Dict:
+def _json_safe(value):
+    """
+    Values from PostgreSQL/MySQL drivers (Decimal, datetime, UUID, bytes, arrays) are not JSON serialisable, and the
+    cache, the review queue and the API all serialise results. Convert them once, here, so every engine returns the
+    same plain types. Binary values are replaced by a size marker rather than exposed.
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, Decimal):
+        if not value.is_finite():
+            return str(value)
+        return int(value) if value == value.to_integral_value() else float(value)
+    if isinstance(value, (datetime.datetime, datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, datetime.timedelta):
+        return str(value)
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return f"<binary {len(bytes(value))} bytes>"
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, (list, tuple, set)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    return str(value)
+
+
+def execute_readonly_query(sql_query: str, reveal_financial: bool = False) -> Dict:
     """
     Executes a given SQL query and returns the results.
     A last-resort regex check allows only statements that start with SELECT or WITH (CTE);
@@ -368,6 +411,8 @@ def execute_readonly_query(sql_query: str) -> Dict:
 
     Resource limits: the statement is cancelled after QUERY_TIMEOUT seconds, and at most
     MAX_RESULT_ROWS rows are fetched (`truncated: true` is set when more were available).
+
+    `reveal_financial` keeps salary-class values readable; only the human-approval path sets it (see apply_data_masking).
     """
     if not re.match(r"^\s*(select|with)\b", sql_query, re.IGNORECASE):
         raise ValueError("Only SELECT queries are allowed for this endpoint.")
@@ -389,9 +434,9 @@ def execute_readonly_query(sql_query: str) -> Dict:
     truncated = len(rows) > max_rows
     raw_results = {
         "columns": columns,
-        "rows": [dict(row._mapping) for row in rows[:max_rows]],
+        "rows": [{k: _json_safe(v) for k, v in row._mapping.items()} for row in rows[:max_rows]],
     }
-    masked = apply_data_masking(raw_results, sql=sql_query)
+    masked = apply_data_masking(raw_results, sql=sql_query, reveal_financial=reveal_financial)
     if truncated:
         masked["truncated"] = True
     return masked

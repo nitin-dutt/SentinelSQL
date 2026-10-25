@@ -267,9 +267,14 @@ def embedding_harness(cache_path: str, texts_per_minute: float = 80.0, use_cache
     def model_id(client) -> str:
         return f"{getattr(client, 'model', '')}@{getattr(client, 'output_dimensionality', None)}"
 
-    def fetch(client, texts):
-        """Returns vectors for `texts`, calling the provider only for texts missing from the cache."""
-        mid = model_id(client)
+    def fetch(client, texts, query=False):
+        """Returns vectors for `texts`, calling the provider only for texts missing from the cache.
+
+        Gemini embeds *documents* and *queries* differently (task type), and the product does the same: tables are indexed with
+        `embed_documents`, questions are embedded with `embed_query`. The harness must keep them apart, both in the call it makes
+        and in the cache key, or a benchmark measures a different system from the one that ships.
+        """
+        mid = model_id(client) + ("|query" if query else "")
         out = [None] * len(texts)
         missing = []
         for i, t in enumerate(texts):
@@ -285,7 +290,10 @@ def embedding_harness(cache_path: str, texts_per_minute: float = 80.0, use_cache
                 limiter.acquire()
             for attempt in range(MAX_HARNESS_RETRIES + 1):
                 try:
-                    vectors = orig_docs(client, [texts[i] for i in chunk])
+                    if query:
+                        vectors = [orig_query(client, texts[i]) for i in chunk]
+                    else:
+                        vectors = orig_docs(client, [texts[i] for i in chunk])
                     break
                 except Exception as e:
                     msg = str(e)
@@ -304,7 +312,7 @@ def embedding_harness(cache_path: str, texts_per_minute: float = 80.0, use_cache
         return out
 
     Client.embed_documents = lambda self, texts, *a, **k: fetch(self, list(texts))
-    Client.embed_query = lambda self, text, *a, **k: fetch(self, [text])[0]
+    Client.embed_query = lambda self, text, *a, **k: fetch(self, [text], query=True)[0]
     try:
         yield usage
     finally:

@@ -1,9 +1,9 @@
 {
   "meta": {
-    "timestamp_utc": "2026-10-11T11:06:17Z",
-    "git_head": "f0ff979",
+    "timestamp_utc": "2026-10-14T16:10:13Z",
+    "git_head": "8cbd53e",
     "git_working_tree_dirty": true,
-    "git_changed_files": 51,
+    "git_changed_files": 17,
     "python": "3.11.7",
     "platform": "Windows 10 AMD64",
     "logical_cpus": 32,
@@ -41,21 +41,21 @@
       "n_databases": 20,
       "n_tables": 81,
       "n_questions": 200,
-      "newly_embedded_tables": 81,
+      "newly_embedded_tables": 0,
       "product_default_top3_plus_fk_closure": {
         "all_gold_tables_retrieved": {
-          "k": 199,
+          "k": 200,
           "n": 200,
-          "rate": 99.5,
-          "lo": 97.22,
-          "hi": 99.91
+          "rate": 100.0,
+          "lo": 98.12,
+          "hi": 100.0
         },
         "single_table_questions": {
-          "k": 94,
+          "k": 95,
           "n": 95,
-          "rate": 98.95,
-          "lo": 94.28,
-          "hi": 99.81
+          "rate": 100.0,
+          "lo": 96.11,
+          "hi": 100.0
         },
         "multi_table_questions": {
           "k": 105,
@@ -66,11 +66,11 @@
         },
         "by_hardness": {
           "easy": {
-            "k": 49,
+            "k": 50,
             "n": 50,
-            "rate": 98.0,
-            "lo": 89.5,
-            "hi": 99.65
+            "rate": 100.0,
+            "lo": 92.86,
+            "hi": 100.0
           },
           "extra": {
             "k": 50,
@@ -94,8 +94,8 @@
             "hi": 100.0
           }
         },
-        "mean_tables_in_prompt": 4.84,
-        "fraction_of_pool_in_prompt_pct": 5.98,
+        "mean_tables_in_prompt": 4.82,
+        "fraction_of_pool_in_prompt_pct": 5.95,
         "retrieval_modes": {
           "vector": 200
         }
@@ -103,76 +103,76 @@
       "tokens": {
         "tokenizer": "gemini-api",
         "full_schema_tokens": 3930,
-        "retrieved_prompt_tokens_mean": 192.4,
+        "retrieved_prompt_tokens_mean": 198.1,
         "sample_size": 30,
-        "reduction_pct": 95.1
+        "reduction_pct": 94.96
       },
       "sweep_embedding_closure": {
         "1": {
           "all_gold_tables_retrieved": {
-            "k": 169,
+            "k": 170,
             "n": 200,
-            "rate": 84.5,
-            "lo": 78.84,
-            "hi": 88.86
+            "rate": 85.0,
+            "lo": 79.39,
+            "hi": 89.29
           },
-          "mean_table_recall": 90.92,
+          "mean_table_recall": 91.42,
           "mean_tables_in_prompt": 2.38
         },
         "2": {
           "all_gold_tables_retrieved": {
-            "k": 195,
+            "k": 196,
             "n": 200,
-            "rate": 97.5,
-            "lo": 94.28,
-            "hi": 98.93
+            "rate": 98.0,
+            "lo": 94.97,
+            "hi": 99.22
           },
-          "mean_table_recall": 97.88,
-          "mean_tables_in_prompt": 3.56
+          "mean_table_recall": 98.38,
+          "mean_tables_in_prompt": 3.69
         },
         "3": {
           "all_gold_tables_retrieved": {
-            "k": 199,
+            "k": 200,
             "n": 200,
-            "rate": 99.5,
-            "lo": 97.22,
-            "hi": 99.91
+            "rate": 100.0,
+            "lo": 98.12,
+            "hi": 100.0
           },
-          "mean_table_recall": 99.5,
-          "mean_tables_in_prompt": 4.84
+          "mean_table_recall": 100.0,
+          "mean_tables_in_prompt": 4.82
         },
         "4": {
           "all_gold_tables_retrieved": {
-            "k": 199,
+            "k": 200,
             "n": 200,
-            "rate": 99.5,
-            "lo": 97.22,
-            "hi": 99.91
+            "rate": 100.0,
+            "lo": 98.12,
+            "hi": 100.0
           },
-          "mean_table_recall": 99.5,
-          "mean_tables_in_prompt": 6.37
+          "mean_table_recall": 100.0,
+          "mean_tables_in_prompt": 6.41
         },
         "5": {
           "all_gold_tables_retrieved": {
-            "k": 199,
+            "k": 200,
             "n": 200,
-            "rate": 99.5,
-            "lo": 97.22,
-            "hi": 99.91
+            "rate": 100.0,
+            "lo": 98.12,
+            "hi": 100.0
           },
-          "mean_table_recall": 99.5,
-          "mean_tables_in_prompt": 7.93
+          "mean_table_recall": 100.0,
+          "mean_tables_in_prompt": 8.07
         },
         "6": {
           "all_gold_tables_retrieved": {
-            "k": 199,
+            "k": 200,
             "n": 200,
-            "rate": 99.5,
-            "lo": 97.22,
-            "hi": 99.91
+            "rate": 100.0,
+            "lo": 98.12,
+            "hi": 100.0
           },
-          "mean_table_recall": 99.5,
-          "mean_tables_in_prompt": 9.67
+          "mean_table_recall": 100.0,
+          "mean_tables_in_prompt": 9.76
         },
         "8": {
           "all_gold_tables_retrieved": {
@@ -183,41 +183,41 @@
             "hi": 100.0
           },
           "mean_table_recall": 100.0,
-          "mean_tables_in_prompt": 13.03
+          "mean_tables_in_prompt": 12.99
         }
       },
       "sweep_embedding_no_closure": {
         "1": {
           "all_gold_tables_retrieved": {
-            "k": 82,
+            "k": 84,
             "n": 200,
-            "rate": 41.0,
-            "lo": 34.42,
-            "hi": 47.92
+            "rate": 42.0,
+            "lo": 35.37,
+            "hi": 48.93
           },
-          "mean_table_recall": 64.37,
+          "mean_table_recall": 65.12,
           "mean_tables_in_prompt": 1.0
         },
         "2": {
           "all_gold_tables_retrieved": {
-            "k": 149,
+            "k": 153,
             "n": 200,
-            "rate": 74.5,
-            "lo": 68.04,
-            "hi": 80.04
+            "rate": 76.5,
+            "lo": 70.16,
+            "hi": 81.84
           },
-          "mean_table_recall": 87.5,
+          "mean_table_recall": 89.0,
           "mean_tables_in_prompt": 2.0
         },
         "3": {
           "all_gold_tables_retrieved": {
-            "k": 182,
+            "k": 183,
             "n": 200,
-            "rate": 91.0,
-            "lo": 86.22,
-            "hi": 94.23
+            "rate": 91.5,
+            "lo": 86.81,
+            "hi": 94.63
           },
-          "mean_table_recall": 95.62,
+          "mean_table_recall": 96.54,
           "mean_tables_in_prompt": 3.0
         },
         "4": {
@@ -228,27 +228,27 @@
             "lo": 92.31,
             "hi": 97.96
           },
-          "mean_table_recall": 97.92,
+          "mean_table_recall": 98.17,
           "mean_tables_in_prompt": 4.0
         },
         "5": {
+          "all_gold_tables_retrieved": {
+            "k": 196,
+            "n": 200,
+            "rate": 98.0,
+            "lo": 94.97,
+            "hi": 99.22
+          },
+          "mean_table_recall": 99.0,
+          "mean_tables_in_prompt": 5.0
+        },
+        "6": {
           "all_gold_tables_retrieved": {
             "k": 197,
             "n": 200,
             "rate": 98.5,
             "lo": 95.68,
             "hi": 99.49
-          },
-          "mean_table_recall": 99.08,
-          "mean_tables_in_prompt": 5.0
-        },
-        "6": {
-          "all_gold_tables_retrieved": {
-            "k": 198,
-            "n": 200,
-            "rate": 99.0,
-            "lo": 96.43,
-            "hi": 99.73
           },
           "mean_table_recall": 99.25,
           "mean_tables_in_prompt": 6.0
@@ -425,31 +425,15 @@
       },
       "vector_search_latency": {
         "n": 200,
-        "mean_ms": 5.736,
-        "p50_ms": 5.734,
-        "p90_ms": 5.832,
-        "p95_ms": 5.914,
-        "p99_ms": 6.304,
-        "min_ms": 5.468,
-        "max_ms": 7.576
+        "mean_ms": 7.27,
+        "p50_ms": 6.985,
+        "p90_ms": 8.313,
+        "p95_ms": 8.427,
+        "p99_ms": 9.299,
+        "min_ms": 6.797,
+        "max_ms": 9.435
       },
-      "failures_sample": [
-        {
-          "question": "How many different loser names are there?",
-          "gold": [
-            "wta_1__matches"
-          ],
-          "retrieved": [
-            "network_1__friend",
-            "network_1__highschooler",
-            "network_1__likes",
-            "poker_player__people",
-            "poker_player__poker_player",
-            "voter_1__contestants",
-            "voter_1__votes"
-          ]
-        }
-      ],
+      "failures_sample": [],
       "embedding_backend": "gemini:models/gemini-embedding-001@768"
     }
   }

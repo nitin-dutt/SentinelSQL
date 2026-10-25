@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { submitQuery, fetchSession, setToken, AuthError } from "./api/sentinel";
+import { submitQuery, fetchSession, fetchRunStatus, setToken, AuthError } from "./api/sentinel";
 import type { Session } from "./api/sentinel";
 import Login from "./components/Login";
 import QueryInput from "./components/QueryInput";
@@ -8,6 +8,7 @@ import ErrorBanner from "./components/ErrorBanner";
 import LoadingIndicator from "./components/LoadingIndicator";
 import AdminDashboard from "./components/AdminDashboard";
 import AuditLogViewer from "./components/AuditLogViewer";
+import SchemaPanel from "./components/SchemaPanel";
 
 type AppStatus = "idle" | "loading" | "rejected" | "error" | "requires_human" | "completed";
 
@@ -19,6 +20,11 @@ export default function App() {
   const [response, setResponse] = useState<any>(null);
   const [submittedQuery, setSubmittedQuery] = useState<string>("");
   
+  const [examples, setExamples] = useState<string[]>([]);
+  const [maxChars, setMaxChars] = useState<number | undefined>(undefined);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshNote, setRefreshNote] = useState<string | null>(null);
+
   const isLoading = status === "loading";
   const isAdmin = session?.role === "admin";
 
@@ -30,6 +36,18 @@ export default function App() {
       .finally(() => setSessionChecked(true));
   }, []);
 
+  // On a public demo the server offers example questions; elsewhere /demo/info says {demo:false} and no chips are shown.
+  useEffect(() => {
+    if (!session) return;
+    fetch("/demo/info")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((info) => {
+        setExamples(info?.demo ? info.examples ?? [] : []);
+        setMaxChars(info?.demo ? info.max_question_chars : undefined);
+      })
+      .catch(() => setExamples([]));
+  }, [session]);
+
   function handleLogout() {
     setToken(null);
     setSession(null);
@@ -38,7 +56,34 @@ export default function App() {
     setActiveTab("query");
   }
 
+  // The employee asks again whether a reviewer has decided; a finished request replaces the "held for review" card with its answer.
+  async function handleRefreshStatus(runId: string) {
+    setRefreshing(true);
+    setRefreshNote(null);
+    try {
+      const run = await fetchRunStatus(runId);
+      if (run.status === "completed") {
+        setResponse({ status: "completed", sql: run.sql, results: run.results, run_id: runId, confidence_score: 100 });
+        setStatus("completed");
+      } else if (run.status === "rejected" || run.status === "failed") {
+        setResponse({ status: "rejected", reason: run.reason || "The reviewer rejected this request.", confidence_score: 0 });
+        setStatus("rejected");
+      } else {
+        setRefreshNote("Still waiting: no reviewer has decided yet.");
+      }
+    } catch (e) {
+      if (e instanceof AuthError) {
+        handleLogout();
+        return;
+      }
+      setRefreshNote(e instanceof Error ? e.message : "Could not check the request status");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   async function handleSubmit(query: string) {
+    setRefreshNote(null);
     setSubmittedQuery(query);
     setStatus("loading");
     setResponse(null);
@@ -92,7 +137,8 @@ export default function App() {
         {activeTab === "audit" && isAdmin ? (
           <AuditLogViewer />
         ) : activeTab === "admin" && isAdmin ? (
-          <AdminDashboard 
+          <AdminDashboard
+            currentUserId={session.user_id}
             onDecisionComplete={(runId, result) => {
               if (response?.run_id === runId) {
                 setResponse(result);
@@ -102,15 +148,27 @@ export default function App() {
             }}
           />
         ) : (
-          <div style={{ maxWidth: "1000px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "32px" }}>
+          <div style={{ maxWidth: "1500px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: "24px" }}>
+          <div style={{ flex: "1 1 600px", minWidth: 0, display: "flex", flexDirection: "column", gap: "32px" }}>
 
             <div className="glass-panel animate-fade-in" style={{ padding: "32px" }}>
               <h2 style={{ marginTop: 0, marginBottom: "8px", fontSize: "28px" }}>Query Data</h2>
               <p style={{ color: "var(--text-muted)", margin: "0 0 24px 0" }}>
                 Ask questions in plain English and let AI generate the SQL securely.
               </p>
-              <QueryInput onSubmit={handleSubmit} loading={isLoading} />
+              <QueryInput onSubmit={handleSubmit} loading={isLoading} maxChars={maxChars} />
+              {examples.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "16px", alignItems: "center" }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: "13px" }}>Try:</span>
+                  {examples.map((q) => (
+                    <button key={q} type="button" disabled={isLoading} onClick={() => handleSubmit(q)} style={{ fontSize: "13px", padding: "4px 10px" }}>
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
 
             {isLoading && (
               <div className="glass-panel" style={{ padding: "48px", textAlign: "center" }}>
@@ -165,6 +223,14 @@ export default function App() {
                     An administrator other than you will review it. Run ID: <code>{response.run_id}</code>
                   </p>
                 )}
+                {!isAdmin && (
+                  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <button className="primary" disabled={refreshing} onClick={() => handleRefreshStatus(response.run_id)}>
+                      {refreshing ? "Checking..." : "Refresh status"}
+                    </button>
+                    {refreshNote && <span style={{ color: "var(--text-muted)", fontSize: 14 }}>{refreshNote}</span>}
+                  </div>
+                )}
               </div>
             )}
 
@@ -203,6 +269,11 @@ export default function App() {
                 {response.results && <ResultsTable results={response.results} />}
               </div>
             )}
+          </div>
+          {/* Beside the results on a wide screen (scrolls on its own); below them on a narrow one. */}
+          <aside style={{ flex: "1 1 320px", maxWidth: "420px", position: "sticky", top: 0, maxHeight: "calc(100vh - 140px)", overflowY: "auto" }}>
+            <SchemaPanel onAuthError={handleLogout} />
+          </aside>
           </div>
         )}
       </main>

@@ -151,8 +151,8 @@ def test_edited_sql_gets_a_limit_injected():
     assert "LIMIT" in executed.upper()
 
 
-def test_edited_salary_query_with_alias_is_still_masked_end_to_end():
-    """The original exploit: edit to `salary AS pay`, expect no raw salaries."""
+def test_edited_salary_query_with_alias_is_still_masked_for_everyone_but_the_approving_reviewer():
+    """The original exploit: edit to `salary AS pay`. The alias must not let the values reach anyone except the reviewer who approved it."""
     run_id = pending_run()
     r = client.post("/hitl/decision",
                     json={"run_id": run_id, "decision": "edit",
@@ -160,7 +160,9 @@ def test_edited_salary_query_with_alias_is_still_masked_end_to_end():
     body = r.json()
     assert body["status"] == "completed"
     assert len(body["results"]["rows"]) <= 100
-    assert all(row["pay"] == "[CONFIDENTIAL]" for row in body["results"]["rows"])
+    assert all(row["pay"] != "[CONFIDENTIAL]" for row in body["results"]["rows"])  # the reviewer approved this exact query
+    stored = client.get(f"/query/status/{run_id}", headers=EMPLOYEE).json()["results"]["rows"]
+    assert stored and all(row["pay"] == "[CONFIDENTIAL]" for row in stored)  # the alias does not hide it from the lineage check
 
 
 def test_invalid_sql_is_never_saved_as_golden_template():
@@ -350,3 +352,30 @@ def test_anchor_endpoints():
     bad = client.get("/admin/audit-logs/verify", params={"anchor_head": "deadbeef", "anchor_count": 1}, headers=ADMIN).json()
     assert bad["valid"] is False
     assert client.get("/admin/audit-logs/anchor", headers=EMPLOYEE).status_code == 403
+
+
+def test_submitter_cannot_edit_and_run_own_run_but_can_withdraw_it():
+    run_id = pending_run(submitter="admin-1")
+    edit = client.post("/hitl/decision", json={"run_id": run_id, "decision": "edit", "edited_sql": "SELECT 1"}, headers=ADMIN)
+    assert edit.status_code == 403 and get_run(run_id)["status"] == "pending"
+    withdrawn = client.post("/hitl/decision", json={"run_id": run_id, "decision": "reject"}, headers=ADMIN)
+    assert withdrawn.status_code == 200 and withdrawn.json()["status"] == "rejected"
+    assert get_run(run_id)["status"] == "rejected"
+
+
+def test_the_approving_reviewer_sees_salary_values_but_the_submitter_still_gets_them_masked():
+    from app.db.database import execute_readonly_query
+    run_id = pending_run(submitter="emp-1", sql="SELECT AVG(salary) FROM salaries LIMIT 100")
+    reviewer = client.post("/hitl/decision", json={"run_id": run_id, "decision": "approve"}, headers=ADMIN).json()
+    shown = list(reviewer["results"]["rows"][0].values())[0]
+    assert shown != "[CONFIDENTIAL]" and float(shown) > 0
+    stored = client.get(f"/query/status/{run_id}", headers=EMPLOYEE).json()
+    assert list(stored["results"]["rows"][0].values())[0] == "[CONFIDENTIAL]"
+    # every other path keeps the redaction
+    assert list(execute_readonly_query("SELECT AVG(salary) FROM salaries")["rows"][0].values())[0] == "[CONFIDENTIAL]"
+
+
+def test_approval_does_not_unmask_other_sensitive_data():
+    run_id = pending_run(submitter="emp-1", sql="SELECT ssn, personal_email FROM employees LIMIT 3")
+    rows = client.post("/hitl/decision", json={"run_id": run_id, "decision": "approve"}, headers=ADMIN).json()["results"]["rows"]
+    assert rows and all("*" in str(r["ssn"]) and "*" in str(r["personal_email"]) for r in rows)

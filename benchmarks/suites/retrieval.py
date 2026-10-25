@@ -152,7 +152,8 @@ def evaluate_pool(pool_name: str, db_ids: List[str], tables_meta, questions, usa
     print(f"  [{pool_name}] {len(schema['tables'])} tables: embedding table documents ...", flush=True)
     newly_embedded = retriever.index_schema()
     print(f"  [{pool_name}] {newly_embedded} embedded, prefetching {len(questions)} question vectors ...", flush=True)
-    engine.embed_many([q["question"] for q in questions])
+    for q in questions:                       # questions are embedded as queries (as the product does), tables as documents
+        engine.embed(q["question"])
 
     docs = {tid: retriever.document_for(tid, meta, f"Database table storing {tid} records.") for tid, meta in schema["tables"].items()}
     tfidf = TfIdf(docs)

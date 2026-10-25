@@ -34,7 +34,10 @@ export default function ResultsTable({
         }}
       >
         <h3 style={{ margin: 0, color: "var(--text-main)" }}>📊 Results</h3>
-        <p style={{ color: "var(--text-muted)", marginTop: 8 }}>No results found for this query.</p>
+        <p style={{ color: "var(--text-muted)", marginTop: 8 }}>No rows matched this query.</p>
+        <p style={{ color: "var(--text-muted)", marginTop: 4, fontSize: 13 }}>
+          If your question is not about the data in this database (see the table list), the system may have guessed a filter that matches nothing. Try rephrasing it in terms of the tables and columns.
+        </p>
       </div>
     );
   }
@@ -73,6 +76,10 @@ export default function ResultsTable({
       }
     }
     if (typeof value === "object") return JSON.stringify(value);
+    // Averages and ratios arrive with every decimal the database computed (122666.66666666667): show two. Whole numbers (ids, counts) are left alone.
+    if (typeof value === "number" && !Number.isInteger(value)) {
+      return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
     return String(value);
   };
 

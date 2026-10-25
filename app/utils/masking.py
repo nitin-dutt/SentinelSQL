@@ -22,6 +22,8 @@ import sqlglot
 from sqlglot import exp
 from sqlglot.lineage import lineage
 
+from app.db.urls import sql_dialect
+
 logger = logging.getLogger("sentinel.masking")
 
 
@@ -215,10 +217,12 @@ _REDACTING_RULES = (mask_secret, mask_financial)  # full redaction beats partial
 _ID_LIKE = re.compile(r"((^|_)(sku|ref|reference|code|tracking|uuid|guid|invoice|barcode|isbn|serial|slug|zip|ip|ip_addr)($|_))|((^|_)(no|num|id)$)", re.I)
 
 
-def _pick_rule(names: List[str]) -> Optional[Callable[[Any], Any]]:
+def _pick_rule(names: List[str], reveal_financial: bool = False) -> Optional[Callable[[Any], Any]]:
     """Chooses the masking function for a set of source/output column names (strongest wins)."""
     matched = []
     for pattern, mask_fn in COLUMN_MASK_RULES:
+        if reveal_financial and mask_fn is mask_financial:
+            continue
         if any(pattern.search(n) for n in names if n):
             matched.append(mask_fn)
     for fn in matched:
@@ -249,7 +253,7 @@ def _is_star(proj: exp.Expression) -> bool:
 
 def _leaves_for(column_name: str, sql: str, schema, fallback: List[str]) -> List[str]:
     try:
-        node = lineage(column_name, sql, schema=schema)
+        node = lineage(column_name, sql, schema=schema, dialect=sql_dialect())
         leaves = [n.name.split(".")[-1] for n in node.walk() if not n.downstream]
         return leaves or fallback
     except Exception as e:
@@ -267,7 +271,7 @@ def derive_lineage_sources(sql: str, output_columns: Optional[List[str]] = None)
     each actual output column name (`output_columns`) is traced instead; this is what
     catches `SELECT * FROM (SELECT salary AS pay ...)`.
     """
-    ast = sqlglot.parse_one(sql)
+    ast = sqlglot.parse_one(sql, read=sql_dialect())
     projections = list(ast.selects) if hasattr(ast, "selects") else []
     if not projections:
         raise ValueError("Cannot determine projections")
@@ -290,7 +294,7 @@ def derive_lineage_sources(sql: str, output_columns: Optional[List[str]] = None)
     return sources
 
 
-def apply_data_masking(results: Dict[str, Any], sql: Optional[str] = None) -> Dict[str, Any]:
+def apply_data_masking(results: Dict[str, Any], sql: Optional[str] = None, reveal_financial: bool = False) -> Dict[str, Any]:
     """
     Masks sensitive values in query results before they reach a client or an LLM.
 
@@ -300,6 +304,9 @@ def apply_data_masking(results: Dict[str, Any], sql: Optional[str] = None) -> Di
          defeats aliases, expressions, subqueries, CTEs and UNIONs.
       3. Content scanning of every remaining string cell for embedded emails, SSNs,
          cards and phone numbers.
+
+    `reveal_financial=True` leaves salary-class values (salary, bonus, compensation, payroll, wage) readable. It exists only for
+    the reviewer who has just approved a held query; everything else (emails, SSNs, cards, secrets, free text) is still masked.
     """
     if not results or "columns" not in results or "rows" not in results:
         return results
@@ -322,7 +329,7 @@ def apply_data_masking(results: Dict[str, Any], sql: Optional[str] = None) -> Di
             skip_columns.add(col)  # bare COUNT(...): numeric, not sensitive
             continue
         names = [col] + lineage_sources.get(idx, [])
-        rule = _pick_rule(names)
+        rule = _pick_rule(names, reveal_financial)
         if rule is not None:
             masking_map[col] = rule
         elif any(_ID_LIKE.search(n) for n in names if n):

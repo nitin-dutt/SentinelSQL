@@ -38,12 +38,27 @@ from benchmarks.lib import spider as sp
 from benchmarks.lib.meta import run_metadata
 from benchmarks.lib.sqlcompare import gold_has_order_by, rows_match, run_sqlite
 from benchmarks.lib.stats import mcnemar_exact, proportion
-from benchmarks.suites.common import LLM_CACHE, load_result, progress, save_result
+from benchmarks.suites.common import EMBEDDING_CACHE, LLM_CACHE, WORK_DIR, load_result, progress, save_result
 
 TIERS = ["easy", "medium", "hard", "extra"]
 OFFICIAL_MIX = {"easy": 248, "medium": 446, "hard": 174, "extra": 166}      # official dev distribution
-PER_TIER = int(os.getenv("SPIDER_PER_TIER", "50"))
-SEED = 42
+# SPIDER_HOLDOUT=1 draws a fresh sample that excludes every question of the main 200-question sample (seed 42). The main sample
+# was read while diagnosing failures and tuning prompts, so only the hold-out gives an unbiased accuracy for the tuned system.
+HOLDOUT = os.getenv("SPIDER_HOLDOUT", "") == "1"
+PER_TIER = int(os.getenv("SPIDER_PER_TIER", "25" if HOLDOUT else "50"))
+SEED = 43 if HOLDOUT else 42
+RESULT_NAME = "spider_holdout" if HOLDOUT else "spider"
+# SPIDER_VARIANT switches on the Plan A features for the GOVERNED arm only (the raw arm and its cache are untouched):
+#   "fewshot"         3 verified examples retrieved from a pool of Spider TRAIN questions (the product's golden-query mechanism)
+#   "repair"          one repair attempt when the database rejects the SQL (the product's repair step)
+#   "fewshot_repair"  both
+# Each variant writes its own result file (e.g. spider_holdout_fewshot.json) so it can be compared with the baseline question by question.
+VARIANT = os.getenv("SPIDER_VARIANT", "").strip().lower()
+FEWSHOT = "fewshot" in VARIANT
+REPAIR = "repair" in VARIANT
+FEWSHOT_K = 3                                    # fixed in advance, deliberately not tuned
+if VARIANT:
+    RESULT_NAME += "_" + VARIANT
 
 RAW_PROMPT = """You are an expert SQL engineer. Given this SQLite schema:
 
@@ -57,12 +72,24 @@ Question: {question}
 
 # ---------------------------------------------------------------------------- data
 
+def _main_sample(dev):
+    """The main 200-question sample (seed 42, 50 per tier), reproduced so the hold-out can exclude it."""
+    by_tier: Dict[str, List[int]] = defaultdict(list)
+    for i, ex in enumerate(dev):
+        by_tier[sp.eval_hardness(ex["sql"])].append(i)
+    rng = random.Random(42)
+    return [{"index": i} for tier in TIERS for i in sorted(rng.sample(by_tier[tier], min(50, len(by_tier[tier]))))]
+
+
 def sample_questions(per_tier: int = PER_TIER, seed: int = SEED) -> List[Dict[str, Any]]:
     dev = sp.load_dev()
     by_tier: Dict[str, List[int]] = defaultdict(list)
     for i, ex in enumerate(dev):
         by_tier[sp.eval_hardness(ex["sql"])].append(i)
     rng = random.Random(seed)
+    if HOLDOUT:
+        seen = {q["index"] for q in _main_sample(dev)}
+        by_tier = {tier: [i for i in idx if i not in seen] for tier, idx in by_tier.items()}
     chosen = []
     for tier in TIERS:
         for i in sorted(rng.sample(by_tier[tier], min(per_tier, len(by_tier[tier])))):
@@ -125,7 +152,7 @@ def run_raw(item, db_path, gold_rows) -> Dict[str, Any]:
     return {"sql": sql, **judge(db_path, item["gold"], gold_rows, sql)}
 
 
-def run_governed(item, db_path, gold_rows, ctx) -> Dict[str, Any]:
+def run_governed(item, db_path, gold_rows, ctx, fewshot: bool = False, repair: bool = False) -> Dict[str, Any]:
     from app.agents.intent_agent import IntentAnalysisAgent
     from app.agents.sql_generator import SQLGenerationAgent
     from app.agents.sql_validator import SQLValidationAgent
@@ -137,8 +164,15 @@ def run_governed(item, db_path, gold_rows, ctx) -> Dict[str, Any]:
         out.update(outcome="intent_rejected", detail=str(e)[:100])
         return out
     try:
-        with patch("app.rag.golden_store.format_few_shot_examples", return_value=""), \
-             patch("app.rag.data_dictionary.format_dictionary_context", return_value=""):
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            stack.enter_context(patch("app.rag.data_dictionary.format_dictionary_context", return_value=""))
+            if fewshot:
+                from app.rag.golden_store import find_matching_golden_queries
+                out["fewshot"] = [{"question": m["natural_language_query"], "similarity": round(m["similarity"], 3)}
+                                  for m in find_matching_golden_queries(item["question"], top_k=FEWSHOT_K)]
+            else:
+                stack.enter_context(patch("app.rag.golden_store.format_few_shot_examples", return_value=""))
             raw_sql = SQLGenerationAgent().generate_sql(intent=intent, schema_context=ctx, user_query=item["question"])
     except ValueError as e:
         out.update(outcome="generation_failed", detail=str(e)[:100])
@@ -157,6 +191,18 @@ def run_governed(item, db_path, gold_rows, ctx) -> Dict[str, Any]:
     executed_sql = verdict.get("sanitized_sql") or raw_sql
     out["sql"] = executed_sql.rstrip(";")
     judged = judge(db_path, item["gold"], gold_rows, out["sql"])
+    if repair and judged["error"] and judged["error"] != "no_sql":
+        # What the product graph does: the database error goes back to the model once and the candidate is validated again.
+        out["first_error"], out["first_sql"] = judged["error"], out["sql"]
+        try:
+            candidate = SQLGenerationAgent().repair_sql(item["question"], ctx, out["sql"], judged["error"])
+            second = SQLValidationAgent().validate(candidate, item["question"])
+            out["repaired"] = True
+            if second["safe"] and not second.get("requires_human"):
+                out["sql"] = (second.get("sanitized_sql") or candidate).rstrip(";")
+                judged = judge(db_path, item["gold"], gold_rows, out["sql"])
+        except ValueError as e:
+            out["repair_failed"] = str(e)[:100]
     out.update(outcome="executed", correct=judged["correct"], error=judged["error"])
     # logic-only score: drop the row cap unless the gold query itself has one
     probe_sql = out["sql"] if re.search(r"\blimit\b", item["gold"], re.I) else strip_limit(out["sql"])
@@ -220,7 +266,11 @@ def analyse(records: List[Dict[str, Any]]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------- driver
 
 def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
-    from benchmarks.lib.llm import DailyQuotaExceeded, harness
+    from contextlib import ExitStack
+
+    from app.rag.vector_store import EmbeddingUnavailableError
+    from benchmarks.lib import fewshot
+    from benchmarks.lib.llm import DailyQuotaExceeded, embedding_harness, harness
 
     questions = sample_questions()
     if limit:
@@ -244,27 +294,40 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
     started = time.time()
     if llm:
         try:
-            with harness(LLM_CACHE) as u:
+            with ExitStack() as stack:
+                u = stack.enter_context(harness(LLM_CACHE))
+                if FEWSHOT:
+                    eu = stack.enter_context(embedding_harness(EMBEDDING_CACHE))
+                    pool_dir = os.path.join(WORK_DIR, "spider_pool")
+                    os.makedirs(pool_dir, exist_ok=True)
+                    os.environ["GOLDEN_DB_PATH"] = os.path.join(pool_dir, "golden.db")
+                    os.environ["GOLDEN_VECTOR_CACHE"] = os.path.join(pool_dir, "golden_vectors.json")
+                    os.environ["FEWSHOT_TOP_K"] = str(FEWSHOT_K)
+                    pool = fewshot.build_pool()
+                    fewshot.assert_disjoint_from_dev(pool)
+                    print(f"  few-shot pool: {len(pool)} Spider train examples, {fewshot.seed_golden_store(pool)} newly loaded", flush=True)
                 for n, (q, path, gold_rows) in enumerate(prepared, 1):
                     progress("spider", n, len(prepared), started)
                     ctx = product_schema_context(q["db_id"], tables_meta)
-                    records.append({**q, "raw": run_raw(q, path, gold_rows), "governed": run_governed(q, path, gold_rows, ctx)})
+                    records.append({**q, "raw": run_raw(q, path, gold_rows),
+                                    "governed": run_governed(q, path, gold_rows, ctx, fewshot=FEWSHOT, repair=REPAIR)})
                     if n % 20 == 0:
-                        save_result("spider.partial", {"records": records})
-                usage = u.snapshot()
-        except DailyQuotaExceeded as e:
+                        save_result(RESULT_NAME + ".partial", {"records": records})
+                usage = {"llm": u.snapshot(), **({"embeddings": eu.snapshot()} if FEWSHOT else {})}
+        except (DailyQuotaExceeded, EmbeddingUnavailableError) as e:
             status = "paused: daily quota (progress cached; re-run to resume)"
             print("  " + status, flush=True)
 
     result = {
-        "meta": run_metadata([sp.DEV_JSON], {"status": status, "seed": SEED, "per_tier": PER_TIER, "usage": usage,
+        "meta": run_metadata([sp.DEV_JSON], {"status": status, "seed": SEED, "per_tier": PER_TIER, "variant": VARIANT or "baseline",
+                                             "fewshot_k": FEWSHOT_K if FEWSHOT else 0, "pool_size": 500 if FEWSHOT else 0, "usage": usage,
                                              "duration_s": round(time.time() - started)}),
         "comparator_controls": {**controls, "n": len(prepared)},
         "analysis": analyse(records) if records else None,
         "records": records,
     }
-    previous = load_result("spider")
+    previous = load_result(RESULT_NAME)
     if not records and previous:
         return previous
-    print("saved", save_result("spider", result))
+    print("saved", save_result(RESULT_NAME, result))
     return result

@@ -6,7 +6,7 @@ Latency suite: what a user actually waits for.
             makes the client wait (no benchmark harness or response cache is involved: every number is a live call).
             Per-stage times come from wrapping the four graph nodes.
   cache L1  the exact-match cache path, 500 trials through the HTTP endpoint.
-  cache L2  the similarity path (one live embedding per lookup), N distinct paraphrases.
+  cache L2  the similarity path (one live embedding per lookup) on paraphrase pairs taken from the cache-safety benchmark.
 
 Speedups are computed against the *measured* cold median, never a typed constant. Time spent by the model is
 reported separately from time spent in SentinelSQL's own code (validation, execution, masking).
@@ -24,14 +24,20 @@ from benchmarks.suites.common import EMPLOYEE, progress, save_result, workspace
 COLD_N = int(os.getenv("LATENCY_COLD_N", "30"))
 SPACING_S = float(os.getenv("LATENCY_SPACING_S", "9"))
 L1_TRIALS = 500
-L2_PARAPHRASES = [
-    ("How many customers are in the North region?", "Count the customers located in the North region"),
-    ("What is the total amount of all orders?", "Give me the sum of every order amount"),
-    ("How many support tickets have high priority?", "Count tickets with a high priority"),
-    ("List the distinct shipping carriers", "Which different carriers do we ship with?"),
-    ("What is the largest single order amount?", "Show the maximum order amount"),
-    ("How many campaigns use the email channel?", "Number of campaigns that run on email"),
-]
+L2_PAIRS = 12                                       # similarity-path lookups to time (two live embeddings each)
+
+
+def l2_pairs(limit: int = L2_PAIRS):
+    """Paraphrase pairs that the cache-safety benchmark measured as legitimate similarity hits (cosine >= 0.92, guards agree)."""
+    from benchmarks.data.cache_pairs import PAIRS
+    from benchmarks.suites.common import load_result
+    scored = {p["id"]: p for p in (load_result("cache_safety") or {}).get("pairs", [])}
+    chosen = []
+    for pid, kind, qa, qb, should_hit, sql_a in PAIRS:
+        m = scored.get(pid)
+        if should_hit and m and m["similarity"] >= 0.92 and m["guards_ok"]:
+            chosen.append((qa, qb, sql_a or "SELECT name FROM customers LIMIT 5"))
+    return chosen[:limit]
 
 
 class StageTimer:
@@ -129,20 +135,20 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
                 out["cache_l1_http"] = {"trials": L1_TRIALS, "hit_rate_pct": round(100 * sum(x["hit"] for x in l1) / L1_TRIALS, 1),
                                         **latency_summary([x["ms"] for x in l1 if x["hit"]])}
 
-                # similarity lookups call the embedding model once per distinct new question
+                # Similarity path: seed the cache directly with a paraphrase pair's first question (no model call), then
+                # ask the second question through the real endpoint. Each lookup embeds the new question live.
                 l2, hits = [], 0
-                for stored, para in L2_PARAPHRASES:
-                    r = client.post("/query", json={"query": stored}, headers=EMPLOYEE).json()
-                    if r.get("status") != "completed":
-                        continue
-                    time.sleep(SPACING_S)
+                pairs = l2_pairs()
+                for qa, qb, sql in pairs:
+                    cache.set(qa, sql, {"columns": ["name"], "rows": [{"name": "x"}]}, role="employee")
+                    time.sleep(1.0)
                     t = time.perf_counter()
-                    r2 = client.post("/query", json={"query": para}, headers=EMPLOYEE).json()
+                    r2 = client.post("/query", json={"query": qb}, headers=EMPLOYEE).json()
                     ms = (time.perf_counter() - t) * 1000
-                    if r2.get("cached") and r2.get("cache_match_type") != "exact":
+                    if r2.get("cached") and r2.get("cache_match_type") == "semantic":
                         hits += 1
                         l2.append(ms)
-                out["cache_l2_http"] = {"paraphrases_tried": len(L2_PARAPHRASES), "similarity_hits": hits,
+                out["cache_l2_http"] = {"pairs_tried": len(pairs), "similarity_hits": hits,
                                         **(latency_summary(l2) if l2 else {})}
                 out["cache_stats"] = cache.get_stats()
 

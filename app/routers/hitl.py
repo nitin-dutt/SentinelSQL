@@ -10,6 +10,7 @@ from app.db.database import execute_readonly_query
 from app.hitl.web_store import get_run, update_run
 from app.utils.audit_logger import log_audit_event
 from app.utils.logger import get_logger
+from app.utils.masking import apply_data_masking
 from app.utils.sql_parser import parse_and_validate_ast
 
 logger = get_logger("sentinel.hitl")
@@ -34,8 +35,9 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
     if run_status != "pending":
         return HITLResponse(status="rejected", reason=f"Run already decided (status: {run_status})")
 
-    # Separation of duties: the person who asked may not approve their own request.
-    if submitter_id and submitter_id == approver_id and not self_approval_allowed():
+    # Separation of duties: the person who asked may not approve (or edit and run) their own request.
+    # Withdrawing it by rejecting is always allowed: it can only stop a query, never run one.
+    if req.decision != "reject" and submitter_id and submitter_id == approver_id and not self_approval_allowed():
         log_audit_event(
             run_id=req.run_id, user_id=submitter_id, role=role, user_query=state.get("user_query"),
             generated_sql=state.get("sql"), confidence_score=0, execution_status="hitl_self_approval_blocked",
@@ -77,7 +79,8 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
     sql_to_execute = ast_res.sanitized_sql
 
     try:
-        results = execute_readonly_query(sql_to_execute)
+        # The reviewer who approved a held query sees salary-class values; PII and secrets stay masked.
+        reviewer_results = execute_readonly_query(sql_to_execute, reveal_financial=True)
     except Exception as e:
         update_run(req.run_id, status="failed", reason=str(e))
         log_audit_event(
@@ -88,6 +91,10 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
         return HITLResponse(status="rejected", reason=str(e))
 
     latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+    # What is stored is what the submitter will read when they check the run, so it gets the normal masking.
+    results = apply_data_masking(reviewer_results, sql=sql_to_execute)
+    if isinstance(reviewer_results, dict) and reviewer_results.get("truncated") and isinstance(results, dict):
+        results["truncated"] = True
     rows_count = len(results.get("rows", [])) if results and isinstance(results, dict) else 0
 
     # Persist the SQL that actually ran (edited and/or LIMIT-sanitized) so pollers see it.
@@ -110,4 +117,4 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
         except Exception as e:
             logger.warning("Failed to save golden template: %s", e)
 
-    return HITLResponse(status="completed", sql=sql_to_execute, results=results)
+    return HITLResponse(status="completed", sql=sql_to_execute, results=reviewer_results)

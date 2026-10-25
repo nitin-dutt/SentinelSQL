@@ -49,7 +49,8 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
             with embedding_harness(EMBEDDING_CACHE) as usage:
                 engine = get_embedding_engine()
                 texts = sorted({t for p in pairs for t in (p[2], p[3])})
-                embedded = dict(zip(texts, engine.embed_many(texts)))
+                # Exactly what the production cache does: each question is normalised and embedded as a *query*, one at a time.
+                embedded = {t: engine.embed(SemanticCache.normalize_query(t)) for t in texts}
                 backend = engine.backend_id
 
                 def sim(a: str, b: str) -> float:
@@ -80,13 +81,18 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
                 tmp = tempfile.mkdtemp(prefix="cache-e2e-")
                 disagreements = []
                 for p, (pid, kind, qa, qb, should_hit, sql_a) in zip(scored, pairs):
-                    cache = SemanticCache(cache_file=os.path.join(tmp, f"{pid}.json"), threshold=PRODUCTION_THRESHOLD,
+                    cache = SemanticCache(cache_file=os.path.join(tmp, f"{pid}.json"), threshold=PRODUCTION_THRESHOLD, enabled=True,   # the workspace turns the cache OFF via the environment
                                           version_provider=lambda: "bench")
                     cache.set(qa, sql_a or "SELECT 1 LIMIT 1;", {"columns": ["x"], "rows": [{"x": 1}]}, role="employee")
                     served = cache.get(qb, role="employee") is not None
                     expected = p["similarity"] >= PRODUCTION_THRESHOLD and p["guards_ok"]
                     if served != expected:
                         disagreements.append({"id": pid, "served": served, "expected": expected, "similarity": p["similarity"]})
+
+                # A check that serves nothing would 'disagree' with every expected hit and look like a finding; make that impossible to miss.
+                if any(p["should_hit"] and p["similarity"] >= PRODUCTION_THRESHOLD and p["guards_ok"] for p in scored) and len(disagreements) == sum(
+                        1 for p in scored if p["similarity"] >= PRODUCTION_THRESHOLD and p["guards_ok"]):
+                    raise RuntimeError("end-to-end check served no hits at all: the real cache looks disabled")
 
                 by_kind = defaultdict(list)
                 for p in scored:

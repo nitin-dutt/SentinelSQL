@@ -362,3 +362,58 @@ def test_every_flavour_of_always_true_is_quarantined(condition):
 def test_ordinary_conditions_are_not_tautologies(condition):
     res = parse_and_validate_ast(f"SELECT name FROM customers WHERE region = 'x' OR {condition} LIMIT 5")
     assert not res.requires_human, condition
+
+
+# ---------------------------------------------------------------- Spider-benchmark false positives (found by BEN-09 follow-up)
+
+@pytest.mark.parametrize("sql", [
+    "SELECT name FROM shop AS s WHERE NOT EXISTS (SELECT * FROM hiring AS h WHERE h.shop_id = s.shop_id)",
+    "SELECT name FROM shop AS s WHERE EXISTS (SELECT * FROM hiring h WHERE h.shop_id = s.shop_id)",
+])
+def test_wildcard_inside_exists_is_allowed(sql):
+    r = parse_and_validate_ast(sql)
+    assert r.is_valid, r.reason
+
+
+@pytest.mark.parametrize("sql", [
+    "SELECT * FROM shop WHERE EXISTS (SELECT 1 FROM hiring)",                     # the outer projection still leaks columns
+    "SELECT name FROM shop WHERE shop_id IN (SELECT * FROM hiring)",              # a wildcard that is not an EXISTS body
+    "SELECT name FROM (SELECT * FROM shop) AS t",                                 # wildcard in a derived table
+])
+def test_wildcard_outside_exists_is_still_blocked(sql):
+    r = parse_and_validate_ast(sql)
+    assert not r.is_valid and "SELECT *" in r.reason
+
+
+def test_set_operation_branches_are_limited_separately():
+    two_joins = ("SELECT a.x FROM a JOIN b ON a.id = b.id JOIN c ON b.id = c.id")
+    r = parse_and_validate_ast(f"{two_joins} INTERSECT {two_joins}")
+    assert r.is_valid and r.join_count == 2          # two 2-join queries, not a 4-join query
+
+
+def test_one_branch_over_the_join_limit_is_still_blocked():
+    four = "SELECT a.x FROM a JOIN b ON a.i = b.i JOIN c ON b.i = c.i JOIN d ON c.i = d.i JOIN e ON d.i = e.i"
+    assert not parse_and_validate_ast(four).is_valid
+    assert not parse_and_validate_ast(f"SELECT 1 AS x UNION {four}").is_valid
+
+
+def test_a_long_chain_of_branches_hits_the_total_join_cap():
+    branch = "SELECT a.x FROM a JOIN b ON a.i = b.i JOIN c ON b.i = c.i"
+    sql = " UNION ".join([branch] * 5)                # 10 joins in total, each branch only 2
+    r = parse_and_validate_ast(sql)
+    assert not r.is_valid and "in total" in r.reason
+
+
+@pytest.mark.parametrize("sql", [
+    "SELECT a.name FROM customers a JOIN orders b ON TRUE",
+    "SELECT a.name FROM customers a JOIN orders b ON 1 = 1",
+    "SELECT a.name FROM customers a LEFT JOIN orders b ON 2 > 1",
+])
+def test_joins_on_an_always_true_condition_are_cartesian_products(sql):
+    r = parse_and_validate_ast(sql)
+    assert not r.is_valid and "Cartesian" in r.reason
+
+
+def test_a_real_join_condition_is_not_mistaken_for_a_tautology():
+    assert parse_and_validate_ast("SELECT a.name FROM customers a JOIN orders b ON a.customer_id = b.customer_id").is_valid
+

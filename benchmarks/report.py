@@ -57,7 +57,17 @@ def section_security(r) -> str:
              f"{pct(base['exfiltration']['readonly_db_only_returned_protected_data'], False)}; keyword filter stopped "
              f"{pct(base['exfiltration']['keyword_filter_stopped'], False)}; policy engine {pct(base['exfiltration']['gateway_contained'], False)}.", ""]
     if r.get("natural_language"):
-        lines += ["### Attacks submitted as natural language (LLM in the loop)", "", "```", str(r["natural_language"])[:1500], "```", ""]
+        nl = r["natural_language"]
+        a, b = nl["attacks"], nl["benign"]
+        st = a["stopped_by"]
+        lines += ["### Attacks submitted as natural language (LLM in the loop)", "",
+                  f"{a['n']} attack prompts and {b['n']} benign prompts through the full pipeline with the live model. The baseline is the same model with an instructions-only guardrail, a read-only database, no policy engine and no masking.", "",
+                  table(["", "Harmful outcome"], [["SentinelSQL", pct(a["attack_success_rate_sentinel"])], ["Prompt-only baseline", pct(a["attack_success_rate_prompt_only_baseline"])]]), "",
+                  f"How the attacks ended: {st['intent_filter']} stopped by the intent filter, {st['human_review']} sent to human review, "
+                  f"{st['model_refused_or_unparseable']} the model refused or produced unparseable output, {st['executed']} executed as harmless masked reads.", "",
+                  f"Benign prompts: false-block rate {pct(b['false_block_rate'])}; answered {pct(b['answered'])}; {b['errors']} errors where the model referenced a column that does not exist; "
+                  f"sensitive-table questions sent to review {pct(b['legit_sensitive_sent_to_review'])}; protected data leaked: {b['any_protected_data_leaked']}.", "",
+                  "Note: the baseline is also at zero here, so these English prompts do not show protection beyond the model's own behaviour. The gateway's value is demonstrated by the SQL-level attacks above (what a tricked model or an MCP agent can submit).", ""]
     else:
         lines += ["_Natural-language attack prompts: pending (needs the live model)._", ""]
     return "\n".join(lines)
@@ -140,7 +150,18 @@ def section_spider(r) -> str:
         table(["Arm", "Accuracy (unweighted)", "Reweighted to dev mix", "easy", "medium", "hard", "extra"], rows), "",
         f"Paired comparison, model alone vs gateway: raw-only correct {pr['raw_only_correct']}, gateway-only correct {pr['governed_only_correct']}, "
         f"McNemar p = {pr['mcnemar_p']}.", "",
-        f"Gateway outcomes: {a['governed_outcomes']}. Where the gateway lost a correct answer: {a['raw_correct_but_governed_lost']}.", ""])
+        f"Gateway outcomes: {a['governed_outcomes']}. Where the gateway lost a correct answer: {a['raw_correct_but_governed_lost']}.", "",
+        _holdout_note()])
+
+
+def _holdout_note() -> str:
+    ho = load_result("spider_holdout")
+    if not ho or not ho.get("analysis"):
+        return "_Hold-out sample (fresh questions, excludes the 200 above): not run yet._\n"
+    h = ho["analysis"]
+    return (f"Hold-out sample (fresh questions that exclude the 200 above; the 200 were used to tune the prompt): n={h['n']} "
+            f"({ho['meta']['status'][:40]}). Model alone {pct(h['raw_model']['ALL_unweighted'])}; gateway {pct(h['governed_as_shipped']['ALL_unweighted'])}. "
+            "If the status says paused, the hardest tier is missing and the figure is optimistic.\n")
 
 
 def section_ablation(r) -> str:
@@ -175,6 +196,25 @@ SECTIONS = [("security", section_security), ("pii", section_pii), ("audit", sect
             ("retrieval", section_retrieval), ("spider", section_spider), ("ablation", section_ablation), ("latency", section_latency)]
 
 
+def plan_a_section() -> str:
+    """Few-shot examples and the repair step, compared question by question with the baseline (benchmarks/compare.py)."""
+    from benchmarks.compare import compare_results
+    rows = []
+    for label, base, variant in (("Hold-out + few-shot", "spider_holdout", "spider_holdout_fewshot"), ("Hold-out + repair", "spider_holdout", "spider_holdout_repair"),
+                                 ("Hold-out + both", "spider_holdout", "spider_holdout_fewshot_repair"), ("Main + few-shot", "spider", "spider_fewshot"),
+                                 ("Main + repair", "spider", "spider_repair")):
+        b, v = load_result(base), load_result(variant)
+        c = compare_results(b, v) if b and v else None
+        if c:
+            rows.append([label, c["n_shared"], pct(c["base"], False), pct(c["variant"], False), f"{c['difference_points']:+.1f}",
+                         f"{c['only_variant_correct']} / {c['only_base_correct']}", c["mcnemar_p"], c["repairs_attempted"]])
+    if not rows:
+        return ""
+    return ("## 9. Few-shot examples and the repair step (Spider, paired with the baseline)\n\n" +
+            table(["Comparison", "n", "Baseline", "Variant", "Points", "Fixed / broken", "McNemar p", "Repairs"], rows) +
+            "\n\nBoth ideas were specified before the hold-out results were seen. Neither changes accuracy.\n")
+
+
 def build() -> str:
     parts = ["# SentinelSQL benchmark report", "",
              "Generated from `benchmarks/results/*.json` by `python -m benchmarks.report`. Every figure comes from a result file; "
@@ -192,6 +232,9 @@ def build() -> str:
             parts.append(f"## {name}\n\n_Result file present but could not be rendered ({type(e).__name__}: {e})._\n")
     if pending:
         parts.append("## Pending suites\n\nNot yet run to completion: " + ", ".join(pending) + ".\n")
+    extra = plan_a_section()
+    if extra:
+        parts.append(extra)
     parts.append("## Limitations\n\n"
                  "- All end-to-end results use SQLite and the 21-table demo database; PostgreSQL and MySQL are untested.\n"
                  "- The held-out security set stops being held-out once its failures are fixed; the frozen first run is reported alongside.\n"

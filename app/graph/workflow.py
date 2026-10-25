@@ -7,6 +7,7 @@ shared (`schema_context`, RUN-03), and infrastructure failures are reported thro
 with `error: True` instead of raising (RUN-02).
 """
 
+import os
 from functools import lru_cache
 from typing import Any, Dict, Optional, TypedDict
 
@@ -15,7 +16,7 @@ from langgraph.graph import StateGraph, END
 from app.agents.intent_agent import IntentAnalysisAgent, QueryIntent
 from app.agents.sql_generator import SQLGenerationAgent
 from app.agents.sql_validator import SQLValidationAgent
-from app.db.database import execute_readonly_query
+from app.db.database import QueryTimeoutError, execute_readonly_query
 from app.rag.schema_retriever import get_rag_schema_context
 from app.utils.logger import get_logger
 
@@ -31,6 +32,28 @@ class AgentState(TypedDict, total=False):
     sql: Optional[str]
     validation: Optional[Dict[str, Any]]
     results: Optional[Any]
+    repair_attempts: int                 # how many times the SQL was sent back to the model after a database error
+    last_error: Optional[str]            # the database error awaiting a repair attempt
+
+
+# Database errors that rewriting the SQL cannot fix: permissions, read-only enforcement, timeouts.
+_NOT_REPAIRABLE = ("permission denied", "access denied", "read-only", "read only", "readonly", "statement timeout", "interrupted")
+
+
+def _max_repairs() -> int:
+    try:
+        return max(0, int(os.getenv("SQL_REPAIR_ATTEMPTS", "1")))
+    except ValueError:
+        return 1
+
+
+def _is_repairable(error: Exception) -> bool:
+    """True for a statement the database rejected (unknown column, syntax, ambiguity), not for timeouts, connection loss or permissions."""
+    from sqlalchemy.exc import DBAPIError
+    if isinstance(error, QueryTimeoutError) or not isinstance(error, DBAPIError) or getattr(error, "connection_invalidated", False):
+        return False
+    text = str(error).lower()
+    return not any(marker in text for marker in _NOT_REPAIRABLE)
 
 
 def _blocked(reason: str, *, error: bool = False) -> Dict[str, Any]:
@@ -98,11 +121,34 @@ def execution_node(state: AgentState) -> AgentState:
     try:
         state["results"] = execute_readonly_query(state["sql"])
     except Exception as e:
-        # Timeouts and database errors (e.g. the model referenced a column that does not exist)
-        # become a clean response instead of an HTTP 500.
         logger.warning("Execution failed: %s: %s", type(e).__name__, e)
         state["results"] = None
+        if _is_repairable(e) and state.get("repair_attempts", 0) < _max_repairs():
+            # The model wrote SQL the database rejected (typically an invented column): give it the error once.
+            state["last_error"] = str(e)
+            return state
+        # Timeouts and database errors become a clean response instead of an HTTP 500.
+        state["last_error"] = None
         state["validation"] = _blocked(f"Query could not be completed: {e}", error=True)
+    return state
+
+
+def repair_node(state: AgentState) -> AgentState:
+    """Asks the model to correct the SQL the database rejected. The result goes back through validation, never straight to execution."""
+    state["repair_attempts"] = state.get("repair_attempts", 0) + 1
+    error = state.get("last_error") or ""
+    state["last_error"] = None
+    try:
+        state["sql"] = SQLGenerationAgent().repair_sql(
+            user_query=state.get("user_query") or "",
+            schema_context=state.get("schema_context") or get_rag_schema_context(state.get("user_query")),
+            failed_sql=state.get("sql") or "",
+            error=error,
+        )
+        logger.info("SQL repair attempt %d produced a candidate for validation", state["repair_attempts"])
+    except Exception as e:  # the repair call failed or returned nothing usable: report the original database error
+        logger.warning("SQL repair failed (%s: %s)", type(e).__name__, e)
+        state["validation"] = _blocked(f"Query could not be completed: {error}", error=True)
     return state
 
 
@@ -115,6 +161,20 @@ def route_after_intent(state: AgentState) -> str:
 
 def route_after_sql_generation(state: AgentState) -> str:
     return "validate" if state.get("sql") else END
+
+
+def route_after_execution(state: AgentState) -> str:
+    # A repairable database error is waiting: one repair attempt, then validation and execution again
+    if state.get("last_error") and state.get("results") is None:
+        return "repair"
+    return END
+
+
+def route_after_repair(state: AgentState) -> str:
+    validation = state.get("validation")
+    if validation and not validation.get("safe", True) and validation.get("error"):
+        return END
+    return "validate"
 
 
 def route_after_validation(state: AgentState) -> str:
@@ -136,12 +196,14 @@ def build_graph():
     graph.add_node("sql_gen", sql_generation_node)
     graph.add_node("validate", validation_node)
     graph.add_node("execute", execution_node)
+    graph.add_node("repair", repair_node)
 
     graph.set_entry_point("intent")
 
     graph.add_conditional_edges("intent", route_after_intent, {"sql_gen": "sql_gen", END: END})
     graph.add_conditional_edges("sql_gen", route_after_sql_generation, {"validate": "validate", END: END})
     graph.add_conditional_edges("validate", route_after_validation, {"execute": "execute", END: END})
-    graph.add_edge("execute", END)
+    graph.add_conditional_edges("execute", route_after_execution, {"repair": "repair", END: END})
+    graph.add_conditional_edges("repair", route_after_repair, {"validate": "validate", END: END})
 
     return graph.compile()

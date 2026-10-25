@@ -5,10 +5,13 @@ This module only wires things together: startup/shutdown (lifespan) and the rout
 endpoints live in app/routers/ (alignment_plan RUN-06).
 """
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
+from app import demo
 from app.db.database import check_connection, init_db
 from app.routers import admin, hitl, mcp, query, system
 from app.utils.logger import get_logger
@@ -28,6 +31,23 @@ app = FastAPI(title="SentinelSQL API", lifespan=lifespan)
 
 for _router in (system.router, query.router, hitl.router, admin.router, mcp.router):
     app.include_router(_router)
+demo.install(app)  # public-demo limits; inert unless DEMO_MODE=true
+
+
+def mount_ui(target: FastAPI, directory: str) -> bool:
+    """
+    Serves the built React UI from the same origin as the API (the container image does this, so one port and no CORS or proxy).
+    Mounted last, so every API route keeps priority. Returns False, and mounts nothing, when there is no build to serve.
+    """
+    if not os.path.isfile(os.path.join(directory, "index.html")):
+        return False
+    target.mount("/", StaticFiles(directory=directory, html=True), name="ui")
+    return True
+
+
+# UI_DIST_DIR points at the built frontend (set in the Docker image); in development Vite serves the UI instead, so nothing is mounted.
+if os.getenv("UI_DIST_DIR"):
+    mount_ui(app, os.environ["UI_DIST_DIR"])
 
 
 # -----------------------

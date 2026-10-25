@@ -4,6 +4,7 @@ import time
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app import demo
 from app.api.schemas import QueryRequest, QueryResponse
 from app.auth import Actor, get_actor, require_roles, ROLE_ADMIN, ROLE_EMPLOYEE
 from app.cache.semantic_cache import get_semantic_cache
@@ -22,6 +23,7 @@ def _rows_in(results) -> int:
 
 @router.post("/query", response_model=QueryResponse)
 def run_query(req: QueryRequest, actor: Actor = Depends(require_roles(ROLE_EMPLOYEE, ROLE_ADMIN))):
+    demo.check_question_length(req.query)
     user_id = actor.user_id
     role = actor.role
     start_time = time.perf_counter()
@@ -49,6 +51,8 @@ def run_query(req: QueryRequest, actor: Actor = Depends(require_roles(ROLE_EMPLO
             cache_similarity=cached_entry.get("similarity"),
             cache_original_query=cached_entry.get("original_query"),
         )
+
+    demo.charge_llm_call()  # public demo only: spends one unit of the day's language-model budget
 
     state = {
         "user_query": req.query,

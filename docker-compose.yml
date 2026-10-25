@@ -1,0 +1,26 @@
+# One command to run SentinelSQL (API and UI) on http://localhost:8000
+#
+#   cp .env.example .env        # then set GEMINI_API_KEY and replace the AUTH_TOKENS placeholders
+#   docker compose up --build
+#
+# The bundled demo database (SQLite, 21 tables) is created on first start. To use your own database set DATABASE_URL in .env
+# (postgresql://... or mysql://...); it is passed through, and a host database is reached from the container as host.docker.internal.
+services:
+  sentinelsql:
+    build: .
+    image: sentinelsql:local
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false          # without it the API starts but every route answers 401 (no tokens configured: fail closed)
+    environment:
+      # the in-container defaults for the bundled demo; a DATABASE_URL in .env replaces the database
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///sentinel.db}
+      ACTIVE_DB: ""              # leave unset: the URL alone selects the engine (a legacy ACTIVE_DB in .env would override it)
+    volumes:
+      - sentinel-data:/data
+    restart: unless-stopped
+
+volumes:
+  sentinel-data:

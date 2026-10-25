@@ -92,3 +92,6 @@ Thumbs.db
 *.swp
 .coverage
 htmlcov/
+
+# ---- Private study manual (author-only)
+study/

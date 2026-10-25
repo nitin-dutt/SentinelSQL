@@ -20,6 +20,8 @@ from typing import List, Optional
 import sqlglot
 from sqlglot import exp
 
+from app.db.urls import sql_dialect
+
 # Sensitivity tiers live in app/policy/sensitivity.json (alignment_plan PII-03).
 _DEFAULT_SENSITIVITY_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "policy", "sensitivity.json")
 
@@ -146,6 +148,8 @@ DESTRUCTIVE_EXPRESSION_TYPES = (
 
 # MAX_ROWS is the LIMIT injected when a query has none; MAX_RESULT_ROWS is the ceiling a
 # query may request (and the cap applied at execution). Both are read from the environment.
+_EXECUTABLE_COMMENT = re.compile(r"/\*\s*M?!")        # MySQL /*! ... */ and MariaDB /*M! ... */
+MAX_TOTAL_JOINS = 8                      # across all branches of a set operation; each branch is still limited to 3
 DEFAULT_SAFETY_LIMIT = int(os.getenv("MAX_ROWS", "100"))
 MAX_PERMITTED_LIMIT = int(os.getenv("MAX_RESULT_ROWS", "1000"))
 
@@ -188,14 +192,24 @@ def _classify_projection(proj: exp.Expression):
 def _find_wildcard_projection(node: exp.Expression) -> Optional[str]:
     """
     Returns the offending projection text if any SELECT in the tree projects `*` or `alias.*`.
-    COUNT(*) is fine: the star there is an argument, not a projection.
+    COUNT(*) is fine: the star there is an argument, not a projection. So is `EXISTS (SELECT * ...)`: nothing it selects is returned.
     """
     for select in node.find_all(exp.Select):
+        if _is_exists_subquery(select):
+            continue          # EXISTS only tests whether a row exists; its projection is never returned (SELECT 1 is equivalent)
         for proj in select.expressions:
             inner = proj.this if isinstance(proj, exp.Alias) else proj
             if isinstance(inner, exp.Star) or (isinstance(inner, exp.Column) and isinstance(inner.this, exp.Star)):
                 return inner.sql()
     return None
+
+
+def _is_exists_subquery(select: exp.Select) -> bool:
+    """True when this SELECT is the body of an EXISTS(...) predicate (NOT EXISTS included)."""
+    parent = select.parent
+    if isinstance(parent, exp.Subquery):
+        parent = parent.parent
+    return isinstance(parent, exp.Exists)
 
 
 @dataclass
@@ -222,7 +236,8 @@ def parse_and_validate_ast(raw_sql: str) -> ASTValidationResult:
 
     # Step 1: Parse the SQL statements
     try:
-        statements = sqlglot.parse(clean_sql)
+        dialect = sql_dialect()          # read the SQL the way the configured database does (MySQL backticks, PostgreSQL ::casts, ...)
+        statements = sqlglot.parse(clean_sql, read=dialect)
     except Exception as e:
         return ASTValidationResult(
             is_valid=False,
@@ -280,6 +295,38 @@ def parse_and_validate_ast(raw_sql: str) -> ASTValidationResult:
                 score_breakdown=[f"Subquery Destructive Node: '{node_name}' inside query AST"]
             )
 
+    # Step 4a: constructs that exist on PostgreSQL / MySQL and do something other than read rows.
+    if dialect in (None, "mysql") and _EXECUTABLE_COMMENT.search(clean_sql):
+        # MySQL runs the text inside /*! ... */ (MariaDB: /*M! ... */) as SQL, but a parser sees only a comment, so
+        # `SELECT /*! SLEEP(5) */ 1` would slip past every function check below.
+        return ASTValidationResult(
+            is_valid=False,
+            sanitized_sql=raw_sql,
+            reason="MySQL executable comments (/*! ... */) are not permitted: the database would run code the policy cannot inspect.",
+            risk_level="HIGH",
+            confidence_score=0,
+            score_breakdown=["Executable Comment: /*! ... */ hides SQL from inspection"]
+        )
+    for select in ast.find_all(exp.Select):
+        if select.args.get("into"):
+            return ASTValidationResult(
+                is_valid=False,
+                sanitized_sql=raw_sql,
+                reason="SELECT ... INTO is not permitted: it creates a table (PostgreSQL), a file or a variable (MySQL) instead of only reading.",
+                risk_level="HIGH",
+                confidence_score=0,
+                score_breakdown=["SELECT INTO: writes a table, file or variable"]
+            )
+        if select.args.get("locks"):
+            return ASTValidationResult(
+                is_valid=False,
+                sanitized_sql=raw_sql,
+                reason="Locking reads (FOR UPDATE / FOR SHARE / LOCK IN SHARE MODE) are not permitted: they hold row locks and can stall other users.",
+                risk_level="HIGH",
+                confidence_score=0,
+                score_breakdown=["Locking Read: row locks can block other sessions (denial of service)"]
+            )
+
     # Step 4b: Wildcard projections are blocked on every ingress (alignment_plan GRD-03).
     # Explicit columns are required so reviewers, masking and audit see exactly what leaves the database.
     wildcard = _find_wildcard_projection(ast)
@@ -322,22 +369,41 @@ def parse_and_validate_ast(raw_sql: str) -> ASTValidationResult:
 
     # Step 6: Inspect JOINs and check for Cartesian products
     joins = list(ast.find_all(exp.Join))
-    join_count = len(joins)
+    # The complexity limit applies to each query on its own: `A INTERSECT B` with two joins in each branch is two 2-join
+    # queries, not a 4-join one. Joins outside every branch (a WITH attached to the set operation) are added to the largest
+    # branch, and a hard cap on the total keeps a long chain of branches bounded.
+    branch_counts = [len(list(branch.find_all(exp.Join))) for branch in _root_selects(ast)]
+    join_count = (max(branch_counts) if branch_counts else 0) + (len(joins) - sum(branch_counts))
 
     for join in joins:
         # Check if join lacks condition (Cartesian join) unless cross join is explicitly declared
         on_clause = join.args.get("on")
         using_clause = join.args.get("using")
-        if not on_clause and not using_clause:
+        # No condition, or a condition that is true by construction (`ON TRUE`, `ON 1=1`): both pair every row with every row.
+        # sqlglot's SQLite dialect itself reads a bare `JOIN b` as `JOIN b ON TRUE`.
+        unconditional = on_clause is None and not using_clause
+        always_true = on_clause is not None and not using_clause and _is_tautology(on_clause)
+        if unconditional or always_true:
             return ASTValidationResult(
                 is_valid=False,
                 sanitized_sql=raw_sql,
                 tables_accessed=tables,
-                reason="Unconditional Cartesian product JOIN detected without ON or USING clause.",
+                reason="Unconditional Cartesian product JOIN detected (no ON/USING condition, or a condition that is always true).",
                 risk_level="HIGH",
                 confidence_score=0,
-                score_breakdown=["Cartesian Product: JOIN without ON/USING condition is forbidden"]
+                score_breakdown=["Cartesian Product: JOIN without a real ON/USING condition is forbidden"]
             )
+
+    if len(joins) > MAX_TOTAL_JOINS:
+        return ASTValidationResult(
+            is_valid=False,
+            sanitized_sql=raw_sql,
+            tables_accessed=tables,
+            reason=f"Query contains {len(joins)} JOINs in total, exceeding the sanity limit of {MAX_TOTAL_JOINS}.",
+            risk_level="HIGH",
+            confidence_score=0,
+            score_breakdown=[f"Excessive Joins: {len(joins)} JOINs in total exceeds {MAX_TOTAL_JOINS}"]
+        )
 
     if join_count > 3:
         return ASTValidationResult(
@@ -382,7 +448,7 @@ def parse_and_validate_ast(raw_sql: str) -> ASTValidationResult:
 
     if not has_limit:
         ast = ast.limit(DEFAULT_SAFETY_LIMIT)
-        sanitized_sql = ast.sql()
+        sanitized_sql = ast.sql(dialect=dialect)
         effective_limit = DEFAULT_SAFETY_LIMIT
     else:
         try:
@@ -391,7 +457,7 @@ def parse_and_validate_ast(raw_sql: str) -> ASTValidationResult:
                 requested_limit = int(limit_val_expr.this)
                 if requested_limit > MAX_PERMITTED_LIMIT:
                     ast.set("limit", exp.Limit(expression=exp.Literal.number(MAX_PERMITTED_LIMIT)))
-                    sanitized_sql = ast.sql()
+                    sanitized_sql = ast.sql(dialect=dialect)
                     effective_limit = MAX_PERMITTED_LIMIT
                     excessive_limit_requested = True
                 else:

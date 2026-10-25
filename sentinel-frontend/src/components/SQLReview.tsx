@@ -8,6 +8,8 @@ type Props = {
   onEdit: (editedSql: string, saveAsTemplate: boolean) => void;
   onReject: () => void;
   loading: boolean;
+  /** When set, approving and editing are disabled and this explains why (e.g. the reviewer submitted the request). */
+  blockedReason?: string;
 };
 
 export default function SQLReview({
@@ -18,6 +20,7 @@ export default function SQLReview({
   onEdit,
   onReject,
   loading,
+  blockedReason,
 }: Props) {
   const [editedSql, setEditedSql] = useState(sql);
   const [mode, setMode] = useState<"view" | "edit">("view");
@@ -56,7 +59,7 @@ export default function SQLReview({
         </p>
       )}
 
-      <hr style={{ margin: 16, border: "none", borderTop: "1px solid rgba(245, 158, 11, 0.2)" }} />
+      <hr style={{ margin: "16px 0", border: "none", borderTop: "1px solid rgba(245, 158, 11, 0.2)" }} />
 
       <label
         style={{
@@ -75,6 +78,8 @@ export default function SQLReview({
         onChange={(e) => setEditedSql(e.target.value)}
         readOnly={!isEditMode}
         style={{
+          display: "block",
+          boxSizing: "border-box",
           width: "100%",
           fontFamily: "monospace",
           fontSize: "14px",
@@ -135,13 +140,13 @@ export default function SQLReview({
         }}
       >
         {!isEditMode && (
-          <button className="primary" onClick={() => onApprove(saveAsTemplate)} disabled={loading} style={{ background: "var(--success)", borderColor: "var(--success)" }}>
+          <button className="primary" onClick={() => onApprove(saveAsTemplate)} disabled={loading || !!blockedReason} style={{ background: "var(--success)", borderColor: "var(--success)" }}>
             Approve & Execute
           </button>
         )}
 
         {!isEditMode && (
-          <button onClick={() => setMode("edit")} disabled={loading}>
+          <button onClick={() => setMode("edit")} disabled={loading || !!blockedReason}>
             Edit SQL
           </button>
         )}
@@ -162,6 +167,10 @@ export default function SQLReview({
           Reject
         </button>
       </div>
+
+      {blockedReason && (
+        <p style={{ marginTop: 12, fontSize: 14, color: "var(--warning)" }}>{blockedReason}</p>
+      )}
 
       {loading && (
         <p style={{ marginTop: 12, fontSize: 14, color: "var(--accent)" }}>

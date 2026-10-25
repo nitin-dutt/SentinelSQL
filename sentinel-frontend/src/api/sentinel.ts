@@ -93,7 +93,9 @@ export async function submitQuery(query: string): Promise<QueryResponse> {
     throw new Error("Your role is not allowed to run queries");
   }
   if (!res.ok) {
-    throw new Error("Backend error while submitting query");
+    // The demo's limits (429 rate limit or daily budget, 422 too long) explain themselves in `detail`; show that text.
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.detail === "string" ? body.detail : "Backend error while submitting query");
   }
 
   return res.json();
@@ -123,7 +125,8 @@ export async function submitDecision(payload: {
     throw new Error(body?.detail ?? "You are not allowed to decide this request");
   }
   if (!res.ok) {
-    throw new Error("Backend error while submitting HITL decision");
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.detail === "string" ? body.detail : "Backend error while submitting HITL decision");
   }
 
   return res.json();
@@ -357,3 +360,36 @@ export async function deleteDictionaryTerm(id: number): Promise<{ status: string
 
 
 
+
+export interface SchemaTable {
+  name: string;
+  description: string;
+  sensitive: boolean;
+  columns: { name: string; type: string; primary_key: boolean }[];
+  foreign_keys: string[];
+}
+
+/** Tables, columns and sensitivity flags for the structure panel. */
+export async function fetchSchemaOverview(): Promise<SchemaTable[]> {
+  const res = await fetch("/schema/overview", { headers: authHeaders() });
+  if (res.status === 401) throw new AuthError();
+  if (!res.ok) throw new Error("Could not load the schema");
+  return (await res.json()).tables;
+}
+
+export interface RunStatus {
+  run_id: string;
+  status: "pending" | "completed" | "rejected" | "failed" | string;
+  sql?: string | null;
+  results?: any;
+  reason?: string | null;
+}
+
+/** Current state of a request that was held for human review. */
+export async function fetchRunStatus(runId: string): Promise<RunStatus> {
+  const res = await fetch(`/query/status/${encodeURIComponent(runId)}`, { headers: authHeaders() });
+  if (res.status === 401) throw new AuthError();
+  if (res.status === 404) throw new Error("This request was not found. It may have expired.");
+  if (!res.ok) throw new Error("Could not check the request status");
+  return res.json();
+}

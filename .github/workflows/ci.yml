@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install pinned dependencies
+        run: |
+          pip install -r requirements.lock
+          pip install pytest pytest-asyncio pytest-cov httpx
+      - name: Run the tests (no network or API keys needed; embeddings are stubbed, live database tests are skipped)
+        env:
+          EMBEDDING_PROVIDER: offline
+        run: pytest -q -m "not pg_mysql"
+
+  databases:
+    name: Live PostgreSQL and MySQL tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sentinel
+          POSTGRES_PASSWORD: pw
+          POSTGRES_DB: demo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentinel -d demo"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: pw
+          MYSQL_DATABASE: demo
+          MYSQL_USER: sentinel
+          MYSQL_PASSWORD: pw
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -ppw"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - run: |
+          pip install -r requirements.lock
+          pip install pytest pytest-asyncio httpx
+      - name: Run the live database tests
+        env:
+          EMBEDDING_PROVIDER: offline
+          TEST_POSTGRES_URL: postgresql://sentinel:pw@localhost:5432/demo
+          TEST_MYSQL_URL: mysql://sentinel:pw@localhost:3306/demo
+          TEST_MYSQL_ROOT_URL: mysql://root:pw@localhost:3306/demo
+        run: pytest -q -m pg_mysql
+
+  frontend:
+    name: Frontend build (TypeScript check and bundle)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sentinel-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sentinel-frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  docker:
+    name: Docker image builds and the container passes the preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t sentinelsql:ci .
+      - name: Start the container
+        run: |
+          docker run -d --name sentinelsql -p 8000:8000 \
+            -e AUTH_TOKENS="ci-employee:emp-1:employee,ci-admin-1:admin-1:admin,ci-admin-2:admin-2:admin,ci-agent:agent-1:external_ai" \
+            sentinelsql:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8000/health && break
+            sleep 2
+          done
+          curl -fsS http://localhost:8000/health
+      - name: The UI is served by the API container
+        run: curl -fsS http://localhost:8000/ | grep -qi "<div id=\"root\""
+      - name: Run the demo preflight against the container (the language-model check is a warning without an API key)
+        env:
+          AUTH_TOKENS: ci-employee:emp-1:employee,ci-admin-1:admin-1:admin,ci-admin-2:admin-2:admin,ci-agent:agent-1:external_ai
+        run: python3 scripts/demo_preflight.py http://localhost:8000
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs sentinelsql
