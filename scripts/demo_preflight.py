@@ -103,8 +103,12 @@ def main() -> int:
     if held:
         code, d = call("POST", "/hitl/decision", adm2, {"run_id": r["run_id"], "decision": "approve"})
         rows = ((d or {}).get("results") or {}).get("rows", [])
-        check("an admin approves it and the salary comes back redacted", d and d.get("status") == "completed" and rows and all(v == "[CONFIDENTIAL]" for v in (row.get("salary") for row in rows)),
-              f"status {d and d.get('status')}")
+        shown = [row.get("salary") for row in rows]
+        check("the approving admin sees the real salary figures", d and d.get("status") == "completed" and rows and all(isinstance(v, (int, float)) for v in shown),
+              f"status {d and d.get('status')}, values {shown[:2]}")
+        code, st = call("GET", f"/mcp/status/{r['run_id']}", agent)
+        seen = [row.get("salary") for row in (((st or {}).get("results") or {}).get("rows") or [])]
+        check("the agent that asked still gets the salary redacted", code == 200 and seen and all(v == "[CONFIDENTIAL]" for v in seen), f"HTTP {code}, values {seen[:2]}")
     code, r2 = call("POST", "/mcp/submit", adm1, {"sql": "SELECT salary FROM salaries", "rationale": "preflight: submitted by an admin"})
     if r2 and r2.get("status") == "requires_human":
         code, _ = call("POST", "/hitl/decision", adm1, {"run_id": r2["run_id"], "decision": "approve"})
