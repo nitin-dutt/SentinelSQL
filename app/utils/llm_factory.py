@@ -11,15 +11,13 @@ exponential backoff (LLM_MAX_RETRIES, default 2). A call that still fails raises
 `LLMUnavailableError`, which the pipeline turns into a clean "error" response instead of a 500.
 """
 
-import os
 import time
 from functools import lru_cache
 from typing import Any
-from dotenv import load_dotenv
 
 from app.utils.logger import get_logger
+from app.settings import settings
 
-load_dotenv()
 logger = get_logger("sentinel.llm")
 
 
@@ -49,7 +47,7 @@ class UniversalLLM:
         self.model_name = model_name
 
     def _invoke_with_retries(self, prompt: str) -> Any:
-        retries = max(0, int(os.getenv("LLM_MAX_RETRIES", "2")))
+        retries = settings.models.max_retries
         for attempt in range(retries + 1):
             try:
                 return self.client.invoke(prompt)
@@ -63,7 +61,21 @@ class UniversalLLM:
                 raise LLMUnavailableError(f"The language model is unavailable right now ({type(e).__name__}). Please try again.") from e
 
     def invoke(self, prompt: str) -> str:
-        response = self._invoke_with_retries(prompt)
+        from app.observability import tracing
+        started = time.perf_counter()
+        try:
+            response = self._invoke_with_retries(prompt)
+        except Exception:
+            tracing.record_model_call(self.model_name, (time.perf_counter() - started) * 1000, prompt, "", ok=False)
+            raise
+        text_out = self._text_of(response)
+        # one record per call in the current request's trace: latency, and the provider's token counts when it reports them
+        tracing.record_model_call(self.model_name, (time.perf_counter() - started) * 1000, prompt, text_out,
+                                  usage=tracing.usage_from_response(response))
+        return text_out
+
+    @staticmethod
+    def _text_of(response: Any) -> str:
         text_out = ""
         # LangChain ChatGoogleGenerativeAI returns an AIMessage with a .content attribute
         if hasattr(response, "content"):
@@ -125,22 +137,21 @@ def get_llm(role: str = "default") -> UniversalLLM:
     1. If GEMINI_API_KEY or GOOGLE_API_KEY is present -> Google Gemini
     2. Otherwise -> Local Ollama instance
     """
-    gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    explicit_provider = os.getenv("LLM_PROVIDER", "").strip().lower()
-    timeout = float(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
+    gemini_key = settings.models.gemini_api_key
+    explicit_provider = settings.models.provider
+    timeout = settings.models.timeout_seconds
 
     # 1. Use Google Gemini if key is provided (unless user explicitly configured ollama)
     if gemini_key and explicit_provider != "ollama":
-        model_name = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+        model_name = settings.models.gemini_model
         return _build_llm(role, "gemini", model_name, gemini_key, timeout)
 
     # 2. Fallback to Local Ollama
-    from app.config import INTENT_MODEL, SQL_MODEL, VALIDATION_MODEL
-
+    models = settings.models
     model_mapping = {
-        "intent": INTENT_MODEL,
-        "sql": SQL_MODEL,
-        "validation": VALIDATION_MODEL,
-        "default": INTENT_MODEL
+        "intent": models.intent_model,
+        "sql": models.sql_model,
+        "validation": models.validation_model,
+        "default": models.intent_model
     }
-    return _build_llm(role, "ollama", model_mapping.get(role, INTENT_MODEL), "", timeout)
+    return _build_llm(role, "ollama", model_mapping.get(role, models.intent_model), "", timeout)

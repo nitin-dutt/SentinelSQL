@@ -16,25 +16,46 @@ import uuid
 from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine, event, text
 
 from app.db.urls import _dialect_for_url, normalize_database_url, resolve_urls, sql_dialect  # noqa: F401  (re-exported)
 from app.utils.logger import get_logger
 from app.utils.masking import apply_data_masking
+from app.settings import settings
 
-load_dotenv()
 logger = get_logger("sentinel.db")
 
 _lock = threading.Lock()
 _state: Dict[str, object] = {}
+# Engines of connected workspaces, by settings scope key (app/workspaces.py registers and drops them).
+_scoped: Dict[str, Dict[str, object]] = {}
+
+
+class ScopeClosedError(RuntimeError):
+    """The workspace this request belongs to has been closed (it expired or was disconnected)."""
+
+
+def register_scoped_engines(key: str, engine, readonly_engine) -> None:
+    _scoped[key] = {"engine": engine, "readonly_engine": readonly_engine, "data_version": (0.0, "")}
+
+
+def drop_scoped_engines(key: str) -> None:
+    state = _scoped.pop(key, None)
+    for eng in {id(e): e for e in (state or {}).values() if hasattr(e, "dispose")}.values():
+        eng.dispose()
+
+
+def _scoped_state() -> Optional[Dict[str, object]]:
+    key = settings.scope_key()
+    if not key:
+        return None
+    try:
+        return _scoped[key]
+    except KeyError:
+        raise ScopeClosedError("This workspace is closed. Connect the database again.") from None
 
 
 # --------------------------------------------------------------------------- configuration
-
-def _truthy(value: Optional[str]) -> bool:
-    return (value or "").strip().lower() in ("1", "true", "yes", "on")
-
 
 def _dialect_label_for(url: str) -> str:
     return _dialect_for_url(url)[1]
@@ -74,14 +95,13 @@ def enforce_read_only_sessions(eng) -> None:
             cursor.close()
 
 
-def internal_sqlite_path(env_override: str) -> str:
+def internal_sqlite_path(explicit: Optional[str]) -> str:
     """
     File for SentinelSQL's own bookkeeping tables (golden queries, business glossary).
-    Resolution: the named environment variable, else the primary database when it is a SQLite file
+    Resolution: `explicit` (the store's own setting, e.g. settings.stores.golden_db), else the primary database when it is a SQLite file
     (the bundled demo keeps everything in one place), else `sentinel_app.db` so that pointing the app
     at PostgreSQL/MySQL never creates SentinelSQL tables inside the customer's database.
     """
-    explicit = os.getenv(env_override)
     if explicit:
         return explicit
     _, url, _ = resolve_urls()
@@ -94,11 +114,11 @@ def _build_engines() -> None:
     active_db, url, readonly_url = resolve_urls()
     logger.info("Database: %s | primary: %s | read-only: %s", _dialect_label_for(url), _safe(url), _safe(readonly_url))
 
-    explicit = os.getenv("DATABASE_URL")
+    explicit = settings.database.url
     if active_db and explicit and normalize_database_url(explicit) != url:
         logger.warning("ACTIVE_DB=%s selects its own URL and overrides DATABASE_URL; remove ACTIVE_DB to use DATABASE_URL alone.", active_db)
     primary = create_engine(url)
-    if not url.startswith("sqlite") and _truthy(os.getenv("DB_FALLBACK_TO_SQLITE")):
+    if not url.startswith("sqlite") and settings.database.fallback_to_sqlite:
         # Opt-in only: silently switching a configured Postgres/MySQL deployment to the demo
         # SQLite file would hide an outage and point the app at the wrong data.
         try:
@@ -126,11 +146,17 @@ def _ensure_built() -> None:
 
 
 def get_engine():
+    scoped = _scoped_state()
+    if scoped is not None:
+        return scoped["engine"]
     _ensure_built()
     return _state["engine"]
 
 
 def get_readonly_engine():
+    scoped = _scoped_state()
+    if scoped is not None:
+        return scoped["readonly_engine"]
     _ensure_built()
     return _state["readonly_engine"]
 
@@ -178,8 +204,9 @@ def get_data_version() -> str:
     the server's statistics are used (see `_server_data_version`), falling back to "untracked".
     """
     global _data_version_memo
-    checked_at, value = _data_version_memo
-    if value and time.monotonic() - checked_at < float(os.getenv("DATA_VERSION_CHECK_SECONDS", "1")):
+    scoped = _scoped_state()
+    checked_at, value = scoped["data_version"] if scoped is not None else _data_version_memo
+    if value and time.monotonic() - checked_at < settings.database.data_version_check_seconds:
         return value
     _, url, _ = resolve_urls()
     if url.startswith("sqlite"):
@@ -193,7 +220,10 @@ def get_data_version() -> str:
         value = "sqlite:" + ":".join(parts)
     else:
         value = _server_data_version()
-    _data_version_memo = (time.monotonic(), value)
+    if scoped is not None:
+        scoped["data_version"] = (time.monotonic(), value)
+    else:
+        _data_version_memo = (time.monotonic(), value)
     return value
 
 
@@ -278,9 +308,9 @@ def seed_demo_data_enabled() -> bool:
     requested explicitly with SEED_DEMO_DATA=true, so pointing SentinelSQL at a real database
     never writes demo tables into it (alignment_plan DAT-05).
     """
-    explicit = os.getenv("SEED_DEMO_DATA")
-    if explicit is not None and explicit.strip():
-        return _truthy(explicit)
+    explicit = settings.database.seed_demo_data
+    if explicit is not None:
+        return explicit
     return get_engine().dialect.name == "sqlite"
 
 
@@ -349,11 +379,11 @@ class QueryTimeoutError(Exception):
 
 
 def _query_timeout_seconds() -> float:
-    return float(os.getenv("QUERY_TIMEOUT", "10"))
+    return settings.limits.query_timeout
 
 
 def _max_result_rows() -> int:
-    return int(os.getenv("MAX_RESULT_ROWS", "1000"))
+    return settings.limits.max_result_rows
 
 
 def _arm_statement_timeout(connection, seconds: float):
@@ -403,7 +433,7 @@ def _json_safe(value):
     return str(value)
 
 
-def execute_readonly_query(sql_query: str, reveal_financial: bool = False) -> Dict:
+def execute_readonly_query(sql_query: str, reveal_financial: bool = False, engine=None) -> Dict:
     """
     Executes a given SQL query and returns the results.
     A last-resort regex check allows only statements that start with SELECT or WITH (CTE);
@@ -412,12 +442,41 @@ def execute_readonly_query(sql_query: str, reveal_financial: bool = False) -> Di
     Resource limits: the statement is cancelled after QUERY_TIMEOUT seconds, and at most
     MAX_RESULT_ROWS rows are fetched (`truncated: true` is set when more were available).
 
-    `reveal_financial` keeps salary-class values readable; only the human-approval path sets it (see apply_data_masking).
+    `reveal_financial` keeps salary-class values readable (see apply_data_masking). The human-approval path needs that
+    view and the normal one from the same rows: it uses `execute_readonly_query_for_review`.
+
+    `engine` runs the query on another SQLAlchemy engine instead of the configured read-only one, with the same
+    limits and masking (the Spider benchmark runs the pipeline against the Spider databases this way). The caller is
+    responsible for that engine being read-only.
     """
+    raw_results, truncated = _fetch_readonly(sql_query, engine)
+    return _masked_view(raw_results, sql_query, truncated, reveal_financial=reveal_financial)
+
+
+def execute_readonly_query_for_review(sql_query: str) -> Tuple[Dict, Dict]:
+    """
+    Runs the query once and returns two masked views of the same rows: (reviewer's, submitter's). The reviewer who has
+    just approved a held query sees salary-class values; the submitter's copy has the normal masking. Both are made
+    from the unmasked rows, so nothing is masked twice. Same limits and errors as `execute_readonly_query`.
+    """
+    raw_results, truncated = _fetch_readonly(sql_query)
+    return (_masked_view(raw_results, sql_query, truncated, reveal_financial=True),
+            _masked_view(raw_results, sql_query, truncated, reveal_financial=False))
+
+
+def _masked_view(raw_results: Dict, sql_query: str, truncated: bool, reveal_financial: bool) -> Dict:
+    masked = apply_data_masking(raw_results, sql=sql_query, reveal_financial=reveal_financial)
+    if truncated:
+        masked["truncated"] = True
+    return masked
+
+
+def _fetch_readonly(sql_query: str, engine=None) -> Tuple[Dict, bool]:
+    """The UNMASKED rows and whether the row cap cut them off. Never return this to a caller outside this module."""
     if not re.match(r"^\s*(select|with)\b", sql_query, re.IGNORECASE):
         raise ValueError("Only SELECT queries are allowed for this endpoint.")
     max_rows = _max_result_rows()
-    with get_readonly_engine().connect() as connection:
+    with (engine or get_readonly_engine()).connect() as connection:
         disarm = _arm_statement_timeout(connection, _query_timeout_seconds())
         try:
             result = connection.execute(text(sql_query))
@@ -436,7 +495,4 @@ def execute_readonly_query(sql_query: str, reveal_financial: bool = False) -> Di
         "columns": columns,
         "rows": [{k: _json_safe(v) for k, v in row._mapping.items()} for row in rows[:max_rows]],
     }
-    masked = apply_data_masking(raw_results, sql=sql_query, reveal_financial=reveal_financial)
-    if truncated:
-        masked["truncated"] = True
-    return masked
+    return raw_results, truncated

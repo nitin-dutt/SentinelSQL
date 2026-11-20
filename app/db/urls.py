@@ -15,11 +15,12 @@ This module has no dependency on the rest of the app, so the parser, masking and
 creating import cycles.
 """
 
-import os
 from functools import lru_cache
 from typing import Optional, Tuple
 
 from sqlalchemy.engine import make_url
+
+from app.settings import settings
 
 # URL scheme -> the scheme SQLAlchemy needs for the drivers listed in requirements.txt
 _SCHEME_ALIASES = {
@@ -49,18 +50,20 @@ def normalize_database_url(url: str) -> str:
 
 def resolve_urls() -> Tuple[str, str, str]:
     """Returns (active_db, primary_url, readonly_url) from the current environment."""
-    active_db = os.getenv("ACTIVE_DB", "").strip().lower()
+    db = settings.database
+    active_db = db.active_db
+    default_sqlite = "sqlite:///sentinel.db"
     if active_db in ("postgres", "postgresql"):
-        url = os.getenv("DATABASE_URL_POSTGRES") or os.getenv("DATABASE_URL") or "postgresql+psycopg2://user:password@localhost:5432/database_name"
+        url = db.postgres_url or db.url or "postgresql+psycopg2://user:password@localhost:5432/database_name"
     elif active_db == "mysql":
-        url = os.getenv("DATABASE_URL_MYSQL") or os.getenv("DATABASE_URL") or "mysql+mysqlconnector://user:password@localhost:3307/database_name"
+        url = db.mysql_url or db.url or "mysql+mysqlconnector://user:password@localhost:3307/database_name"
     elif active_db == "sqlite":
-        url = os.getenv("DATABASE_URL_SQLITE") or os.getenv("DATABASE_URL", "sqlite:///sentinel.db")
+        url = db.sqlite_url or (default_sqlite if db.url is None else db.url)
     else:
-        url = os.getenv("DATABASE_URL") or os.getenv("DATABASE_URL_SQLITE", "sqlite:///sentinel.db")
+        url = db.url or (default_sqlite if db.sqlite_url is None else db.sqlite_url)
     url = normalize_database_url(url)
 
-    readonly = os.getenv("READONLY_DATABASE_URL")
+    readonly = db.readonly_url
     if readonly:
         readonly = normalize_database_url(readonly)
     elif url.startswith("sqlite"):
