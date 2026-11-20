@@ -1,0 +1,4872 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-11-16T18:00:08Z",
+    "git_head": "cf0f005",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 133,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {
+      "benchmarks/data/domain_qa.py": "28fa1f2593b9fb727ef814c16ba481ff0a3637f7b1023bf075fe02046bd71d06"
+    },
+    "status": "complete",
+    "repeats": 2,
+    "n_questions": 30,
+    "usage": {
+      "llm": {
+        "live_calls": 0,
+        "cache_hits": 600,
+        "failed_calls": 0,
+        "harness_retries": 0
+      },
+      "embeddings": {
+        "live_texts": 0,
+        "cache_hits": 51,
+        "live_requests": 0
+      }
+    },
+    "duration_s": 4
+  },
+  "analysis": {
+    "by_config": {
+      "baseline": {
+        "trials": {
+          "k": 44,
+          "n": 60,
+          "rate": 73.33,
+          "lo": 60.99,
+          "hi": 82.87
+        },
+        "strict_with_row_cap": {
+          "k": 44,
+          "n": 60,
+          "rate": 73.33,
+          "lo": 60.99,
+          "hi": 82.87
+        },
+        "by_group": {
+          "all": {
+            "k": 44,
+            "n": 60,
+            "rate": 73.33,
+            "lo": 60.99,
+            "hi": 82.87
+          },
+          "glossary_questions": {
+            "k": 7,
+            "n": 18,
+            "rate": 38.89,
+            "lo": 20.3,
+            "hi": 61.38
+          },
+          "multi_table_joins": {
+            "k": 8,
+            "n": 12,
+            "rate": 66.67,
+            "lo": 39.06,
+            "hi": 86.19
+          },
+          "other": {
+            "k": 29,
+            "n": 32,
+            "rate": 90.62,
+            "lo": 75.78,
+            "hi": 96.76
+          }
+        },
+        "failures": [
+          {
+            "id": "D04",
+            "rep": 1,
+            "question": "How many support tickets have high priority?",
+            "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'High';",
+            "error": null
+          },
+          {
+            "id": "D15",
+            "rep": 1,
+            "question": "For each campaign, how many website events were recorded?",
+            "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+            "error": null
+          },
+          {
+            "id": "D19",
+            "rep": 1,
+            "question": "Who are our VIP customers?",
+            "sql": "SELECT name FROM customers;",
+            "error": null
+          },
+          {
+            "id": "D20",
+            "rep": 1,
+            "question": "What is our net revenue?",
+            "sql": "SELECT SUM(orders.amount) - SUM(returns.refund_amount) FROM orders CROSS JOIN returns;",
+            "error": null
+          },
+          {
+            "id": "D23",
+            "rep": 1,
+            "question": "How many escalated tickets do we have?",
+            "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status = 'escalated';",
+            "error": null
+          },
+          {
+            "id": "D24",
+            "rep": 1,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+            "error": null
+          },
+          {
+            "id": "D25",
+            "rep": 1,
+            "question": "List our senior employees",
+            "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title LIKE '%Senior%';",
+            "error": null
+          },
+          {
+            "id": "D26",
+            "rep": 1,
+            "question": "Who are the top performers?",
+            "sql": "SELECT employees.full_name\nFROM employees\nJOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id\nGROUP BY employees.full_name\nORDER BY AVG(performance_reviews.rating) DESC\nLIMIT 5;",
+            "error": null
+          },
+          {
+            "id": "D30",
+            "rep": 1,
+            "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+            "sql": "SELECT DISTINCT customers.name FROM customers WHERE customers.customer_id IN (SELECT support_tickets.customer_id FROM support_tickets WHERE support_tickets.priority = 'High') AND customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+            "error": null
+          },
+          {
+            "id": "D15",
+            "rep": 2,
+            "question": "For each campaign, how many website events were recorded?",
+            "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+            "error": null
+          },
+          {
+            "id": "D19",
+            "rep": 2,
+            "question": "Who are our VIP customers?",
+            "sql": "SELECT name FROM customers;",
+            "error": null
+          },
+          {
+            "id": "D23",
+            "rep": 2,
+            "question": "How many escalated tickets do we have?",
+            "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status = 'Escalated';",
+            "error": null
+          }
+        ]
+      },
+      "+rag": {
+        "trials": {
+          "k": 38,
+          "n": 60,
+          "rate": 63.33,
+          "lo": 50.68,
+          "hi": 74.38
+        },
+        "strict_with_row_cap": {
+          "k": 38,
+          "n": 60,
+          "rate": 63.33,
+          "lo": 50.68,
+          "hi": 74.38
+        },
+        "by_group": {
+          "all": {
+            "k": 38,
+            "n": 60,
+            "rate": 63.33,
+            "lo": 50.68,
+            "hi": 74.38
+          },
+          "glossary_questions": {
+            "k": 6,
+            "n": 18,
+            "rate": 33.33,
+            "lo": 16.28,
+            "hi": 56.25
+          },
+          "multi_table_joins": {
+            "k": 4,
+            "n": 12,
+            "rate": 33.33,
+            "lo": 13.81,
+            "hi": 60.94
+          },
+          "other": {
+            "k": 28,
+            "n": 32,
+            "rate": 87.5,
+            "lo": 71.93,
+            "hi": 95.03
+          }
+        },
+        "failures": [
+          {
+            "id": "D14",
+            "rep": 1,
+            "question": "List every customer with the number of support tickets they have opened",
+            "sql": "SELECT T1.customer_id, T1.name, T1.email, T1.region, COUNT(T2.ticket_id) FROM customers AS T1 LEFT JOIN support_tickets AS T2 ON T1.customer_id = T2.customer_id GROUP BY T1.customer_id, T1.name, T1.email, T1.region;",
+            "error": null
+          },
+          {
+            "id": "D15",
+            "rep": 1,
+            "question": "For each campaign, how many website events were recorded?",
+            "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+            "error": null
+          },
+          {
+            "id": "D17",
+            "rep": 1,
+            "question": "Which suppliers provide the product named Laptop?",
+            "sql": "SELECT suppliers.supplier_id, suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+            "error": null
+          },
+          {
+            "id": "D19",
+            "rep": 1,
+            "question": "Who are our VIP customers?",
+            "sql": "SELECT customers.customer_id, customers.name, customers.email, customers.region\nFROM customers\nJOIN orders ON customers.customer_id = orders.customer_id\nGROUP BY customers.customer_id, customers.name, customers.email, customers.region\nORDER BY SUM(orders.amount) DESC\nLIMIT 1;",
+            "error": null
+          },
+          {
+            "id": "D20",
+            "rep": 1,
+            "question": "What is our net revenue?",
+            "sql": "SELECT SUM(orders.amount) - SUM(returns.refund_amount) FROM orders JOIN returns ON orders.order_id = returns.order_id;",
+            "error": null
+          },
+          {
+            "id": "D23",
+            "rep": 1,
+            "question": "How many escalated tickets do we have?",
+            "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'Escalated';",
+            "error": null
+          },
+          {
+            "id": "D24",
+            "rep": 1,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id FROM shipments WHERE delivered_date > shipped_date;",
+            "error": null
+          },
+          {
+            "id": "D25",
+            "rep": 1,
+            "question": "List our senior employees",
+            "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title LIKE '%Senior%';",
+            "error": null
+          },
+          {
+            "id": "D26",
+            "rep": 1,
+            "question": "Who are the top performers?",
+            "sql": "SELECT T1.full_name\nFROM employees AS T1\nJOIN performance_reviews AS T2 ON T1.employee_id = T2.employee_id\nGROUP BY T1.employee_id, T1.full_name\nORDER BY AVG(T2.rating) DESC, MAX(T2.rating) DESC\nLIMIT 5;",
+            "error": null
+          },
+          {
+            "id": "D28",
+            "rep": 1,
+            "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+            "sql": "SELECT DISTINCT customers.name, categories.name FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id JOIN categories ON products.category = categories.category_id;",
+            "error": null
+          },
+          {
+            "id": "D30",
+            "rep": 1,
+            "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+            "sql": "SELECT DISTINCT T1.name FROM customers AS T1 JOIN support_tickets AS T2 ON T1.customer_id = T2.customer_id JOIN orders AS T3 ON T1.customer_id = T3.customer_id WHERE T2.priority = 'High';",
+            "error": null
+          },
+          {
+            "id": "D14",
+            "rep": 2,
+            "question": "List every customer with the number of support tickets they have opened",
+            "sql": "SELECT customers.name, customers.email, customers.region, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name, customers.email, customers.region;",
+            "error": null
+          }
+        ]
+      },
+      "+glossary": {
+        "trials": {
+          "k": 57,
+          "n": 60,
+          "rate": 95.0,
+          "lo": 86.3,
+          "hi": 98.29
+        },
+        "strict_with_row_cap": {
+          "k": 57,
+          "n": 60,
+          "rate": 95.0,
+          "lo": 86.3,
+          "hi": 98.29
+        },
+        "by_group": {
+          "all": {
+            "k": 57,
+            "n": 60,
+            "rate": 95.0,
+            "lo": 86.3,
+            "hi": 98.29
+          },
+          "glossary_questions": {
+            "k": 15,
+            "n": 18,
+            "rate": 83.33,
+            "lo": 60.78,
+            "hi": 94.16
+          },
+          "multi_table_joins": {
+            "k": 12,
+            "n": 12,
+            "rate": 100.0,
+            "lo": 75.75,
+            "hi": 100.0
+          },
+          "other": {
+            "k": 32,
+            "n": 32,
+            "rate": 100.0,
+            "lo": 89.28,
+            "hi": 100.0
+          }
+        },
+        "failures": [
+          {
+            "id": "D24",
+            "rep": 1,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id, order_id, carrier, shipped_date, delivered_date, status FROM shipments WHERE julianday(shipments.delivered_date) - julianday(shipments.shipped_date) > 5;",
+            "error": null
+          },
+          {
+            "id": "D25",
+            "rep": 1,
+            "question": "List our senior employees",
+            "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE employees.job_title LIKE '%Senior%';",
+            "error": null
+          },
+          {
+            "id": "D24",
+            "rep": 2,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id, order_id, carrier, shipped_date, delivered_date, status FROM shipments WHERE julianday(shipments.delivered_date) - julianday(shipments.shipped_date) > 5;",
+            "error": null
+          }
+        ]
+      },
+      "+golden": {
+        "trials": {
+          "k": 47,
+          "n": 60,
+          "rate": 78.33,
+          "lo": 66.38,
+          "hi": 86.88
+        },
+        "strict_with_row_cap": {
+          "k": 47,
+          "n": 60,
+          "rate": 78.33,
+          "lo": 66.38,
+          "hi": 86.88
+        },
+        "by_group": {
+          "all": {
+            "k": 47,
+            "n": 60,
+            "rate": 78.33,
+            "lo": 66.38,
+            "hi": 86.88
+          },
+          "glossary_questions": {
+            "k": 8,
+            "n": 18,
+            "rate": 44.44,
+            "lo": 24.56,
+            "hi": 66.28
+          },
+          "multi_table_joins": {
+            "k": 8,
+            "n": 12,
+            "rate": 66.67,
+            "lo": 39.06,
+            "hi": 86.19
+          },
+          "other": {
+            "k": 31,
+            "n": 32,
+            "rate": 96.88,
+            "lo": 84.26,
+            "hi": 99.45
+          }
+        },
+        "failures": [
+          {
+            "id": "D04",
+            "rep": 1,
+            "question": "How many support tickets have high priority?",
+            "sql": "SELECT COUNT(*) FROM support_tickets WHERE priority = 'High';",
+            "error": null
+          },
+          {
+            "id": "D19",
+            "rep": 1,
+            "question": "Who are our VIP customers?",
+            "sql": "SELECT name FROM customers WHERE region = 'VIP';",
+            "error": null
+          },
+          {
+            "id": "D23",
+            "rep": 1,
+            "question": "How many escalated tickets do we have?",
+            "sql": "SELECT COUNT(ticket_id) FROM support_tickets WHERE status = 'escalated';",
+            "error": null
+          },
+          {
+            "id": "D24",
+            "rep": 1,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+            "error": null
+          },
+          {
+            "id": "D25",
+            "rep": 1,
+            "question": "List our senior employees",
+            "sql": "SELECT full_name FROM employees WHERE job_title LIKE '%Senior%';",
+            "error": null
+          },
+          {
+            "id": "D26",
+            "rep": 1,
+            "question": "Who are the top performers?",
+            "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews pr ON e.employee_id = pr.employee_id GROUP BY e.employee_id, e.full_name ORDER BY AVG(pr.rating) DESC LIMIT 5;",
+            "error": null
+          },
+          {
+            "id": "D30",
+            "rep": 1,
+            "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+            "sql": "SELECT DISTINCT c.name FROM customers c JOIN support_tickets st ON c.customer_id = st.customer_id JOIN orders o ON c.customer_id = o.customer_id WHERE st.priority = 'High';",
+            "error": null
+          },
+          {
+            "id": "D19",
+            "rep": 2,
+            "question": "Who are our VIP customers?",
+            "sql": "SELECT name FROM customers WHERE region = 'VIP';",
+            "error": null
+          },
+          {
+            "id": "D23",
+            "rep": 2,
+            "question": "How many escalated tickets do we have?",
+            "sql": "SELECT COUNT(*) FROM support_tickets WHERE status = 'Escalated';",
+            "error": null
+          },
+          {
+            "id": "D24",
+            "rep": 2,
+            "question": "Which shipments were slow deliveries?",
+            "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+            "error": null
+          },
+          {
+            "id": "D25",
+            "rep": 2,
+            "question": "List our senior employees",
+            "sql": "SELECT full_name FROM employees WHERE job_title = 'Senior';",
+            "error": null
+          },
+          {
+            "id": "D26",
+            "rep": 2,
+            "question": "Who are the top performers?",
+            "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews p ON e.employee_id = p.employee_id GROUP BY e.employee_id, e.full_name ORDER BY AVG(p.rating) DESC;",
+            "error": null
+          }
+        ]
+      },
+      "full": {
+        "trials": {
+          "k": 59,
+          "n": 60,
+          "rate": 98.33,
+          "lo": 91.14,
+          "hi": 99.71
+        },
+        "strict_with_row_cap": {
+          "k": 59,
+          "n": 60,
+          "rate": 98.33,
+          "lo": 91.14,
+          "hi": 99.71
+        },
+        "by_group": {
+          "all": {
+            "k": 59,
+            "n": 60,
+            "rate": 98.33,
+            "lo": 91.14,
+            "hi": 99.71
+          },
+          "glossary_questions": {
+            "k": 18,
+            "n": 18,
+            "rate": 100.0,
+            "lo": 82.41,
+            "hi": 100.0
+          },
+          "multi_table_joins": {
+            "k": 12,
+            "n": 12,
+            "rate": 100.0,
+            "lo": 75.75,
+            "hi": 100.0
+          },
+          "other": {
+            "k": 31,
+            "n": 32,
+            "rate": 96.88,
+            "lo": 84.26,
+            "hi": 99.45
+          }
+        },
+        "failures": [
+          {
+            "id": "D15",
+            "rep": 1,
+            "question": "For each campaign, how many website events were recorded?",
+            "sql": "SELECT c.campaign_id, c.name, COUNT(w.event_id) FROM campaigns c LEFT JOIN web_events w ON w.campaign_id = c.campaign_id GROUP BY c.campaign_id, c.name;",
+            "error": null
+          }
+        ]
+      }
+    },
+    "vs_baseline": {
+      "+rag": {
+        "all_questions": {
+          "mean_diff": -0.1,
+          "lo": -0.21666666666666667,
+          "hi": 0.0,
+          "p_not_better": 0.9808
+        },
+        "glossary_questions": {
+          "mean_diff": -0.05555555555555555,
+          "lo": -0.16666666666666666,
+          "hi": 0.0,
+          "p_not_better": 1.0
+        },
+        "multi_table_joins": {
+          "mean_diff": -0.3333333333333333,
+          "lo": -0.6666666666666666,
+          "hi": 0.0,
+          "p_not_better": 1.0
+        },
+        "other": {
+          "mean_diff": -0.03125,
+          "lo": -0.1875,
+          "hi": 0.09375,
+          "p_not_better": 0.728
+        }
+      },
+      "+glossary": {
+        "all_questions": {
+          "mean_diff": 0.21666666666666667,
+          "lo": 0.08333333333333333,
+          "hi": 0.36666666666666664,
+          "p_not_better": 0.0
+        },
+        "glossary_questions": {
+          "mean_diff": 0.4444444444444444,
+          "lo": 0.16666666666666666,
+          "hi": 0.7222222222222222,
+          "p_not_better": 0.001
+        },
+        "multi_table_joins": {
+          "mean_diff": 0.3333333333333333,
+          "lo": 0.0,
+          "hi": 0.6666666666666666,
+          "p_not_better": 0.0862
+        },
+        "other": {
+          "mean_diff": 0.09375,
+          "lo": 0.0,
+          "hi": 0.25,
+          "p_not_better": 0.1102
+        }
+      },
+      "+golden": {
+        "all_questions": {
+          "mean_diff": 0.05,
+          "lo": 0.0,
+          "hi": 0.13333333333333333,
+          "p_not_better": 0.1316
+        },
+        "glossary_questions": {
+          "mean_diff": 0.05555555555555555,
+          "lo": 0.0,
+          "hi": 0.16666666666666666,
+          "p_not_better": 0.3404
+        },
+        "multi_table_joins": {
+          "mean_diff": 0.0,
+          "lo": 0.0,
+          "hi": 0.0,
+          "p_not_better": 1.0
+        },
+        "other": {
+          "mean_diff": 0.0625,
+          "lo": 0.0,
+          "hi": 0.1875,
+          "p_not_better": 0.3482
+        }
+      },
+      "full": {
+        "all_questions": {
+          "mean_diff": 0.25,
+          "lo": 0.11666666666666667,
+          "hi": 0.4,
+          "p_not_better": 0.0
+        },
+        "glossary_questions": {
+          "mean_diff": 0.6111111111111112,
+          "lo": 0.2777777777777778,
+          "hi": 0.8888888888888888,
+          "p_not_better": 0.0002
+        },
+        "multi_table_joins": {
+          "mean_diff": 0.3333333333333333,
+          "lo": 0.0,
+          "hi": 0.6666666666666666,
+          "p_not_better": 0.0862
+        },
+        "other": {
+          "mean_diff": 0.0625,
+          "lo": 0.0,
+          "hi": 0.15625,
+          "p_not_better": 0.1102
+        }
+      }
+    },
+    "fixed_by_full_pipeline": [
+      "D15",
+      "D19",
+      "D23",
+      "D24",
+      "D25",
+      "D26",
+      "D30"
+    ],
+    "broken_by_full_pipeline": []
+  },
+  "trials": [
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'High';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM products JOIN returns ON products.product_id = returns.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT customers.name, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM invoices JOIN payments ON invoices.invoice_id = payments.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT name FROM customers;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - SUM(returns.refund_amount) FROM orders CROSS JOIN returns;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status = 'escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title LIKE '%Senior%';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT employees.full_name\nFROM employees\nJOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id\nGROUP BY employees.full_name\nORDER BY AVG(performance_reviews.rating) DESC\nLIMIT 5;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, products.category FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 1,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT DISTINCT customers.name FROM customers WHERE customers.customer_id IN (SELECT support_tickets.customer_id FROM support_tickets WHERE support_tickets.priority = 'High') AND customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(ticket_id) FROM support_tickets WHERE priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM products JOIN returns ON products.product_id = returns.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT T1.customer_id, T1.name, T1.email, T1.region, COUNT(T2.ticket_id) FROM customers AS T1 LEFT JOIN support_tickets AS T2 ON T1.customer_id = T2.customer_id GROUP BY T1.customer_id, T1.name, T1.email, T1.region;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.supplier_id, suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM invoices JOIN payments ON invoices.invoice_id = payments.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT customers.customer_id, customers.name, customers.email, customers.region\nFROM customers\nJOIN orders ON customers.customer_id = orders.customer_id\nGROUP BY customers.customer_id, customers.name, customers.email, customers.region\nORDER BY SUM(orders.amount) DESC\nLIMIT 1;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - SUM(returns.refund_amount) FROM orders JOIN returns ON orders.order_id = returns.order_id;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'Escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE delivered_date > shipped_date;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title LIKE '%Senior%';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT T1.full_name\nFROM employees AS T1\nJOIN performance_reviews AS T2 ON T1.employee_id = T2.employee_id\nGROUP BY T1.employee_id, T1.full_name\nORDER BY AVG(T2.rating) DESC, MAX(T2.rating) DESC\nLIMIT 5;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, categories.name FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id JOIN categories ON products.category = categories.category_id;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 1,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT DISTINCT T1.name FROM customers AS T1 JOIN support_tickets AS T2 ON T1.customer_id = T2.customer_id JOIN orders AS T3 ON T1.customer_id = T3.customer_id WHERE T2.priority = 'High';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT products.name, products.price FROM products WHERE products.category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT shipments.carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT shipments.carrier, COUNT(shipments.shipment_id) FROM shipments GROUP BY shipments.carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM products JOIN returns ON products.product_id = returns.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT customers.name, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM payments JOIN invoices ON payments.invoice_id = invoices.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT customers.name FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.customer_id, customers.name HAVING SUM(orders.amount) >= 3000;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - (SELECT COALESCE(SUM(returns.refund_amount), 0) FROM returns) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high' AND support_tickets.status <> 'closed';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id, order_id, carrier, shipped_date, delivered_date, status FROM shipments WHERE julianday(shipments.delivered_date) - julianday(shipments.shipped_date) > 5;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE employees.job_title LIKE '%Senior%';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT employees.full_name\nFROM employees\nJOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id\nGROUP BY employees.employee_id, employees.full_name\nHAVING AVG(performance_reviews.rating) >= 4\nLIMIT 5;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, products.category FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 1,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT customers.name FROM customers WHERE customers.customer_id IN (SELECT support_tickets.customer_id FROM support_tickets WHERE support_tickets.priority = 'high') AND customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(*) FROM support_tickets WHERE priority = 'High';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(*) FROM campaigns WHERE channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT p.name, SUM(oi.quantity) FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT d.name, COUNT(e.employee_id) FROM departments d LEFT JOIN employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT p.name, SUM(r.refund_amount) FROM products p JOIN returns r ON p.product_id = r.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT c.name, COUNT(t.ticket_id) FROM customers c LEFT JOIN support_tickets t ON c.customer_id = t.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT c.name, COUNT(w.event_id) FROM campaigns c LEFT JOIN web_events w ON w.campaign_id = c.campaign_id GROUP BY c.campaign_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT d.name, AVG(pr.rating) FROM departments d JOIN employees e ON d.department_id = e.department_id JOIN performance_reviews pr ON e.employee_id = pr.employee_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT s.name FROM suppliers s JOIN product_suppliers ps ON ps.supplier_id = s.supplier_id JOIN products p ON p.product_id = ps.product_id WHERE p.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM payments JOIN invoices ON payments.invoice_id = invoices.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT name FROM customers WHERE region = 'VIP';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(o.amount) - (SELECT COALESCE(SUM(refund_amount), 0) FROM returns) FROM orders o;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(ticket_id) FROM support_tickets WHERE status = 'escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT full_name FROM employees WHERE job_title LIKE '%Senior%';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews pr ON e.employee_id = pr.employee_id GROUP BY e.employee_id, e.full_name ORDER BY AVG(pr.rating) DESC LIMIT 5;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT c.name, p.category FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM order_items JOIN products ON order_items.product_id = products.product_id JOIN product_suppliers ON products.product_id = product_suppliers.product_id JOIN suppliers ON product_suppliers.supplier_id = suppliers.supplier_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 1,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT DISTINCT c.name FROM customers c JOIN support_tickets st ON c.customer_id = st.customer_id JOIN orders o ON c.customer_id = o.customer_id WHERE st.priority = 'High';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(*) FROM support_tickets WHERE priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaign_id) FROM campaigns WHERE channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT p.name, SUM(oi.quantity) FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT d.name, COUNT(e.employee_id) FROM departments d LEFT JOIN employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM returns JOIN products ON returns.product_id = products.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT c.name, COUNT(t.ticket_id) FROM customers c LEFT JOIN support_tickets t ON t.customer_id = c.customer_id GROUP BY c.customer_id, c.name, c.email, c.region;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT c.campaign_id, c.name, COUNT(w.event_id) FROM campaigns c LEFT JOIN web_events w ON w.campaign_id = c.campaign_id GROUP BY c.campaign_id, c.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT d.name, AVG(p.rating) FROM departments d JOIN employees e ON d.department_id = e.department_id JOIN performance_reviews p ON e.employee_id = p.employee_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT s.name FROM suppliers s JOIN product_suppliers ps ON ps.supplier_id = s.supplier_id JOIN products p ON p.product_id = ps.product_id WHERE p.name = 'Laptop' GROUP BY s.supplier_id, s.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT T1.status, SUM(T2.amount) FROM invoices AS T1 JOIN payments AS T2 ON T1.invoice_id = T2.invoice_id GROUP BY T1.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT c.name FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id, c.name, c.email, c.region HAVING SUM(o.amount) >= 3000;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - (SELECT COALESCE(SUM(returns.refund_amount), 0) FROM returns) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(*) FROM support_tickets WHERE support_tickets.priority = 'high' AND support_tickets.status <> 'closed';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE julianday(shipments.delivered_date) - julianday(shipments.shipped_date) > 5;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT full_name FROM employees WHERE hire_date < '2020-01-01';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews pr ON e.employee_id = pr.employee_id GROUP BY e.employee_id, e.full_name HAVING AVG(pr.rating) >= 4 LIMIT 5;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT c.name, p.category FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT s.country, SUM(oi.quantity) FROM suppliers s JOIN product_suppliers ps ON s.supplier_id = ps.supplier_id JOIN order_items oi ON ps.product_id = oi.product_id GROUP BY s.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 1,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT DISTINCT c.name FROM customers c JOIN support_tickets st ON c.customer_id = st.customer_id WHERE st.priority = 'high' AND c.customer_id IN (SELECT o.customer_id FROM orders o);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT shipments.carrier, COUNT(shipments.shipment_id) FROM shipments GROUP BY shipments.carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM products JOIN returns ON products.product_id = returns.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT customers.name, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM payments JOIN invoices ON payments.invoice_id = invoices.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT name FROM customers;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - COALESCE(SUM(returns.refund_amount), 0) FROM orders LEFT JOIN returns ON orders.order_id = returns.order_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status = 'Escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title = 'Senior';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT T1.full_name FROM employees AS T1 JOIN performance_reviews AS T2 ON T1.employee_id = T2.employee_id GROUP BY T1.employee_id, T1.full_name ORDER BY AVG(T2.rating) DESC;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, products.category FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "baseline",
+      "rep": 2,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT customers.name FROM customers WHERE customers.customer_id IN (SELECT support_tickets.customer_id FROM support_tickets WHERE support_tickets.priority = 'High') AND customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(ticket_id) FROM support_tickets WHERE priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT shipments.carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT T1.name, SUM(T2.refund_amount) FROM products AS T1 JOIN returns AS T2 ON T1.product_id = T2.product_id GROUP BY T1.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT customers.name, customers.email, customers.region, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name, customers.email, customers.region;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.campaign_id, campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.supplier_id, suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop' GROUP BY suppliers.supplier_id, suppliers.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM invoices JOIN payments ON invoices.invoice_id = payments.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT T1.customer_id, T1.name, T1.email, T1.region FROM customers AS T1 JOIN orders AS T2 ON T1.customer_id = T2.customer_id GROUP BY T1.customer_id, T1.name, T1.email, T1.region ORDER BY SUM(T2.amount) DESC LIMIT 1;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - SUM(returns.refund_amount) FROM orders, returns;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status = 'escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE delivered_date > datetime(shipped_date, '+7 days');",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT employee_id, full_name, department_id, job_title, hire_date, ssn, phone, personal_email, manager_id FROM employees WHERE job_title LIKE '%Senior%';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT T1.full_name FROM employees AS T1 INNER JOIN performance_reviews AS T2 ON T1.employee_id = T2.employee_id GROUP BY T1.employee_id, T1.full_name ORDER BY AVG(T2.rating) DESC;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, categories.name FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id JOIN categories ON products.category = categories.category_id;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+rag",
+      "rep": 2,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT customers.name \nFROM customers \nJOIN support_tickets ON customers.customer_id = support_tickets.customer_id \nJOIN orders ON customers.customer_id = orders.customer_id \nWHERE support_tickets.priority = 'High';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT products.name, products.price FROM products WHERE products.category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaigns.campaign_id) FROM campaigns WHERE campaigns.channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT shipments.carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT shipments.carrier, COUNT(shipments.shipment_id) FROM shipments GROUP BY shipments.carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT departments.name, COUNT(employees.employee_id) FROM departments LEFT JOIN employees ON departments.department_id = employees.department_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM products JOIN returns ON products.product_id = returns.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT customers.name, COUNT(support_tickets.ticket_id) FROM customers LEFT JOIN support_tickets ON customers.customer_id = support_tickets.customer_id GROUP BY customers.customer_id, customers.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT campaigns.name, COUNT(web_events.event_id) FROM campaigns LEFT JOIN web_events ON campaigns.campaign_id = web_events.campaign_id GROUP BY campaigns.campaign_id, campaigns.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT departments.name, AVG(performance_reviews.rating) FROM departments JOIN employees ON departments.department_id = employees.department_id JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY departments.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT suppliers.name FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN products ON product_suppliers.product_id = products.product_id WHERE products.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM invoices JOIN payments ON invoices.invoice_id = payments.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT customers.name FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.customer_id, customers.name HAVING SUM(orders.amount) >= 3000;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - (SELECT COALESCE(SUM(returns.refund_amount), 0) FROM returns) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoices.invoice_id, invoices.due_date FROM invoices WHERE invoices.status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high' AND support_tickets.status <> 'closed';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id, order_id, carrier, shipped_date, delivered_date, status FROM shipments WHERE julianday(shipments.delivered_date) - julianday(shipments.shipped_date) > 5;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT full_name FROM employees WHERE hire_date < '2020-01-01';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT employees.full_name FROM employees JOIN performance_reviews ON employees.employee_id = performance_reviews.employee_id GROUP BY employees.employee_id, employees.full_name HAVING AVG(performance_reviews.rating) >= 4;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customers.customer_id) FROM customers WHERE customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT customers.name, products.category FROM customers JOIN orders ON customers.customer_id = orders.customer_id JOIN order_items ON orders.order_id = order_items.order_id JOIN products ON order_items.product_id = products.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT suppliers.country, SUM(order_items.quantity) FROM suppliers JOIN product_suppliers ON suppliers.supplier_id = product_suppliers.supplier_id JOIN order_items ON product_suppliers.product_id = order_items.product_id GROUP BY suppliers.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+glossary",
+      "rep": 2,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT customers.name FROM customers WHERE customers.customer_id IN (SELECT support_tickets.customer_id FROM support_tickets WHERE support_tickets.priority = 'high') AND customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(*) FROM support_tickets WHERE priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaign_id) FROM campaigns WHERE channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT p.name, SUM(oi.quantity) FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT d.name, COUNT(e.employee_id) FROM departments d LEFT JOIN employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT p.name, SUM(r.refund_amount) FROM products p JOIN returns r ON p.product_id = r.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT c.name, COUNT(s.ticket_id) FROM customers c LEFT JOIN support_tickets s ON s.customer_id = c.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT c.name, COUNT(w.event_id) FROM campaigns c LEFT JOIN web_events w ON w.campaign_id = c.campaign_id GROUP BY c.campaign_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT d.name, AVG(p.rating) FROM departments d JOIN employees e ON d.department_id = e.department_id JOIN performance_reviews p ON e.employee_id = p.employee_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT DISTINCT s.name FROM suppliers s JOIN product_suppliers ps ON ps.supplier_id = s.supplier_id JOIN products p ON p.product_id = ps.product_id WHERE p.name = 'Laptop';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT invoices.status, SUM(payments.amount) FROM payments JOIN invoices ON payments.invoice_id = invoices.invoice_id GROUP BY invoices.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT name FROM customers WHERE region = 'VIP';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT (SELECT SUM(amount) FROM orders) - (SELECT SUM(refund_amount) FROM returns);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(*) FROM support_tickets WHERE status = 'Escalated';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE status = 'slow';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT full_name FROM employees WHERE job_title = 'Senior';",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews p ON e.employee_id = p.employee_id GROUP BY e.employee_id, e.full_name ORDER BY AVG(p.rating) DESC;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(customer_id) FROM customers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT c.name, p.category FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT t1.country, SUM(t3.quantity) FROM suppliers AS t1 JOIN product_suppliers AS t2 ON t1.supplier_id = t2.supplier_id JOIN order_items AS t3 ON t2.product_id = t3.product_id GROUP BY t1.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "+golden",
+      "rep": 2,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT c.name FROM customers c JOIN support_tickets s ON c.customer_id = s.customer_id JOIN orders o ON c.customer_id = o.customer_id WHERE s.priority = 'High' GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": false,
+      "correct_strict": false,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D01",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many customers are in the North region?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE region = 'North';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D02",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the names and prices of products in the Electronics category",
+      "sql": "SELECT name, price FROM products WHERE category = 'Electronics';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D03",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the total amount of all orders?",
+      "sql": "SELECT SUM(amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D04",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many support tickets have high priority?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D05",
+      "tier": "easy",
+      "needs": [],
+      "question": "Show the name and country of every supplier",
+      "sql": "SELECT name, country FROM suppliers;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D06",
+      "tier": "easy",
+      "needs": [],
+      "question": "What is the largest single order amount?",
+      "sql": "SELECT MAX(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D07",
+      "tier": "easy",
+      "needs": [],
+      "question": "How many campaigns use the email channel?",
+      "sql": "SELECT COUNT(campaign_id) FROM campaigns WHERE channel = 'email';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D08",
+      "tier": "easy",
+      "needs": [],
+      "question": "List the distinct shipping carriers",
+      "sql": "SELECT DISTINCT carrier FROM shipments;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D09",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total order amount for each customer? Show the customer name.",
+      "sql": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D10",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many units of each product were sold? Show the product name.",
+      "sql": "SELECT p.name, SUM(oi.quantity) FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY p.product_id, p.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D11",
+      "tier": "medium",
+      "needs": [],
+      "question": "How many shipments has each carrier handled?",
+      "sql": "SELECT carrier, COUNT(shipment_id) FROM shipments GROUP BY carrier;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D12",
+      "tier": "medium",
+      "needs": [],
+      "question": "Show each department's name and its number of employees",
+      "sql": "SELECT d.name, COUNT(e.employee_id) FROM departments d LEFT JOIN employees e ON d.department_id = e.department_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D13",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total refund amount for each product name?",
+      "sql": "SELECT products.name, SUM(returns.refund_amount) FROM returns JOIN products ON returns.product_id = products.product_id GROUP BY products.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D14",
+      "tier": "medium",
+      "needs": [],
+      "question": "List every customer with the number of support tickets they have opened",
+      "sql": "SELECT c.name, COUNT(s.ticket_id) FROM customers c LEFT JOIN support_tickets s ON s.customer_id = c.customer_id GROUP BY c.customer_id, c.name, c.email, c.region;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D15",
+      "tier": "medium",
+      "needs": [],
+      "question": "For each campaign, how many website events were recorded?",
+      "sql": "SELECT c.name, COUNT(w.event_id) FROM campaigns c LEFT JOIN web_events w ON w.campaign_id = c.campaign_id GROUP BY c.campaign_id, c.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D16",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the average performance review rating for each department name?",
+      "sql": "SELECT d.name, AVG(p.rating) FROM departments d JOIN employees e ON d.department_id = e.department_id JOIN performance_reviews p ON e.employee_id = p.employee_id GROUP BY d.department_id, d.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D17",
+      "tier": "medium",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which suppliers provide the product named Laptop?",
+      "sql": "SELECT s.name FROM suppliers s JOIN product_suppliers ps ON ps.supplier_id = s.supplier_id JOIN products p ON p.product_id = ps.product_id WHERE p.name = 'Laptop' GROUP BY s.supplier_id, s.name;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D18",
+      "tier": "medium",
+      "needs": [],
+      "question": "What is the total amount of payments received for each invoice status?",
+      "sql": "SELECT T1.status, SUM(T2.amount) FROM invoices AS T1 JOIN payments AS T2 ON T1.invoice_id = T2.invoice_id GROUP BY T1.status;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D19",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Who are our VIP customers?",
+      "sql": "SELECT c.name FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name, c.email, c.region HAVING SUM(o.amount) >= 3000;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D20",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is our net revenue?",
+      "sql": "SELECT SUM(orders.amount) - (SELECT COALESCE(SUM(returns.refund_amount), 0) FROM returns) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D21",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "What is the average order value?",
+      "sql": "SELECT AVG(orders.amount) FROM orders;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D22",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List the open invoices with their due dates",
+      "sql": "SELECT invoice_id, due_date FROM invoices WHERE status = 'open';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D23",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many escalated tickets do we have?",
+      "sql": "SELECT COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.priority = 'high' AND support_tickets.status <> 'closed';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D24",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "Which shipments were slow deliveries?",
+      "sql": "SELECT shipment_id FROM shipments WHERE julianday(delivered_date) - julianday(shipped_date) > 5;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D25",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "List our senior employees",
+      "sql": "SELECT full_name FROM employees WHERE hire_date < '2020-01-01';",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D26",
+      "tier": "hard",
+      "needs": [
+        "glossary",
+        "joins3"
+      ],
+      "question": "Who are the top performers?",
+      "sql": "SELECT e.full_name FROM employees e JOIN performance_reviews pr ON e.employee_id = pr.employee_id GROUP BY e.employee_id, e.full_name HAVING AVG(pr.rating) >= 4;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D27",
+      "tier": "hard",
+      "needs": [
+        "glossary"
+      ],
+      "question": "How many active customers do we have?",
+      "sql": "SELECT COUNT(*) FROM customers WHERE customers.customer_id IN (SELECT orders.customer_id FROM orders);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D28",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which product categories has each customer bought? Show the customer name and category, without duplicates.",
+      "sql": "SELECT DISTINCT c.name, p.category FROM customers c JOIN orders o ON c.customer_id = o.customer_id JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D29",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "What is the total quantity sold for each supplier country?",
+      "sql": "SELECT s.country, SUM(oi.quantity) FROM suppliers s JOIN product_suppliers ps ON s.supplier_id = ps.supplier_id JOIN order_items oi ON ps.product_id = oi.product_id GROUP BY s.country;",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    },
+    {
+      "config": "full",
+      "rep": 2,
+      "id": "D30",
+      "tier": "hard",
+      "needs": [
+        "joins3"
+      ],
+      "question": "Which customers have a high priority support ticket and have also placed an order? Show their names.",
+      "sql": "SELECT DISTINCT c.name FROM customers c JOIN support_tickets s ON c.customer_id = s.customer_id WHERE s.priority = 'high' AND c.customer_id IN (SELECT o.customer_id FROM orders o);",
+      "reason": null,
+      "correct": true,
+      "correct_strict": true,
+      "error": null
+    }
+  ]
+}

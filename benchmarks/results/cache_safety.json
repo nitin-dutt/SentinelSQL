@@ -1,9 +1,9 @@
 {
   "meta": {
-    "timestamp_utc": "2026-10-14T16:07:24Z",
-    "git_head": "8cbd53e",
+    "timestamp_utc": "2026-11-16T17:38:00Z",
+    "git_head": "cf0f005",
     "git_working_tree_dirty": true,
-    "git_changed_files": 16,
+    "git_changed_files": 132,
     "python": "3.11.7",
     "platform": "Windows 10 AMD64",
     "logical_cpus": 32,
@@ -30,18 +30,18 @@
     "threshold": 0.92,
     "similarity_only": {
       "wrong_hit_rate": {
-        "k": 8,
+        "k": 6,
         "n": 38,
-        "rate": 21.05,
-        "lo": 11.07,
-        "hi": 36.35
+        "rate": 15.79,
+        "lo": 7.44,
+        "hi": 30.42
       },
       "legit_hit_rate": {
-        "k": 8,
+        "k": 6,
         "n": 24,
-        "rate": 33.33,
-        "lo": 17.97,
-        "hi": 53.29
+        "rate": 25.0,
+        "lo": 12.0,
+        "hi": 44.9
       }
     },
     "guarded": {
@@ -53,11 +53,11 @@
         "hi": 9.18
       },
       "legit_hit_rate": {
-        "k": 7,
+        "k": 5,
         "n": 24,
-        "rate": 29.17,
-        "lo": 14.91,
-        "hi": 49.17
+        "rate": 20.83,
+        "lo": 9.24,
+        "hi": 40.47
       }
     }
   },
@@ -73,11 +73,11 @@
           "hi": 95.83
         },
         "legit_hit_rate": {
-          "k": 24,
+          "k": 23,
           "n": 24,
-          "rate": 100.0,
-          "lo": 86.2,
-          "hi": 100.0
+          "rate": 95.83,
+          "lo": 79.76,
+          "hi": 99.26
         }
       },
       "guarded": {
@@ -101,11 +101,11 @@
       "threshold": 0.85,
       "similarity_only": {
         "wrong_hit_rate": {
-          "k": 26,
+          "k": 25,
           "n": 38,
-          "rate": 68.42,
-          "lo": 52.54,
-          "hi": 80.92
+          "rate": 65.79,
+          "lo": 49.89,
+          "hi": 78.79
         },
         "legit_hit_rate": {
           "k": 20,
@@ -136,18 +136,18 @@
       "threshold": 0.88,
       "similarity_only": {
         "wrong_hit_rate": {
-          "k": 14,
+          "k": 12,
           "n": 38,
-          "rate": 36.84,
-          "lo": 23.38,
-          "hi": 52.72
+          "rate": 31.58,
+          "lo": 19.08,
+          "hi": 47.46
         },
         "legit_hit_rate": {
-          "k": 18,
+          "k": 17,
           "n": 24,
-          "rate": 75.0,
-          "lo": 55.1,
-          "hi": 88.0
+          "rate": 70.83,
+          "lo": 50.83,
+          "hi": 85.09
         }
       },
       "guarded": {
@@ -171,11 +171,11 @@
       "threshold": 0.9,
       "similarity_only": {
         "wrong_hit_rate": {
-          "k": 12,
+          "k": 11,
           "n": 38,
-          "rate": 31.58,
-          "lo": 19.08,
-          "hi": 47.46
+          "rate": 28.95,
+          "lo": 17.0,
+          "hi": 44.76
         },
         "legit_hit_rate": {
           "k": 11,
@@ -183,41 +183,6 @@
           "rate": 45.83,
           "lo": 27.89,
           "hi": 64.93
-        }
-      },
-      "guarded": {
-        "wrong_hit_rate": {
-          "k": 0,
-          "n": 38,
-          "rate": 0.0,
-          "lo": 0.0,
-          "hi": 9.18
-        },
-        "legit_hit_rate": {
-          "k": 8,
-          "n": 24,
-          "rate": 33.33,
-          "lo": 17.97,
-          "hi": 53.29
-        }
-      }
-    },
-    {
-      "threshold": 0.92,
-      "similarity_only": {
-        "wrong_hit_rate": {
-          "k": 8,
-          "n": 38,
-          "rate": 21.05,
-          "lo": 11.07,
-          "hi": 36.35
-        },
-        "legit_hit_rate": {
-          "k": 8,
-          "n": 24,
-          "rate": 33.33,
-          "lo": 17.97,
-          "hi": 53.29
         }
       },
       "guarded": {
@@ -238,21 +203,21 @@
       }
     },
     {
-      "threshold": 0.94,
+      "threshold": 0.92,
       "similarity_only": {
         "wrong_hit_rate": {
-          "k": 2,
+          "k": 6,
           "n": 38,
-          "rate": 5.26,
-          "lo": 1.46,
-          "hi": 17.29
+          "rate": 15.79,
+          "lo": 7.44,
+          "hi": 30.42
         },
         "legit_hit_rate": {
-          "k": 3,
+          "k": 6,
           "n": 24,
-          "rate": 12.5,
-          "lo": 4.34,
-          "hi": 31.0
+          "rate": 25.0,
+          "lo": 12.0,
+          "hi": 44.9
         }
       },
       "guarded": {
@@ -264,11 +229,46 @@
           "hi": 9.18
         },
         "legit_hit_rate": {
-          "k": 3,
+          "k": 5,
           "n": 24,
-          "rate": 12.5,
-          "lo": 4.34,
-          "hi": 31.0
+          "rate": 20.83,
+          "lo": 9.24,
+          "hi": 40.47
+        }
+      }
+    },
+    {
+      "threshold": 0.94,
+      "similarity_only": {
+        "wrong_hit_rate": {
+          "k": 2,
+          "n": 38,
+          "rate": 5.26,
+          "lo": 1.46,
+          "hi": 17.29
+        },
+        "legit_hit_rate": {
+          "k": 1,
+          "n": 24,
+          "rate": 4.17,
+          "lo": 0.74,
+          "hi": 20.24
+        }
+      },
+      "guarded": {
+        "wrong_hit_rate": {
+          "k": 0,
+          "n": 38,
+          "rate": 0.0,
+          "lo": 0.0,
+          "hi": 9.18
+        },
+        "legit_hit_rate": {
+          "k": 1,
+          "n": 24,
+          "rate": 4.17,
+          "lo": 0.74,
+          "hi": 20.24
         }
       }
     },
@@ -348,25 +348,25 @@
       "n": 4,
       "similarity_only_wrong_hits": 0,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.834
+      "mean_similarity": 0.842
     },
     "comparison": {
       "n": 4,
-      "similarity_only_wrong_hits": 2,
+      "similarity_only_wrong_hits": 1,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.905
+      "mean_similarity": 0.903
     },
     "date": {
       "n": 4,
-      "similarity_only_wrong_hits": 2,
+      "similarity_only_wrong_hits": 1,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.897
+      "mean_similarity": 0.892
     },
     "entity": {
       "n": 5,
       "similarity_only_wrong_hits": 0,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.859
+      "mean_similarity": 0.847
     },
     "entity_lowercase": {
       "n": 3,
@@ -378,25 +378,25 @@
       "n": 4,
       "similarity_only_wrong_hits": 0,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.839
+      "mean_similarity": 0.846
     },
     "number": {
       "n": 4,
       "similarity_only_wrong_hits": 2,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.927
+      "mean_similarity": 0.929
     },
     "ranking": {
       "n": 3,
       "similarity_only_wrong_hits": 0,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.865
+      "mean_similarity": 0.861
     },
     "relative_time": {
       "n": 3,
       "similarity_only_wrong_hits": 2,
       "guarded_wrong_hits": 0,
-      "mean_similarity": 0.921
+      "mean_similarity": 0.92
     },
     "subject": {
       "n": 4,
@@ -410,7 +410,7 @@
       "id": "P21",
       "a": "How many high priority tickets are open?",
       "b": "Count open tickets with high priority",
-      "similarity": 0.9286
+      "similarity": 0.9257
     }
   ],
   "wrong_hits_with_similarity_only": [
@@ -419,27 +419,20 @@
       "kind": "number",
       "a": "Show the top 5 customers by revenue",
       "b": "Show the top 10 customers by revenue",
-      "similarity": 0.9518
+      "similarity": 0.9536
     },
     {
       "id": "N02",
       "kind": "number",
       "a": "List orders above 1000",
       "b": "List orders above 2000",
-      "similarity": 0.9232
+      "similarity": 0.9389
     },
     {
       "id": "N05",
       "kind": "date",
       "a": "How many orders were placed in 2024?",
       "b": "How many orders were placed in 2025?",
-      "similarity": 0.932
-    },
-    {
-      "id": "N07",
-      "kind": "date",
-      "a": "Show sales for Q1",
-      "b": "Show sales for Q2",
       "similarity": 0.9268
     },
     {
@@ -447,34 +440,27 @@
       "kind": "comparison",
       "a": "Orders above the average amount",
       "b": "Orders below the average amount",
-      "similarity": 0.9298
-    },
-    {
-      "id": "N11",
-      "kind": "comparison",
-      "a": "Shipments delivered before February",
-      "b": "Shipments delivered after February",
-      "similarity": 0.9256
+      "similarity": 0.9331
     },
     {
       "id": "N32",
       "kind": "relative_time",
       "a": "Orders from this month",
       "b": "Orders from last month",
-      "similarity": 0.9485
+      "similarity": 0.9536
     },
     {
       "id": "N33",
       "kind": "relative_time",
       "a": "Tickets opened today",
       "b": "Tickets opened yesterday",
-      "similarity": 0.935
+      "similarity": 0.9314
     }
   ],
   "wrong_hits_with_guards": [],
   "similarity_stats": {
-    "paraphrase_mean": 0.894,
-    "must_not_hit_mean": 0.866
+    "paraphrase_mean": 0.891,
+    "must_not_hit_mean": 0.865
   },
   "end_to_end_agreement": {
     "checked": 62,
@@ -487,7 +473,7 @@
       "a": "How many customers do we have?",
       "b": "What is the total number of customers?",
       "should_hit": true,
-      "similarity": 0.8906,
+      "similarity": 0.8995,
       "guards_ok": false
     },
     {
@@ -496,7 +482,7 @@
       "a": "Show total revenue by customer",
       "b": "What is each customer's total revenue?",
       "should_hit": true,
-      "similarity": 0.895,
+      "similarity": 0.8945,
       "guards_ok": true
     },
     {
@@ -505,7 +491,7 @@
       "a": "List the products in the Electronics category",
       "b": "Show me all Electronics products",
       "should_hit": true,
-      "similarity": 0.8258,
+      "similarity": 0.8233,
       "guards_ok": true
     },
     {
@@ -514,7 +500,7 @@
       "a": "What is the average order amount?",
       "b": "Average amount per order",
       "should_hit": true,
-      "similarity": 0.9343,
+      "similarity": 0.9313,
       "guards_ok": true
     },
     {
@@ -523,7 +509,7 @@
       "a": "Which customers have never placed an order?",
       "b": "Customers with no orders",
       "should_hit": true,
-      "similarity": 0.9092,
+      "similarity": 0.913,
       "guards_ok": false
     },
     {
@@ -532,7 +518,7 @@
       "a": "Count support tickets by priority",
       "b": "How many tickets are there for each priority level?",
       "should_hit": true,
-      "similarity": 0.8189,
+      "similarity": 0.7924,
       "guards_ok": false
     },
     {
@@ -541,7 +527,7 @@
       "a": "Show open invoices",
       "b": "List the invoices that are still open",
       "should_hit": true,
-      "similarity": 0.8938,
+      "similarity": 0.8896,
       "guards_ok": true
     },
     {
@@ -550,7 +536,7 @@
       "a": "Total quantity sold per product",
       "b": "How many units of each product were sold?",
       "should_hit": true,
-      "similarity": 0.823,
+      "similarity": 0.8096,
       "guards_ok": false
     },
     {
@@ -559,7 +545,7 @@
       "a": "Which suppliers are located in Germany?",
       "b": "List the suppliers based in Germany",
       "should_hit": true,
-      "similarity": 0.9418,
+      "similarity": 0.9378,
       "guards_ok": true
     },
     {
@@ -568,7 +554,7 @@
       "a": "Show the top 5 customers by revenue",
       "b": "Who are our five biggest customers by revenue?",
       "should_hit": true,
-      "similarity": 0.847,
+      "similarity": 0.8728,
       "guards_ok": false
     },
     {
@@ -577,7 +563,7 @@
       "a": "Orders placed in 2025",
       "b": "Show me the orders from 2025",
       "should_hit": true,
-      "similarity": 0.9018,
+      "similarity": 0.8972,
       "guards_ok": true
     },
     {
@@ -586,7 +572,7 @@
       "a": "List shipments delivered by UPS",
       "b": "Which shipments did UPS deliver?",
       "should_hit": true,
-      "similarity": 0.8589,
+      "similarity": 0.8529,
       "guards_ok": true
     },
     {
@@ -595,7 +581,7 @@
       "a": "How many returns were there for each reason?",
       "b": "Number of returns per reason",
       "should_hit": true,
-      "similarity": 0.9266,
+      "similarity": 0.9184,
       "guards_ok": true
     },
     {
@@ -604,7 +590,7 @@
       "a": "What is the total budget for 2024?",
       "b": "Total budget in 2024",
       "should_hit": true,
-      "similarity": 0.9416,
+      "similarity": 0.9433,
       "guards_ok": true
     },
     {
@@ -613,7 +599,7 @@
       "a": "Show payments by method",
       "b": "Payments grouped by payment method",
       "should_hit": true,
-      "similarity": 0.8924,
+      "similarity": 0.8939,
       "guards_ok": true
     },
     {
@@ -622,7 +608,7 @@
       "a": "What are the names of all departments?",
       "b": "List every department name",
       "should_hit": true,
-      "similarity": 0.8908,
+      "similarity": 0.8938,
       "guards_ok": true
     },
     {
@@ -631,7 +617,7 @@
       "a": "Count the products in each category",
       "b": "How many products are in each category?",
       "should_hit": true,
-      "similarity": 0.8917,
+      "similarity": 0.9021,
       "guards_ok": false
     },
     {
@@ -640,7 +626,7 @@
       "a": "Which customers are in the North region?",
       "b": "Show customers from the North region",
       "should_hit": true,
-      "similarity": 0.9247,
+      "similarity": 0.9073,
       "guards_ok": true
     },
     {
@@ -649,7 +635,7 @@
       "a": "What is the maximum order amount?",
       "b": "Largest order amount",
       "should_hit": true,
-      "similarity": 0.8921,
+      "similarity": 0.875,
       "guards_ok": false
     },
     {
@@ -658,7 +644,7 @@
       "a": "List the campaigns and their budgets",
       "b": "Show every campaign with its budget",
       "should_hit": true,
-      "similarity": 0.942,
+      "similarity": 0.9268,
       "guards_ok": true
     },
     {
@@ -667,7 +653,7 @@
       "a": "How many high priority tickets are open?",
       "b": "Count open tickets with high priority",
       "should_hit": true,
-      "similarity": 0.9286,
+      "similarity": 0.9257,
       "guards_ok": false
     },
     {
@@ -676,7 +662,7 @@
       "a": "Show the number of orders per customer",
       "b": "How many orders has each customer placed?",
       "should_hit": true,
-      "similarity": 0.9248,
+      "similarity": 0.9343,
       "guards_ok": true
     },
     {
@@ -685,7 +671,7 @@
       "a": "What is the total refund amount?",
       "b": "Sum of all refunds",
       "should_hit": true,
-      "similarity": 0.8524,
+      "similarity": 0.8438,
       "guards_ok": false
     },
     {
@@ -694,7 +680,7 @@
       "a": "Which products cost more than 100?",
       "b": "Products priced above 100",
       "should_hit": true,
-      "similarity": 0.9065,
+      "similarity": 0.9103,
       "guards_ok": false
     },
     {
@@ -703,7 +689,7 @@
       "a": "Show the top 5 customers by revenue",
       "b": "Show the top 10 customers by revenue",
       "should_hit": false,
-      "similarity": 0.9518,
+      "similarity": 0.9536,
       "guards_ok": false
     },
     {
@@ -712,7 +698,7 @@
       "a": "List orders above 1000",
       "b": "List orders above 2000",
       "should_hit": false,
-      "similarity": 0.9232,
+      "similarity": 0.9389,
       "guards_ok": false
     },
     {
@@ -721,7 +707,7 @@
       "a": "Revenue for the last 3 months",
       "b": "Revenue for the last 6 months",
       "should_hit": false,
-      "similarity": 0.9137,
+      "similarity": 0.9165,
       "guards_ok": false
     },
     {
@@ -730,7 +716,7 @@
       "a": "Which products cost more than 50?",
       "b": "Which products cost more than 500?",
       "should_hit": false,
-      "similarity": 0.918,
+      "similarity": 0.9054,
       "guards_ok": false
     },
     {
@@ -739,7 +725,7 @@
       "a": "How many orders were placed in 2024?",
       "b": "How many orders were placed in 2025?",
       "should_hit": false,
-      "similarity": 0.932,
+      "similarity": 0.9268,
       "guards_ok": false
     },
     {
@@ -748,7 +734,7 @@
       "a": "Revenue in January",
       "b": "Revenue in March",
       "should_hit": false,
-      "similarity": 0.861,
+      "similarity": 0.859,
       "guards_ok": false
     },
     {
@@ -757,7 +743,7 @@
       "a": "Show sales for Q1",
       "b": "Show sales for Q2",
       "should_hit": false,
-      "similarity": 0.9268,
+      "similarity": 0.9184,
       "guards_ok": false
     },
     {
@@ -766,7 +752,7 @@
       "a": "What is the total budget for 2023?",
       "b": "What is the total budget for 2024?",
       "should_hit": false,
-      "similarity": 0.8677,
+      "similarity": 0.8646,
       "guards_ok": false
     },
     {
@@ -775,7 +761,7 @@
       "a": "Customers with more than 3 orders",
       "b": "Customers with fewer than 3 orders",
       "should_hit": false,
-      "similarity": 0.9081,
+      "similarity": 0.9068,
       "guards_ok": false
     },
     {
@@ -784,7 +770,7 @@
       "a": "Orders above the average amount",
       "b": "Orders below the average amount",
       "should_hit": false,
-      "similarity": 0.9298,
+      "similarity": 0.9331,
       "guards_ok": false
     },
     {
@@ -793,7 +779,7 @@
       "a": "Shipments delivered before February",
       "b": "Shipments delivered after February",
       "should_hit": false,
-      "similarity": 0.9256,
+      "similarity": 0.919,
       "guards_ok": false
     },
     {
@@ -802,7 +788,7 @@
       "a": "Products priced over 100",
       "b": "Products priced under 100",
       "should_hit": false,
-      "similarity": 0.8548,
+      "similarity": 0.8531,
       "guards_ok": false
     },
     {
@@ -811,7 +797,7 @@
       "a": "Show the average order amount",
       "b": "Show the total order amount",
       "should_hit": false,
-      "similarity": 0.8234,
+      "similarity": 0.8281,
       "guards_ok": false
     },
     {
@@ -820,7 +806,7 @@
       "a": "What is the maximum order amount?",
       "b": "What is the minimum order amount?",
       "should_hit": false,
-      "similarity": 0.8276,
+      "similarity": 0.8424,
       "guards_ok": false
     },
     {
@@ -829,7 +815,7 @@
       "a": "Count the orders per customer",
       "b": "Sum the order amounts per customer",
       "should_hit": false,
-      "similarity": 0.8058,
+      "similarity": 0.8159,
       "guards_ok": false
     },
     {
@@ -838,7 +824,7 @@
       "a": "Average ticket count per customer",
       "b": "Total ticket count per customer",
       "should_hit": false,
-      "similarity": 0.879,
+      "similarity": 0.8806,
       "guards_ok": false
     },
     {
@@ -847,7 +833,7 @@
       "a": "How many customers are in the North region?",
       "b": "How many customers are in the South region?",
       "should_hit": false,
-      "similarity": 0.9037,
+      "similarity": 0.8715,
       "guards_ok": false
     },
     {
@@ -856,7 +842,7 @@
       "a": "Which suppliers are located in Germany?",
       "b": "Which suppliers are located in France?",
       "should_hit": false,
-      "similarity": 0.8355,
+      "similarity": 0.8246,
       "guards_ok": false
     },
     {
@@ -874,7 +860,7 @@
       "a": "List the products in the Electronics category",
       "b": "List the products in the Furniture category",
       "should_hit": false,
-      "similarity": 0.8211,
+      "similarity": 0.8053,
       "guards_ok": false
     },
     {
@@ -883,7 +869,7 @@
       "a": "Show all orders for Alice",
       "b": "Show all orders for Bob",
       "should_hit": false,
-      "similarity": 0.861,
+      "similarity": 0.8637,
       "guards_ok": false
     },
     {
@@ -919,7 +905,7 @@
       "a": "Show orders that have shipped",
       "b": "Show orders that have not shipped",
       "should_hit": false,
-      "similarity": 0.8831,
+      "similarity": 0.8766,
       "guards_ok": false
     },
     {
@@ -928,7 +914,7 @@
       "a": "Customers with orders",
       "b": "Customers without orders",
       "should_hit": false,
-      "similarity": 0.8363,
+      "similarity": 0.8424,
       "guards_ok": false
     },
     {
@@ -937,7 +923,7 @@
       "a": "Show open tickets",
       "b": "Show closed tickets",
       "should_hit": false,
-      "similarity": 0.7757,
+      "similarity": 0.7936,
       "guards_ok": false
     },
     {
@@ -946,7 +932,7 @@
       "a": "Products that were returned",
       "b": "Products that were never returned",
       "should_hit": false,
-      "similarity": 0.8617,
+      "similarity": 0.8704,
       "guards_ok": false
     },
     {
@@ -955,7 +941,7 @@
       "a": "Show the highest paid orders",
       "b": "Show the lowest paid orders",
       "should_hit": false,
-      "similarity": 0.8674,
+      "similarity": 0.8671,
       "guards_ok": false
     },
     {
@@ -964,7 +950,7 @@
       "a": "Top customers by spend",
       "b": "Bottom customers by spend",
       "should_hit": false,
-      "similarity": 0.8727,
+      "similarity": 0.8692,
       "guards_ok": false
     },
     {
@@ -973,7 +959,7 @@
       "a": "Show the newest orders",
       "b": "Show the oldest orders",
       "should_hit": false,
-      "similarity": 0.8551,
+      "similarity": 0.8481,
       "guards_ok": false
     },
     {
@@ -982,7 +968,7 @@
       "a": "Orders from this month",
       "b": "Orders from last month",
       "should_hit": false,
-      "similarity": 0.9485,
+      "similarity": 0.9536,
       "guards_ok": false
     },
     {
@@ -991,7 +977,7 @@
       "a": "Tickets opened today",
       "b": "Tickets opened yesterday",
       "should_hit": false,
-      "similarity": 0.935,
+      "similarity": 0.9314,
       "guards_ok": false
     },
     {
@@ -1000,7 +986,7 @@
       "a": "Revenue this year",
       "b": "Revenue last year",
       "should_hit": false,
-      "similarity": 0.8805,
+      "similarity": 0.8747,
       "guards_ok": false
     },
     {
@@ -1009,7 +995,7 @@
       "a": "How many customers do we have?",
       "b": "How many suppliers do we have?",
       "should_hit": false,
-      "similarity": 0.7556,
+      "similarity": 0.7525,
       "guards_ok": true
     },
     {
@@ -1018,7 +1004,7 @@
       "a": "List all departments",
       "b": "List all campaigns",
       "should_hit": false,
-      "similarity": 0.6965,
+      "similarity": 0.6968,
       "guards_ok": true
     },
     {
@@ -1036,13 +1022,13 @@
       "a": "Count orders per customer",
       "b": "Count tickets per customer",
       "should_hit": false,
-      "similarity": 0.8313,
+      "similarity": 0.8318,
       "guards_ok": true
     }
   ],
   "usage": {
-    "live_texts": 0,
-    "cache_hits": 117,
-    "live_requests": 0
+    "live_texts": 106,
+    "cache_hits": 11,
+    "live_requests": 106
   }
 }

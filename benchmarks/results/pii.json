@@ -1,9 +1,9 @@
 {
   "meta": {
-    "timestamp_utc": "2026-10-09T19:23:43Z",
-    "git_head": "f0ff979",
+    "timestamp_utc": "2026-11-16T19:11:09Z",
+    "git_head": "cf0f005",
     "git_working_tree_dirty": true,
-    "git_changed_files": 51,
+    "git_changed_files": 134,
     "python": "3.11.7",
     "platform": "Windows 10 AMD64",
     "logical_cpus": 32,
@@ -20,7 +20,7 @@
     "seed": 20261010,
     "probe_rows": 48,
     "queries": 93,
-    "rules_fingerprint_current": "1b9c3b461c8e"
+    "rules_fingerprint_current": "97121dc9d4d3"
   },
   "before": {
     "label": "before: masking/policy as first benchmarked",

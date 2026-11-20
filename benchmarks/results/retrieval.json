@@ -1,9 +1,9 @@
 {
   "meta": {
-    "timestamp_utc": "2026-10-14T16:10:13Z",
-    "git_head": "8cbd53e",
+    "timestamp_utc": "2026-11-16T19:00:36Z",
+    "git_head": "cf0f005",
     "git_working_tree_dirty": true,
-    "git_changed_files": 17,
+    "git_changed_files": 134,
     "python": "3.11.7",
     "platform": "Windows 10 AMD64",
     "logical_cpus": 32,
@@ -22,7 +22,7 @@
     },
     "status": "complete",
     "pools_requested": [
-      "dev"
+      "all"
     ],
     "k_sweep": [
       1,
@@ -434,6 +434,704 @@
         "max_ms": 9.435
       },
       "failures_sample": [],
+      "embedding_backend": "gemini:models/gemini-embedding-001@768"
+    },
+    "all": {
+      "pool": "all",
+      "n_databases": 166,
+      "n_tables": 876,
+      "n_questions": 200,
+      "newly_embedded_tables": 876,
+      "product_default_top3_plus_fk_closure": {
+        "all_gold_tables_retrieved": {
+          "k": 182,
+          "n": 200,
+          "rate": 91.0,
+          "lo": 86.22,
+          "hi": 94.23
+        },
+        "single_table_questions": {
+          "k": 86,
+          "n": 95,
+          "rate": 90.53,
+          "lo": 82.97,
+          "hi": 94.94
+        },
+        "multi_table_questions": {
+          "k": 96,
+          "n": 105,
+          "rate": 91.43,
+          "lo": 84.51,
+          "hi": 95.43
+        },
+        "by_hardness": {
+          "easy": {
+            "k": 46,
+            "n": 50,
+            "rate": 92.0,
+            "lo": 81.16,
+            "hi": 96.85
+          },
+          "extra": {
+            "k": 46,
+            "n": 50,
+            "rate": 92.0,
+            "lo": 81.16,
+            "hi": 96.85
+          },
+          "hard": {
+            "k": 46,
+            "n": 50,
+            "rate": 92.0,
+            "lo": 81.16,
+            "hi": 96.85
+          },
+          "medium": {
+            "k": 44,
+            "n": 50,
+            "rate": 88.0,
+            "lo": 76.19,
+            "hi": 94.38
+          }
+        },
+        "mean_tables_in_prompt": 6.17,
+        "fraction_of_pool_in_prompt_pct": 0.7,
+        "retrieval_modes": {
+          "vector": 200
+        }
+      },
+      "tokens": {
+        "tokenizer": "gemini-api",
+        "full_schema_tokens": 42935,
+        "retrieved_prompt_tokens_mean": 253.1,
+        "sample_size": 30,
+        "reduction_pct": 99.41
+      },
+      "sweep_embedding_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 145,
+            "n": 200,
+            "rate": 72.5,
+            "lo": 65.93,
+            "hi": 78.22
+          },
+          "mean_table_recall": 78.0,
+          "mean_tables_in_prompt": 2.46
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 171,
+            "n": 200,
+            "rate": 85.5,
+            "lo": 79.95,
+            "hi": 89.71
+          },
+          "mean_table_recall": 88.46,
+          "mean_tables_in_prompt": 4.27
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 182,
+            "n": 200,
+            "rate": 91.0,
+            "lo": 86.22,
+            "hi": 94.23
+          },
+          "mean_table_recall": 92.42,
+          "mean_tables_in_prompt": 6.17
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 187,
+            "n": 200,
+            "rate": 93.5,
+            "lo": 89.2,
+            "hi": 96.16
+          },
+          "mean_table_recall": 94.33,
+          "mean_tables_in_prompt": 8.1
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 191,
+            "n": 200,
+            "rate": 95.5,
+            "lo": 91.67,
+            "hi": 97.61
+          },
+          "mean_table_recall": 96.33,
+          "mean_tables_in_prompt": 10.02
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 191,
+            "n": 200,
+            "rate": 95.5,
+            "lo": 91.67,
+            "hi": 97.61
+          },
+          "mean_table_recall": 96.33,
+          "mean_tables_in_prompt": 11.8
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 194,
+            "n": 200,
+            "rate": 97.0,
+            "lo": 93.61,
+            "hi": 98.62
+          },
+          "mean_table_recall": 97.33,
+          "mean_tables_in_prompt": 15.38
+        }
+      },
+      "sweep_embedding_no_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 71,
+            "n": 200,
+            "rate": 35.5,
+            "lo": 29.2,
+            "hi": 42.35
+          },
+          "mean_table_recall": 55.04,
+          "mean_tables_in_prompt": 1.0
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 122,
+            "n": 200,
+            "rate": 61.0,
+            "lo": 54.09,
+            "hi": 67.49
+          },
+          "mean_table_recall": 76.0,
+          "mean_tables_in_prompt": 2.0
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 142,
+            "n": 200,
+            "rate": 71.0,
+            "lo": 64.36,
+            "hi": 76.85
+          },
+          "mean_table_recall": 82.96,
+          "mean_tables_in_prompt": 3.0
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 155,
+            "n": 200,
+            "rate": 77.5,
+            "lo": 71.23,
+            "hi": 82.74
+          },
+          "mean_table_recall": 86.67,
+          "mean_tables_in_prompt": 4.0
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 163,
+            "n": 200,
+            "rate": 81.5,
+            "lo": 75.54,
+            "hi": 86.27
+          },
+          "mean_table_recall": 89.42,
+          "mean_tables_in_prompt": 5.0
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 169,
+            "n": 200,
+            "rate": 84.5,
+            "lo": 78.84,
+            "hi": 88.86
+          },
+          "mean_table_recall": 90.83,
+          "mean_tables_in_prompt": 6.0
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 181,
+            "n": 200,
+            "rate": 90.5,
+            "lo": 85.64,
+            "hi": 93.83
+          },
+          "mean_table_recall": 94.25,
+          "mean_tables_in_prompt": 8.0
+        }
+      },
+      "sweep_tfidf_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 111,
+            "n": 200,
+            "rate": 55.5,
+            "lo": 48.57,
+            "hi": 62.22
+          },
+          "mean_table_recall": 62.38,
+          "mean_tables_in_prompt": 2.48
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 143,
+            "n": 200,
+            "rate": 71.5,
+            "lo": 64.88,
+            "hi": 77.31
+          },
+          "mean_table_recall": 72.62,
+          "mean_tables_in_prompt": 4.23
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 159,
+            "n": 200,
+            "rate": 79.5,
+            "lo": 73.37,
+            "hi": 84.51
+          },
+          "mean_table_recall": 79.75,
+          "mean_tables_in_prompt": 5.96
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 163,
+            "n": 200,
+            "rate": 81.5,
+            "lo": 75.54,
+            "hi": 86.27
+          },
+          "mean_table_recall": 81.5,
+          "mean_tables_in_prompt": 7.97
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 165,
+            "n": 200,
+            "rate": 82.5,
+            "lo": 76.64,
+            "hi": 87.14
+          },
+          "mean_table_recall": 82.5,
+          "mean_tables_in_prompt": 10.04
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 168,
+            "n": 200,
+            "rate": 84.0,
+            "lo": 78.29,
+            "hi": 88.43
+          },
+          "mean_table_recall": 84.0,
+          "mean_tables_in_prompt": 12.12
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 169,
+            "n": 200,
+            "rate": 84.5,
+            "lo": 78.84,
+            "hi": 88.86
+          },
+          "mean_table_recall": 84.75,
+          "mean_tables_in_prompt": 16.26
+        }
+      },
+      "sweep_random_closure": {
+        "1": {
+          "all_gold_tables_retrieved": {
+            "k": 0,
+            "n": 200,
+            "rate": 0.0,
+            "lo": 0.0,
+            "hi": 1.88
+          },
+          "mean_table_recall": 0.0,
+          "mean_tables_in_prompt": 2.52
+        },
+        "2": {
+          "all_gold_tables_retrieved": {
+            "k": 2,
+            "n": 200,
+            "rate": 1.0,
+            "lo": 0.27,
+            "hi": 3.57
+          },
+          "mean_table_recall": 1.0,
+          "mean_tables_in_prompt": 5.17
+        },
+        "3": {
+          "all_gold_tables_retrieved": {
+            "k": 1,
+            "n": 200,
+            "rate": 0.5,
+            "lo": 0.09,
+            "hi": 2.78
+          },
+          "mean_table_recall": 0.75,
+          "mean_tables_in_prompt": 8.35
+        },
+        "4": {
+          "all_gold_tables_retrieved": {
+            "k": 2,
+            "n": 200,
+            "rate": 1.0,
+            "lo": 0.27,
+            "hi": 3.57
+          },
+          "mean_table_recall": 1.0,
+          "mean_tables_in_prompt": 10.88
+        },
+        "5": {
+          "all_gold_tables_retrieved": {
+            "k": 1,
+            "n": 200,
+            "rate": 0.5,
+            "lo": 0.09,
+            "hi": 2.78
+          },
+          "mean_table_recall": 0.67,
+          "mean_tables_in_prompt": 13.49
+        },
+        "6": {
+          "all_gold_tables_retrieved": {
+            "k": 2,
+            "n": 200,
+            "rate": 1.0,
+            "lo": 0.27,
+            "hi": 3.57
+          },
+          "mean_table_recall": 1.25,
+          "mean_tables_in_prompt": 16.66
+        },
+        "8": {
+          "all_gold_tables_retrieved": {
+            "k": 2,
+            "n": 200,
+            "rate": 1.0,
+            "lo": 0.27,
+            "hi": 3.57
+          },
+          "mean_table_recall": 1.5,
+          "mean_tables_in_prompt": 21.45
+        }
+      },
+      "vector_search_latency": {
+        "n": 200,
+        "mean_ms": 63.049,
+        "p50_ms": 62.025,
+        "p90_ms": 64.817,
+        "p95_ms": 65.992,
+        "p99_ms": 81.101,
+        "min_ms": 60.774,
+        "max_ms": 122.874
+      },
+      "failures_sample": [
+        {
+          "question": "How many documents do we have?",
+          "gold": [
+            "cre_Doc_Template_Mgt__documents"
+          ],
+          "retrieved": [
+            "cre_Doc_Control_Systems__document_drafts",
+            "cre_Doc_Control_Systems__documents",
+            "cre_Doc_Control_Systems__documents_mailed",
+            "cre_Doc_Control_Systems__ref_document_status",
+            "cre_Doc_Control_Systems__ref_document_types",
+            "cre_Doc_Control_Systems__ref_shipping_agents",
+            "cre_Doc_Tracking_DB__all_documents",
+            "cre_Doc_Tracking_DB__document_locations",
+            "cre_Doc_Tracking_DB__documents_to_be_destroyed",
+            "cre_Doc_Tracking_DB__ref_calendar",
+            "cre_Doc_Tracking_DB__ref_document_types",
+            "cre_Docs_and_Epenses__documents",
+            "cre_Docs_and_Epenses__documents_with_expenses",
+            "cre_Docs_and_Epenses__projects",
+            "cre_Docs_and_Epenses__ref_document_types",
+            "cre_Docs_and_Epenses__statements"
+          ]
+        },
+        {
+          "question": "Find the number of distinct name of losers.",
+          "gold": [
+            "wta_1__matches"
+          ],
+          "retrieved": [
+            "baseball_1__postseason",
+            "debate__debate",
+            "debate__debate_people",
+            "debate__people",
+            "voter_1__contestants",
+            "voter_1__votes"
+          ]
+        },
+        {
+          "question": "How many different loser names are there?",
+          "gold": [
+            "wta_1__matches"
+          ],
+          "retrieved": [
+            "baseball_1__postseason",
+            "movie_1__rating",
+            "movie_1__reviewer",
+            "voter_1__contestants",
+            "voter_1__votes"
+          ]
+        },
+        {
+          "question": "How many states are there?",
+          "gold": [
+            "voter_1__area_code_state"
+          ],
+          "retrieved": [
+            "geo__border_info",
+            "geo__city",
+            "geo__highlow",
+            "geo__mountain",
+            "geo__river",
+            "geo__state",
+            "world_1__city",
+            "world_1__country",
+            "world_1__countrylanguage"
+          ]
+        },
+        {
+          "question": "Find all airlines that have at least 10 flights.",
+          "gold": [
+            "flight_2__airlines",
+            "flight_2__flights"
+          ],
+          "retrieved": [
+            "flight_2__airlines",
+            "flight_4__airlines",
+            "flight_4__airports",
+            "flight_4__routes"
+          ]
+        },
+        {
+          "question": "find the minimum and maximum number of products of all stores.",
+          "gold": [
+            "employee_hire_evaluation__shop"
+          ],
+          "retrieved": [
+            "department_store__order_items",
+            "department_store__product_suppliers",
+            "department_store__products",
+            "department_store__suppliers",
+            "store_product__store",
+            "store_product__store_district",
+            "store_product__store_product"
+          ]
+        },
+        {
+          "question": "What are the names and id of courses having at most 2 sections?",
+          "gold": [
+            "student_transcripts_tracking__courses",
+            "student_transcripts_tracking__sections"
+          ],
+          "retrieved": [
+            "college_1__class",
+            "college_1__course",
+            "college_1__department",
+            "college_2__classroom",
+            "college_2__course",
+            "college_2__section",
+            "college_2__takes",
+            "college_2__teaches",
+            "college_3__course",
+            "college_3__department",
+            "college_3__enrolled_in",
+            "college_3__faculty"
+          ]
+        },
+        {
+          "question": "What is the department description for the one whose name has the word computer?",
+          "gold": [
+            "student_transcripts_tracking__departments"
+          ],
+          "retrieved": [
+            "college_1__course",
+            "college_1__department",
+            "college_1__employee",
+            "college_1__professor",
+            "college_1__student",
+            "college_3__course",
+            "college_3__department",
+            "college_3__member_of",
+            "college_3__minor_in",
+            "company_1__department"
+          ]
+        },
+        {
+          "question": "What are the names and birth dates of people, ordered by their names in alphabetical order?",
+          "gold": [
+            "poker_player__people"
+          ],
+          "retrieved": [
+            "body_builder__body_builder",
+            "body_builder__people",
+            "candidate_poll__candidate",
+            "candidate_poll__people",
+            "debate__debate_people",
+            "debate__people"
+          ]
+        },
+        {
+          "question": "What are the names of the singers that have more than one songs?",
+          "gold": [
+            "singer__singer",
+            "singer__song"
+          ],
+          "retrieved": [
+            "concert_singer__singer",
+            "concert_singer__singer_in_concert",
+            "music_2__band",
+            "music_2__instruments",
+            "music_2__performance",
+            "music_2__songs",
+            "music_2__tracklists",
+            "music_2__vocals"
+          ]
+        },
+        {
+          "question": "How many flights fly from Aberdeen to Ashley?",
+          "gold": [
+            "flight_2__airports",
+            "flight_2__flights"
+          ],
+          "retrieved": [
+            "aircraft__airport",
+            "aircraft__airport_aircraft",
+            "flight_1__aircraft",
+            "flight_1__flight",
+            "flight_4__airlines",
+            "flight_4__airports",
+            "flight_4__routes"
+          ]
+        },
+        {
+          "question": "Find the names of stores whose number products is more than the average number of products.",
+          "gold": [
+            "employee_hire_evaluation__shop"
+          ],
+          "retrieved": [
+            "department_store__department_store_chain",
+            "department_store__department_stores",
+            "department_store__departments",
+            "department_store__order_items",
+            "department_store__product_suppliers",
+            "department_store__products",
+            "store_product__store",
+            "store_product__store_district",
+            "store_product__store_product"
+          ]
+        },
+        {
+          "question": "Find the name and rank points of the winner who won the most times.",
+          "gold": [
+            "wta_1__matches"
+          ],
+          "retrieved": [
+            "climbing__climber",
+            "climbing__mountain",
+            "riding_club__player",
+            "riding_club__player_coach",
+            "wta_1__players",
+            "wta_1__rankings"
+          ]
+        },
+        {
+          "question": "Return the different names of cities that are in Asia and for which Chinese is the official language.",
+          "gold": [
+            "world_1__city",
+            "world_1__country",
+            "world_1__countrylanguage"
+          ],
+          "retrieved": [
+            "city_record__city",
+            "city_record__hosting_city",
+            "city_record__temperature",
+            "farm__city",
+            "farm__farm_competition",
+            "world_1__country",
+            "world_1__countrylanguage"
+          ]
+        },
+        {
+          "question": "Find the major and age of students who do not have a cat pet.",
+          "gold": [
+            "pets_1__has_pet",
+            "pets_1__pets",
+            "pets_1__student"
+          ],
+          "retrieved": [
+            "allergy_1__has_allergy",
+            "allergy_1__student",
+            "dorm_1__lives_in",
+            "dorm_1__student",
+            "pets_1__has_pet",
+            "pets_1__student"
+          ]
+        },
+        {
+          "question": "What is the name of the course with the most students enrolled?",
+          "gold": [
+            "student_transcripts_tracking__courses",
+            "student_transcripts_tracking__student_enrolment_courses"
+          ],
+          "retrieved": [
+            "college_1__class",
+            "college_1__course",
+            "college_1__department",
+            "college_3__course",
+            "college_3__department",
+            "college_3__enrolled_in",
+            "college_3__faculty",
+            "csu_1__campuses",
+            "csu_1__enrollments"
+          ]
+        },
+        {
+          "question": "What is the id of the semester that had both Masters and Bachelors students enrolled?",
+          "gold": [
+            "student_transcripts_tracking__degree_programs",
+            "student_transcripts_tracking__student_enrolment"
+          ],
+          "retrieved": [
+            "college_2__classroom",
+            "college_2__course",
+            "college_2__section",
+            "college_2__student",
+            "college_2__takes",
+            "college_2__teaches",
+            "student_transcripts_tracking__semesters",
+            "student_transcripts_tracking__student_enrolment"
+          ]
+        },
+        {
+          "question": "Find the city with the largest population that uses English.",
+          "gold": [
+            "world_1__city",
+            "world_1__countrylanguage"
+          ],
+          "retrieved": [
+            "city_record__city",
+            "city_record__hosting_city",
+            "city_record__temperature",
+            "geo__city",
+            "geo__state",
+            "world_1__city",
+            "world_1__country"
+          ]
+        }
+      ],
       "embedding_backend": "gemini:models/gemini-embedding-001@768"
     }
   }

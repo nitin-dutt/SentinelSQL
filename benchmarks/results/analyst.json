@@ -1,0 +1,785 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-11-16T17:53:13Z",
+    "git_head": "cf0f005",
+    "git_working_tree_dirty": true,
+    "git_changed_files": 133,
+    "python": "3.11.7",
+    "platform": "Windows 10 AMD64",
+    "logical_cpus": 32,
+    "llm_model": "gemini-3.5-flash-lite",
+    "embedding_model": "models/gemini-embedding-001",
+    "packages": {
+      "sqlglot": "30.20.0",
+      "fastapi": "0.139.0",
+      "langchain-google-genai": "4.4.0",
+      "langgraph": "1.2.9",
+      "numpy": "2.4.6"
+    },
+    "datasets": {
+      "benchmarks/data/analyst_conversations.py": "057a8b83995db3f423f6148f3a8bbd16df6a4c7b2a20bccb08ec17dfcc631a3f"
+    },
+    "status": "complete",
+    "conversations": 8,
+    "clarify_items": 16,
+    "duration_s": 3,
+    "usage": {
+      "llm": {
+        "live_calls": 0,
+        "cache_hits": 136,
+        "failed_calls": 0,
+        "harness_retries": 0
+      },
+      "embeddings": {
+        "live_texts": 0,
+        "cache_hits": 64,
+        "live_requests": 0
+      }
+    }
+  },
+  "follow_ups": {
+    "first_turns_correct": {
+      "k": 8,
+      "n": 8,
+      "rate": 100.0,
+      "lo": 67.56,
+      "hi": 100.0
+    },
+    "follow_ups_correct_with_memory": {
+      "k": 14,
+      "n": 16,
+      "rate": 87.5,
+      "lo": 63.98,
+      "hi": 96.5
+    },
+    "follow_ups_where_a_clarifying_question_was_asked": 0,
+    "follow_up_outcomes": {
+      "completed": 16
+    },
+    "follow_ups_correct_without_memory": {
+      "k": 6,
+      "n": 16,
+      "rate": 37.5,
+      "lo": 18.48,
+      "hi": 61.36
+    },
+    "paired": {
+      "only_with_memory_correct": 8,
+      "only_without_memory_correct": 0,
+      "mcnemar_p": 0.00781
+    }
+  },
+  "clarifying_questions": {
+    "asked_when_ambiguous_recall": {
+      "k": 8,
+      "n": 8,
+      "rate": 100.0,
+      "lo": 67.56,
+      "hi": 100.0
+    },
+    "answered_directly_when_clear": {
+      "k": 8,
+      "n": 8,
+      "rate": 100.0,
+      "lo": 67.56,
+      "hi": 100.0
+    },
+    "precision_of_asking": {
+      "k": 8,
+      "n": 8,
+      "rate": 100.0,
+      "lo": 67.56,
+      "hi": 100.0
+    },
+    "wrongly_asked": [],
+    "missed": []
+  },
+  "exploration": null,
+  "records": {
+    "follow_ups": [
+      {
+        "conversation": "C01",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "How many orders has each customer placed? Show the customer name.",
+        "gold": "SELECT c.name, COUNT(o.order_id) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.name, COUNT(orders.order_id) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.customer_id, customers.name LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many orders has each customer placed? Show the customer name.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 1.51
+        }
+      },
+      {
+        "conversation": "C01",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "now show the total amount instead of the count",
+        "gold": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id GROUP BY c.customer_id, c.name",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.customer_id, customers.name LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the total order amount for each customer? Show the customer name.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT SUM(amount) FROM orders LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C01",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "only for customers in the North region",
+        "gold": "SELECT c.name, SUM(o.amount) FROM customers c JOIN orders o ON o.customer_id = c.customer_id WHERE c.region = 'North' GROUP BY c.customer_id, c.name",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.name, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id WHERE customers.region = 'North' GROUP BY customers.customer_id, customers.name LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the total order amount for each customer in the North region? Show the customer name.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.customer_id, customers.name, customers.email, customers.region FROM customers WHERE customers.region = 'North' LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C02",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "What is the total order amount?",
+        "gold": "SELECT SUM(amount) FROM orders",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT SUM(orders.amount) FROM orders LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the total order amount?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        }
+      },
+      {
+        "conversation": "C02",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "break that down by customer region",
+        "gold": "SELECT c.region, SUM(o.amount) FROM orders o JOIN customers c ON c.customer_id = o.customer_id GROUP BY c.region",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.region, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.region LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the total order amount by customer region?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.region, SUM(orders.amount) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.region LIMIT 100",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C02",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "and how many orders is that per region?",
+        "gold": "SELECT c.region, COUNT(o.order_id) FROM orders o JOIN customers c ON c.customer_id = o.customer_id GROUP BY c.region",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.region, COUNT(orders.order_id) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.region LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many orders are there by customer region?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT customers.region, COUNT(orders.order_id) FROM customers JOIN orders ON customers.customer_id = orders.customer_id GROUP BY customers.region LIMIT 100",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C03",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "List the names and prices of products in the Electronics category",
+        "gold": "SELECT name, price FROM products WHERE category = 'Electronics'",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT products.name, products.price FROM products WHERE products.category = 'Electronics' LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "List the names and prices of products in the Electronics category",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        }
+      },
+      {
+        "conversation": "C03",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "which of those cost more than 100?",
+        "gold": "SELECT name, price FROM products WHERE category = 'Electronics' AND price > 100",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT products.name, products.price FROM products WHERE products.category = 'Electronics' AND products.price > 100 LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "List the names and prices of products in the Electronics category that cost more than 100",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT products.name FROM products WHERE products.price > 100 LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C03",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "what is their average price?",
+        "gold": "SELECT AVG(price) FROM products WHERE category = 'Electronics' AND price > 100",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT AVG(products.price) FROM products WHERE products.category = 'Electronics' AND products.price > 100 LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the average price of products in the Electronics category that cost more than 100?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT AVG(products.price) FROM products LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C04",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "How many support tickets are there for each priority?",
+        "gold": "SELECT priority, COUNT(*) FROM support_tickets GROUP BY priority",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT support_tickets.priority, COUNT(support_tickets.ticket_id) FROM support_tickets GROUP BY support_tickets.priority LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many support tickets are there for each priority?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C04",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "only the ones that are not closed",
+        "gold": "SELECT priority, COUNT(*) FROM support_tickets WHERE status <> 'closed' GROUP BY priority",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT support_tickets.priority, COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status <> 'closed' GROUP BY support_tickets.priority LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many support tickets are there for each priority, only including the ones that are not closed?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT ticket_id, customer_id, opened_date, status, priority, subject, notes FROM support_tickets WHERE support_tickets.status <> 'closed' LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C04",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "split that by status as well",
+        "gold": "SELECT priority, status, COUNT(*) FROM support_tickets WHERE status <> 'closed' GROUP BY priority, status",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT support_tickets.priority, support_tickets.status, COUNT(support_tickets.ticket_id) FROM support_tickets WHERE support_tickets.status <> 'Closed' GROUP BY support_tickets.priority, support_tickets.status LIMIT 100",
+          "correct": false,
+          "error": null,
+          "standalone_question": "How many support tickets are there for each priority and status, only including the ones that are not closed?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.status, COUNT(shipments.shipment_id) FROM shipments GROUP BY shipments.status LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C05",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "How many shipments has each carrier handled?",
+        "gold": "SELECT carrier, COUNT(*) FROM shipments GROUP BY carrier",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.carrier, COUNT(shipments.shipment_id) FROM shipments GROUP BY shipments.carrier LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many shipments has each carrier handled?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C05",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "which carrier handled the most?",
+        "gold": "SELECT carrier FROM shipments GROUP BY carrier ORDER BY COUNT(*) DESC LIMIT 1",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.carrier FROM shipments GROUP BY shipments.carrier ORDER BY COUNT(shipments.shipment_id) DESC LIMIT 1;",
+          "correct": true,
+          "error": null,
+          "standalone_question": "Which carrier handled the most shipments?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.carrier FROM shipments GROUP BY shipments.carrier ORDER BY COUNT(shipments.shipment_id) DESC LIMIT 1;",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C05",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "list that carrier's shipments with their status",
+        "gold": "SELECT shipment_id, status FROM shipments WHERE carrier = (SELECT carrier FROM shipments GROUP BY carrier ORDER BY COUNT(*) DESC LIMIT 1)",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.shipment_id, shipments.status FROM shipments WHERE shipments.carrier = (SELECT carrier FROM shipments GROUP BY carrier ORDER BY COUNT(*) DESC LIMIT 1) LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "List the shipments handled by the carrier that handled the most shipments, along with their status.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT shipments.carrier, shipments.status FROM shipments LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C06",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "How many units of each product were sold? Show the product name.",
+        "gold": "SELECT p.name, SUM(oi.quantity) FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY p.product_id, p.name",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT products.name, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.name LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many units of each product were sold? Show the product name.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C06",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "group it by product category instead",
+        "gold": "SELECT p.category, SUM(oi.quantity) FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY p.category",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT products.category, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.category LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many units of each product category were sold? Show the product category.",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.03
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT products.category, SUM(order_items.quantity) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.category LIMIT 100",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C06",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "and the revenue per category, using quantity times unit price",
+        "gold": "SELECT p.category, SUM(oi.quantity * oi.unit_price) FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY p.category",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT products.category, SUM(order_items.quantity * order_items.unit_price) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.category LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the revenue per product category, using quantity times unit price?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT products.category, SUM(order_items.quantity * order_items.unit_price) FROM products JOIN order_items ON products.product_id = order_items.product_id GROUP BY products.category LIMIT 100",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C07",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "List all campaigns with their channel and budget",
+        "gold": "SELECT name, channel, budget FROM campaigns",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT name, channel, budget FROM campaigns LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "List all campaigns with their channel and budget",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C07",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "just the email ones",
+        "gold": "SELECT name, channel, budget FROM campaigns WHERE channel = 'email'",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT name, channel, budget FROM campaigns WHERE channel = 'email' LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "List all campaigns with their channel and budget where the channel is email",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT customer_id, name, email, region FROM customers WHERE NOT email IS NULL LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C07",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "what is their combined budget?",
+        "gold": "SELECT SUM(budget) FROM campaigns WHERE channel = 'email'",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT SUM(campaigns.budget) FROM campaigns WHERE campaigns.channel = 'email' LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "What is the combined budget of all campaigns where the channel is email?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT SUM(campaigns.budget) FROM campaigns LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C08",
+        "turn": 1,
+        "is_follow_up": false,
+        "message": "How many invoices are there for each status?",
+        "gold": "SELECT status, COUNT(*) FROM invoices GROUP BY status",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT invoices.status, COUNT(invoices.invoice_id) FROM invoices GROUP BY invoices.status LIMIT 100",
+          "correct": true,
+          "error": null,
+          "standalone_question": "How many invoices are there for each status?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C08",
+        "turn": 2,
+        "is_follow_up": true,
+        "message": "show the total invoiced amount per status too",
+        "gold": "SELECT status, COUNT(*), SUM(total_amount) FROM invoices GROUP BY status",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT invoices.status, SUM(invoices.total_amount) FROM invoices GROUP BY invoices.status LIMIT 100",
+          "correct": false,
+          "error": null,
+          "standalone_question": "What is the total invoiced amount for each status?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT invoices.status, SUM(invoices.total_amount) FROM invoices GROUP BY invoices.status LIMIT 100",
+          "correct": false,
+          "error": null,
+          "latency_s": 0.02
+        }
+      },
+      {
+        "conversation": "C08",
+        "turn": 3,
+        "is_follow_up": true,
+        "message": "which status has the largest total?",
+        "gold": "SELECT status FROM invoices GROUP BY status ORDER BY SUM(total_amount) DESC LIMIT 1",
+        "with_memory": {
+          "status": "completed",
+          "sql": "SELECT invoices.status FROM invoices GROUP BY invoices.status ORDER BY SUM(invoices.total_amount) DESC LIMIT 1;",
+          "correct": true,
+          "error": null,
+          "standalone_question": "Which status has the largest total invoiced amount?",
+          "asked_clarification": false,
+          "agent_steps": 0,
+          "latency_s": 0.02
+        },
+        "no_memory": {
+          "status": "completed",
+          "sql": "SELECT invoices.status FROM invoices GROUP BY invoices.status ORDER BY SUM(invoices.total_amount) DESC LIMIT 1;",
+          "correct": true,
+          "error": null,
+          "latency_s": 0.01
+        }
+      }
+    ],
+    "clarify": [
+      {
+        "id": "A01",
+        "question": "Who are our top customers?",
+        "should_ask": true,
+        "why": "top by what: total amount or number of orders, and how many",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "How should 'top customers' be measured?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A02",
+        "question": "Show me the recent orders",
+        "should_ask": true,
+        "why": "no period given",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "What time period defines 'recent' orders?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A03",
+        "question": "Which products are doing well?",
+        "should_ask": true,
+        "why": "no measure: units sold, revenue or returns",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "How would you like to measure product performance?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A04",
+        "question": "Compare the regions",
+        "should_ask": true,
+        "why": "no measure to compare",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "What metric would you like to use to compare the regions?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A05",
+        "question": "Which campaigns performed best?",
+        "should_ask": true,
+        "why": "no measure: budget, web events or something else",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "How would you like to measure campaign performance?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A06",
+        "question": "List the big orders",
+        "should_ask": true,
+        "why": "no threshold for big",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "What is the minimum order amount to be considered a big order?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A07",
+        "question": "How are the carriers doing?",
+        "should_ask": true,
+        "why": "no measure: shipment count, delivery time or status",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "What metric would you like to use to evaluate the carriers?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "A08",
+        "question": "Show the worst suppliers",
+        "should_ask": true,
+        "why": "no measure of worst",
+        "status": "needs_clarification",
+        "asked": true,
+        "clarifying_question": "What metric should be used to determine the 'worst' suppliers?",
+        "latency_s": 0.02
+      },
+      {
+        "id": "N01",
+        "question": "How many customers are in the North region?",
+        "should_ask": false,
+        "why": "fully specified",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.02
+      },
+      {
+        "id": "N02",
+        "question": "What is the largest single order amount?",
+        "should_ask": false,
+        "why": "fully specified",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.03
+      },
+      {
+        "id": "N03",
+        "question": "Who are our VIP customers?",
+        "should_ask": false,
+        "why": "VIP is defined in the glossary",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.03
+      },
+      {
+        "id": "N04",
+        "question": "What is the average order value?",
+        "should_ask": false,
+        "why": "defined in the glossary",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.02
+      },
+      {
+        "id": "N05",
+        "question": "List the five most expensive products with their prices",
+        "should_ask": false,
+        "why": "measure and count are given",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.02
+      },
+      {
+        "id": "N06",
+        "question": "How many shipments has each carrier handled?",
+        "should_ask": false,
+        "why": "fully specified",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.03
+      },
+      {
+        "id": "N07",
+        "question": "Which customers have opened more than one support ticket?",
+        "should_ask": false,
+        "why": "fully specified",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.03
+      },
+      {
+        "id": "N08",
+        "question": "What is the total refund amount for each product name?",
+        "should_ask": false,
+        "why": "fully specified",
+        "status": "completed",
+        "asked": false,
+        "clarifying_question": null,
+        "latency_s": 0.03
+      }
+    ],
+    "exploration": []
+  }
+}
