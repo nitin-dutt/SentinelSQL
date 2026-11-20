@@ -49,8 +49,9 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
             with embedding_harness(EMBEDDING_CACHE) as usage:
                 engine = get_embedding_engine()
                 texts = sorted({t for p in pairs for t in (p[2], p[3])})
-                # Exactly what the production cache does: each question is normalised and embedded as a *query*, one at a time.
-                embedded = {t: engine.embed(SemanticCache.normalize_query(t)) for t in texts}
+                # Exactly what the production cache does: each question is embedded as it was typed, as a *query*, one at a time.
+                # (Until phase 4 section 6 the cache embedded the normalised text; results before that used those vectors.)
+                embedded = {t: engine.embed(t) for t in texts}
                 backend = engine.backend_id
 
                 def sim(a: str, b: str) -> float:

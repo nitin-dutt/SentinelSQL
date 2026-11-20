@@ -84,23 +84,11 @@ def workspace(name: str, semantic_cache: bool = False, seed: bool = True) -> Ite
 
 
 def _reset_app_state() -> None:
-    """Forget every process-wide singleton that caches the previous environment."""
-    from app.db import database
-    from app.graph import workflow
-    from app.rag import data_dictionary, golden_store, schema_retriever, vector_store
-    from app.cache import semantic_cache
-    from app.utils.schemacontext import clear_schema_cache
+    """Forget every process-wide singleton that caches the previous environment (one function owns the list: app/runtime.py)."""
+    from app.runtime import reset_runtime_state
 
-    database.reset_engines()
-    clear_schema_cache()
-    workflow.build_graph.cache_clear()
-    data_dictionary._INITIALIZED.clear(); data_dictionary._VECTOR_STORE = None
-    golden_store._INITIALIZED.clear(); golden_store._VECTOR_STORE = None
-    vector_store._ENGINE = None; vector_store._ENGINE_SIGNATURE = None
-    semantic_cache._GLOBAL_SEMANTIC_CACHE = None
-    # the global schema retriever indexes whatever database was configured when it was created
-    schema_retriever._GLOBAL_RETRIEVER = schema_retriever.SchemaRAGRetriever(
-        cache_file=os.path.join(WORK_DIR, "schema_vectors.json"))
+    # the schema retriever indexes whatever database was configured when it was created; its vectors stay in the work folder
+    reset_runtime_state(schema_vectors_file=os.path.join(WORK_DIR, "schema_vectors.json"))
 
 
 def save_result(name: str, payload: Dict[str, Any]) -> str:

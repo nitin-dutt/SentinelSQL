@@ -237,7 +237,7 @@ def legacy_masking():
 
 def evaluate(db_file: str, rows, truth, label: str) -> Dict[str, Any]:
     from app.db.database import execute_readonly_query
-    from app.mcp_server import validate_and_classify_sql
+    from app.governance import judge as policy_judge
 
     pii_columns = ["email", "ssn", "phone", "card_number", "notes"]
     by_id = {r["id"]: r for r in rows}
@@ -288,10 +288,10 @@ def evaluate(db_file: str, rows, truth, label: str) -> Dict[str, Any]:
 
     for col in pii_columns:
         for technique, sql in shapes(col):
-            decision = validate_and_classify_sql(sql)
-            state["gated"] = (not decision["safe"]) or decision["requires_human"]
+            decision = policy_judge(sql)
+            state["gated"] = not decision.allowed
             if state["gated"]:
-                gated_queries.append({"technique": technique, "column": col, "reason": decision["reason"][:90]})
+                gated_queries.append({"technique": technique, "column": col, "reason": decision.reason[:90]})
             try:
                 result = execute_readonly_query(sql)
             except Exception as e:

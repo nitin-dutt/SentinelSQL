@@ -1,7 +1,7 @@
 """
 Benchmark driver:   python -m benchmarks.run <suite> [options]
 
-Suites: security, pii, audit, cache_safety, retrieval, spider, ablation, latency, all
+Suites: security, pii, audit, cache_safety, retrieval, spider, ablation, latency, router_eval, redteam, analyst, all
 Live suites call Gemini (15 requests/minute free tier) and cache every response in benchmarks/cache/, so
 an interrupted or quota-limited run resumes where it stopped and a finished run can be re-analysed offline.
 """
@@ -13,7 +13,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-SUITES = ["security", "pii", "audit", "cache_safety", "retrieval", "spider", "ablation", "latency"]
+SUITES = ["security", "pii", "audit", "cache_safety", "retrieval", "spider", "ablation", "latency", "router_eval", "redteam", "analyst"]
 
 
 def main() -> int:

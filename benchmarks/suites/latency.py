@@ -25,6 +25,9 @@ COLD_N = int(os.getenv("LATENCY_COLD_N", "30"))
 SPACING_S = float(os.getenv("LATENCY_SPACING_S", "9"))
 L1_TRIALS = 500
 L2_PAIRS = 12                                       # similarity-path lookups to time (two live embeddings each)
+# LATENCY_COLD_ONLY=1 measures only the cold path and writes latency_cold_intent_<INTENT_MODE>.json (with a _vote<N> suffix when
+# SQL_CANDIDATES > 1), so the routing modes can be compared on the same questions without touching latency.json.
+COLD_ONLY = os.getenv("LATENCY_COLD_ONLY", "") == "1"
 
 
 def l2_pairs(limit: int = L2_PAIRS):
@@ -41,31 +44,43 @@ def l2_pairs(limit: int = L2_PAIRS):
 
 
 class StageTimer:
-    """Wraps the graph's node functions so each request reports how long every stage took."""
+    """
+    Wraps the pipeline's stage functions so each request reports how long every stage took. The policy gate and the
+    execution now happen inside `run` (app/governance.py), so those two are timed there; they keep the result keys
+    `validation_node` and `execution_node` so new results compare with the ones recorded before that change.
+    """
+
+    # (module, function, key in the results)
+    STAGES = (("app.graph.workflow", "intent_node", "intent_node"),
+              ("app.graph.workflow", "sql_generation_node", "sql_generation_node"),
+              ("app.governance", "judge", "validation_node"),
+              ("app.governance", "execute_readonly_query", "execution_node"))
 
     def __init__(self):
         self.current: Dict[str, float] = {}
 
     def install(self):
+        import importlib
         from app.graph import workflow
-        self._originals = {}
-        for name in ("intent_node", "sql_generation_node", "validation_node", "execution_node"):
-            fn = getattr(workflow, name)
-            self._originals[name] = fn
+        self._originals = []
+        for module_name, name, key in self.STAGES:
+            module = importlib.import_module(module_name)
+            fn = getattr(module, name)
+            self._originals.append((module, name, fn))
 
-            def wrapped(state, _fn=fn, _name=name):
+            def wrapped(*args, _fn=fn, _key=key, **kwargs):
                 t = time.perf_counter()
                 try:
-                    return _fn(state)
+                    return _fn(*args, **kwargs)
                 finally:
-                    self.current[_name] = self.current.get(_name, 0.0) + (time.perf_counter() - t) * 1000
-            setattr(workflow, name, wrapped)
+                    self.current[_key] = self.current.get(_key, 0.0) + (time.perf_counter() - t) * 1000
+            setattr(module, name, wrapped)
         workflow.build_graph.cache_clear()
 
     def restore(self):
         from app.graph import workflow
-        for name, fn in self._originals.items():
-            setattr(workflow, name, fn)
+        for module, name, fn in self._originals:
+            setattr(module, name, fn)
         workflow.build_graph.cache_clear()
 
 
@@ -117,6 +132,17 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
     }
     cold_p50 = cold_total.get("p50_ms") if ok else None
 
+    from app.agents.candidate_voting import candidate_count
+    from app.agents.router import intent_mode
+    settings = {"intent_mode": intent_mode(), "sql_candidates": candidate_count()}
+    if COLD_ONLY:
+        name = f"latency_cold_intent_{settings['intent_mode']}" + (f"_vote{settings['sql_candidates']}" if settings["sql_candidates"] > 1 else "")
+        result = {"meta": run_metadata([os.path.join(os.path.dirname(__file__), "..", "data", "domain_qa.py")],
+                                       {"status": "complete", "cold_n": n_cold, "spacing_s": SPACING_S, **settings,
+                                        "duration_s": round(time.time() - started)}), **out}
+        print("saved", save_result(name, result))
+        return result
+
     # ---------------------------------------------------------------- cache paths
     with workspace("latency_cache", semantic_cache=True):
         with TestClient(app) as client:
@@ -158,7 +184,7 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
                 out[key]["speedup_vs_measured_cold_p50"] = round(cold_p50 / out[key]["p50_ms"], 1)
 
     result = {"meta": run_metadata([os.path.join(os.path.dirname(__file__), "..", "data", "domain_qa.py")],
-                                   {"status": "complete", "cold_n": n_cold, "spacing_s": SPACING_S,
+                                   {"status": "complete", "cold_n": n_cold, "spacing_s": SPACING_S, **settings,
                                     "duration_s": round(time.time() - started)}), **out}
     print("saved", save_result("latency", result))
     return result

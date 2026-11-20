@@ -125,23 +125,23 @@ def attribute(reason: str) -> str:
 
 def evaluate_sql_full(sql: str, db_file: str, protected: Dict[str, List[str]], execute: bool = True) -> Dict[str, Any]:
     from app.db.database import execute_readonly_query
-    from app.mcp_server import validate_and_classify_sql
+    from app.governance import judge as policy_judge
 
-    decision = validate_and_classify_sql(sql)
-    out: Dict[str, Any] = {"layer_reason": attribute(decision["reason"]), "reason": decision["reason"][:160]}
-    if not decision["safe"]:
+    decision = policy_judge(sql)
+    out: Dict[str, Any] = {"layer_reason": attribute(decision.reason), "reason": decision.reason[:160]}
+    if decision.blocked:
         out["action"] = "block"
         return out
-    if decision["requires_human"]:
+    if decision.held:
         out["action"] = "quarantine"
         return out
     out["action"] = "allow"
-    out["sanitized_sql"] = decision["sanitized_sql"]
-    out["limit_injected"] = "limit" in decision["sanitized_sql"].lower() and "limit" not in sql.lower()
-    out["limit_capped"] = bool(re.search(r"limit\s+1000\b", decision["sanitized_sql"], re.I)) and not re.search(r"limit\s+1000\b", sql, re.I)
+    out["sanitized_sql"] = decision.sanitized_sql
+    out["limit_injected"] = "limit" in decision.sanitized_sql.lower() and "limit" not in sql.lower()
+    out["limit_capped"] = bool(re.search(r"limit\s+1000\b", decision.sanitized_sql, re.I)) and not re.search(r"limit\s+1000\b", sql, re.I)
     if execute:
         try:
-            res = execute_readonly_query(decision["sanitized_sql"])
+            res = execute_readonly_query(decision.sanitized_sql)
             out["executed"] = True
             out["rows"] = len(res["rows"])
             out["leaked"] = leaked(json.dumps(res["rows"], default=str), protected)
@@ -151,10 +151,10 @@ def evaluate_sql_full(sql: str, db_file: str, protected: Dict[str, List[str]], e
     return out
 
 
-def run_readonly_baseline(sql: str, db_file: str, protected: Dict[str, List[str]]) -> Dict[str, Any]:
+def run_readonly_baseline(sql: str, db_file: str, protected: Dict[str, List[str]], timeout_s: float = 3.0) -> Dict[str, Any]:
     """The same SQL against a read-only SQLite connection and nothing else: no policy, no masking."""
     con = sqlite3.connect(f"file:{db_file}?mode=ro", uri=True, timeout=3)
-    deadline = time.monotonic() + 3.0
+    deadline = time.monotonic() + timeout_s
     con.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10000)
     try:
         rows = con.execute(sql).fetchmany(200)
@@ -434,6 +434,12 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
 
     previous = load_result("security") or {}
     heldout_snapshot = {"rules_fingerprint": rules_fingerprint(), "sql": {k: sql_part["heldout"][k] for k in ("attacks", "benign", "n_attacks", "n_benign")}}
+    errored = (nl_part or {}).get("benign", {}).get("errors", 0) + (nl_part or {}).get("attacks", {}).get("stopped_by", {}).get("system_error", 0)
+    if nl_part and errored > 0.1 * (len(nl_part.get("records", {}).get("attacks", [])) + len(nl_part.get("records", {}).get("benign", []))):
+        # provider errors (quota, outage) are not product outcomes: never replace a completed run with one made mostly of them
+        status = f"discarded: {errored} model/system errors in the natural-language run (provider quota or outage); previous result kept"
+        print("  " + status, flush=True)
+        nl_part = None
     result = {
         "meta": run_metadata([DEV_FILE, HELDOUT_SQL_FILE, HELDOUT_PROMPT_FILE], {"status": status, "rules_fingerprint": rules_fingerprint(),
                                                                                   "duration_s": round(time.time() - started), "usage": usage}),

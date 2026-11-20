@@ -151,7 +151,25 @@ def section_spider(r) -> str:
         f"Paired comparison, model alone vs gateway: raw-only correct {pr['raw_only_correct']}, gateway-only correct {pr['governed_only_correct']}, "
         f"McNemar p = {pr['mcnemar_p']}.", "",
         f"Gateway outcomes: {a['governed_outcomes']}. Where the gateway lost a correct answer: {a['raw_correct_but_governed_lost']}.", "",
-        _holdout_note()])
+        _holdout_note(), _row_cap_and_voting_note()])
+
+
+def _row_cap_and_voting_note() -> str:
+    """The same cached model answers re-scored with the row cap at 1000 (the default since 2026-11-17), and the voting run."""
+    lines = []
+    for name, label in (("spider", "Main sample"), ("spider_holdout", "Hold-out")):
+        c100, c1000 = load_result(name), load_result(name + "_maxrows1000")
+        if c100 and c1000 and c100.get("analysis") and c1000.get("analysis"):
+            g100, g1000 = (x["analysis"]["governed_as_shipped"]["ALL_unweighted"] for x in (c100, c1000))
+            raw = c1000["analysis"]["raw_model"]["ALL_unweighted"]
+            p = c1000["analysis"]["paired_raw_vs_governed_as_shipped"]
+            lines.append(f"{label}: gateway at row cap 100 {pct(g100)}; at row cap 1000 {pct(g1000)}; model alone {pct(raw)} (McNemar p at cap 1000 = {p['mcnemar_p']}).")
+    vote = load_result("spider_holdout_vote3")
+    if vote and vote.get("analysis"):
+        v = vote["analysis"]
+        lines.append(f"Hold-out with 3-candidate voting (row cap 100, status: {vote['meta']['status'][:30]}): gateway {pct(v['governed_as_shipped']['ALL_unweighted'])}, "
+                     f"model alone {pct(v['raw_model']['ALL_unweighted'])}.")
+    return ("\n".join(f"- {x}" for x in lines) + "\n") if lines else ""
 
 
 def _holdout_note() -> str:
@@ -170,7 +188,7 @@ def section_ablation(r) -> str:
     for cfg, v in a["by_config"].items():
         d = a["vs_baseline"].get(cfg, {}).get("all_questions")
         rows.append([cfg, pct(v["trials"], False)] + [pct(v["by_group"].get(g), False) for g in ("glossary_questions", "multi_table_joins", "other")] +
-                    [f"{d['diff']:+.1f} pts [{d['lo']:+.1f}, {d['hi']:+.1f}]" if d else "-"])
+                    [f"{100 * d['mean_diff']:+.1f} pts [{100 * d['lo']:+.1f}, {100 * d['hi']:+.1f}]" if d else "-"])
     return "\n".join([
         "## 7. Architecture ablation (demo database)", "",
         f"{r['meta']['n_questions']} questions x {r['meta']['repeats']} samples per configuration.", "",

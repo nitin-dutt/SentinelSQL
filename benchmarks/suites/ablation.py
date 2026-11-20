@@ -60,7 +60,7 @@ def generate(question: str, config: Dict[str, Any], full_schema: str) -> Dict[st
     from app.graph import workflow
     from app.rag.schema_retriever import get_rag_schema_context
 
-    state: Dict[str, Any] = {"user_query": question, "intent": None, "sql": None, "validation": None, "results": None}
+    state: Dict[str, Any] = {"user_query": question, "intent": None, "sql": None, "results": None}
     patches = [
         patch("app.graph.workflow.get_rag_schema_context", get_rag_schema_context if config["rag"] else (lambda q, *a, **k: full_schema)),
     ]
@@ -119,7 +119,7 @@ def run(llm: bool = True, limit: Optional[int] = None) -> Dict[str, Any]:
                                 state = generate(question, config, full_schema)
                                 sql = state.get("sql")
                                 rec = {"config": config["id"], "rep": rep, "id": qid, "tier": tier, "needs": sorted(needs),
-                                       "question": question, "sql": sql, "reason": (state.get("validation") or {}).get("reason"),
+                                       "question": question, "sql": sql, "reason": (state.get("stopped") or {}).get("reason"),
                                        "correct": False, "correct_strict": False, "error": None}
                                 if sql:
                                     s = sql.rstrip(";")
