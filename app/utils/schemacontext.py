@@ -8,6 +8,7 @@ data types, and relational foreign keys with zero hardcoding.
 
 from typing import Dict, Any, List, Optional
 from sqlalchemy import inspect
+from app.settings import settings
 from app.utils.logger import get_logger
 
 logger = get_logger("sentinel.schema")
@@ -16,6 +17,7 @@ logger = get_logger("sentinel.schema")
 IGNORED_TABLES = {"sqlite_sequence", "audit_logs", "alembic_version", "golden_queries", "data_dictionary"}  # internal bookkeeping, never offered to the model
 
 _CACHED_SCHEMA: Optional[Dict[str, Any]] = None
+_SCOPED_SCHEMAS: Dict[str, Dict[str, Any]] = {}      # the schema of each connected workspace, by settings scope key
 
 
 class SchemaUnavailableError(RuntimeError):
@@ -26,6 +28,11 @@ def clear_schema_cache() -> None:
     """Forget the cached schema so the next call re-inspects the database (after DDL or seeding)."""
     global _CACHED_SCHEMA
     _CACHED_SCHEMA = None
+    _SCOPED_SCHEMAS.clear()
+
+
+def forget_scope(key: str) -> None:
+    _SCOPED_SCHEMAS.pop(key, None)
 
 
 def introspect_schema(force_refresh: bool = False) -> Dict[str, Any]:
@@ -34,8 +41,10 @@ def introspect_schema(force_refresh: bool = False) -> Dict[str, Any]:
     Results are cached in memory for high-performance sub-millisecond retrieval.
     """
     global _CACHED_SCHEMA
-    if _CACHED_SCHEMA is not None and not force_refresh:
-        return _CACHED_SCHEMA
+    scope = settings.scope_key()
+    cached = _SCOPED_SCHEMAS.get(scope) if scope else _CACHED_SCHEMA
+    if cached is not None and not force_refresh:
+        return cached
 
     try:
         from app.db.database import get_engine
@@ -95,12 +104,16 @@ def introspect_schema(force_refresh: bool = False) -> Dict[str, Any]:
 
         formatted_context = "\n".join(lines).strip()
 
-        _CACHED_SCHEMA = {
+        schema = {
             "tables": tables_data,
             "relationships": all_relationships,
             "formatted_context": formatted_context
         }
-        return _CACHED_SCHEMA
+        if scope:
+            _SCOPED_SCHEMAS[scope] = schema
+        else:
+            _CACHED_SCHEMA = schema
+        return schema
 
     except Exception as e:
         # Do not invent a schema: a hand-written fallback would silently present tables that may
