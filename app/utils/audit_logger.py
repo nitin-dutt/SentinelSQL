@@ -18,9 +18,11 @@ import datetime
 import hashlib
 import json
 import logging
-import os
 import sqlite3
 from typing import Any, Dict, List, Optional
+
+from app.settings import settings
+from app.utils.sqlite_store import SqliteStore
 
 logger = logging.getLogger("sentinel.audit")
 
@@ -33,22 +35,9 @@ _HASHED_FIELDS = (
     "risk_level", "approved_by", "execution_time_ms", "masked_rows_count", "timestamp",
 )
 
-_INITIALIZED_PATHS: set = set()
-
-
 def _audit_path() -> str:
     # Read on every call so the location can be redirected (e.g. by tests).
-    return os.getenv("AUDIT_DB_PATH", "audit.db")
-
-
-def _connect() -> sqlite3.Connection:
-    path = _audit_path()
-    # isolation_level=None: we manage BEGIN/COMMIT ourselves for the hash chain.
-    conn = sqlite3.connect(path, timeout=10, isolation_level=None)
-    if path not in _INITIALIZED_PATHS:
-        _init_audit_db(conn)
-        _INITIALIZED_PATHS.add(path)
-    return conn
+    return settings.stores.audit_db
 
 
 def _init_audit_db(conn: sqlite3.Connection) -> None:
@@ -90,6 +79,12 @@ def _init_audit_db(conn: sqlite3.Connection) -> None:
                 conn.execute(f"ALTER TABLE audit_logs ADD COLUMN {col_name} {col_type}")
             except sqlite3.OperationalError:
                 pass
+
+
+# isolation_level=None: we manage BEGIN/COMMIT ourselves for the hash chain. No WAL and plain tuple rows, as before.
+_STORE = SqliteStore(_audit_path, _init_audit_db, wal=False, isolation_level=None, rows=False)
+_connect = _STORE.connect
+_INITIALIZED_PATHS = _STORE.initialized      # the audit benchmark clears this after it replaces the file
 
 
 def _compute_hash(prev_hash: str, values: Dict[str, Any]) -> str:

@@ -13,8 +13,9 @@ Configure the level with LOG_LEVEL (default INFO).
 """
 
 import logging
-import os
 import sys
+
+from app.settings import settings
 
 _CONFIGURED = False
 
@@ -33,7 +34,7 @@ def configure_logging() -> None:
             pass  # not a TextIOWrapper (e.g. replaced by a test runner)
 
     root = logging.getLogger("sentinel")
-    root.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+    root.setLevel(settings.logging.level)
     if not any(getattr(h, "_sentinel_handler", False) for h in root.handlers):
         handler = logging.StreamHandler(sys.stderr)
         handler._sentinel_handler = True  # type: ignore[attr-defined]
