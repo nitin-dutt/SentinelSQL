@@ -132,7 +132,7 @@ def test_run_cannot_be_decided_twice():
 ])
 def test_edited_sql_still_goes_through_the_ast_gate(bad_sql):
     run_id = pending_run()
-    with patch("app.routers.hitl.execute_readonly_query") as mock_exec:
+    with patch("app.governance.execute_readonly_query_for_review") as mock_exec:
         r = client.post("/hitl/decision",
                         json={"run_id": run_id, "decision": "edit", "edited_sql": bad_sql}, headers=ADMIN)
     assert r.json()["status"] == "rejected"
@@ -142,7 +142,7 @@ def test_edited_sql_still_goes_through_the_ast_gate(bad_sql):
 
 def test_edited_sql_gets_a_limit_injected():
     run_id = pending_run()
-    with patch("app.routers.hitl.execute_readonly_query", return_value={"columns": ["name"], "rows": []}) as mock_exec:
+    with patch("app.governance.execute_readonly_query_for_review", return_value=({"columns": ["name"], "rows": []},) * 2) as mock_exec:
         r = client.post("/hitl/decision",
                         json={"run_id": run_id, "decision": "edit",
                               "edited_sql": "SELECT name FROM customers"}, headers=ADMIN)

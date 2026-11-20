@@ -1,63 +1,43 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from app.main import app
-from tests.helpers import ADMIN, EMPLOYEE
+from tests.helpers import ADMIN, EMPLOYEE, pipeline_writing, use_pipeline
 
 client = TestClient(app)
 
-@patch("app.routers.query.build_graph")
-def test_query_endpoint_safe(mock_build_graph):
-    # Mock the LangGraph workflow's return value
-    mock_graph = mock_build_graph.return_value
-    mock_graph.invoke.return_value = {
-        "sql": "SELECT id, name FROM users LIMIT 10",
-        "validation": {"safe": True, "requires_human": False},
-        "results": {"columns": ["id", "name"], "rows": [{"id": 1, "name": "Alice"}]}
-    }
-    
-    response = client.post(
-        "/query",
-        json={"query": "Get users"},
-        headers=ADMIN
-    )
-    
+
+def test_query_endpoint_safe():
+    with use_pipeline(pipeline_writing("SELECT name FROM customers LIMIT 10")):
+        response = client.post("/query", json={"query": "Get customer names (api test)"}, headers=ADMIN)
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "completed"
     assert "Alice" in data["results"]["rows"][0]["name"]
 
-@patch("app.routers.query.build_graph")
-def test_query_endpoint_requires_human(mock_build_graph):
-    mock_graph = mock_build_graph.return_value
-    mock_graph.invoke.return_value = {
-        "sql": "SELECT * FROM payroll LIMIT 10",
-        "validation": {"safe": True, "requires_human": True, "reason": "Medium confidence"}
-    }
-    
-    response = client.post("/query", json={"query": "Get payroll"}, headers=EMPLOYEE)
-    
+
+def test_query_endpoint_requires_human():
+    with use_pipeline(pipeline_writing("SELECT employee_name, salary FROM salaries LIMIT 10")):
+        response = client.post("/query", json={"query": "Get payroll (api test)"}, headers=EMPLOYEE)
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "requires_human"
-    assert "run_id" in data
+    assert data["run_id"] and "sensitive table" in data["reason"].lower()
 
-@patch("app.routers.query.build_graph")
-def test_query_endpoint_rejected(mock_build_graph):
-    mock_graph = mock_build_graph.return_value
-    mock_graph.invoke.return_value = {
-        "sql": "DROP TABLE users",
-        "validation": {"safe": False, "requires_human": False, "reason": "Forbidden"}
-    }
-    
-    response = client.post("/query", json={"query": "delete everything"}, headers=EMPLOYEE)
-    
+
+def test_query_endpoint_rejected():
+    with use_pipeline(pipeline_writing("DROP TABLE customers")):
+        response = client.post("/query", json={"query": "remove the customers table (api test)"}, headers=EMPLOYEE)
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "rejected"
-    assert "Forbidden" in data["reason"]
+    assert "Destructive" in data["reason"]
+
 
 @patch("app.routers.hitl.get_run")
-@patch("app.routers.hitl.execute_readonly_query")
+@patch("app.governance.execute_readonly_query_for_review")
 def test_hitl_decision_approve(mock_execute, mock_get_run):
     # Mock the stored run
     mock_get_run.return_value = {
@@ -66,10 +46,8 @@ def test_hitl_decision_approve(mock_execute, mock_get_run):
     }
     
     # Mock the DB execution result
-    mock_execute.return_value = {
-        "columns": ["id", "salary"],
-        "rows": [{"id": 1, "salary": 5000}]
-    }
+    view = {"columns": ["id", "salary"], "rows": [{"id": 1, "salary": 5000}]}
+    mock_execute.return_value = (view, view)        # (the reviewer's view, the submitter's view)
     
     response = client.post(
         "/hitl/decision",

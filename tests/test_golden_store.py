@@ -84,16 +84,14 @@ def test_admin_golden_queries_endpoints_rbac():
 
 
 @patch("app.routers.hitl.get_run")
-@patch("app.routers.hitl.execute_readonly_query")
+@patch("app.governance.execute_readonly_query_for_review")
 def test_hitl_decision_save_as_template(mock_execute, mock_get_run):
     mock_get_run.return_value = {
         "user_query": "What is the average transaction value by customer?",
         "sql": "SELECT customer_id, AVG(total_amount) FROM orders GROUP BY customer_id LIMIT 10"
     }
-    mock_execute.return_value = {
-        "columns": ["customer_id", "avg_val"],
-        "rows": [{"customer_id": 1, "avg_val": 42.5}]
-    }
+    view = {"columns": ["customer_id", "avg_val"], "rows": [{"customer_id": 1, "avg_val": 42.5}]}
+    mock_execute.return_value = (view, view)        # (the reviewer's view, the submitter's view)
 
     # 1. HITL Decision with save_as_template = False (should NOT save to golden store)
     res_no_save = client.post(

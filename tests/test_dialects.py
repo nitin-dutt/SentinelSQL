@@ -6,7 +6,7 @@ policy engine reads and writes each engine's SQL correctly (the live checks are 
 import pytest
 
 from app.db.urls import normalize_database_url, sql_dialect, sql_dialect_label
-from app.utils.sql_parser import parse_and_validate_ast
+from app.utils.sql_parser import DEFAULT_SAFETY_LIMIT, parse_and_validate_ast
 
 PG = "postgresql://u:p@localhost:5432/d"
 MY = "mysql://u:p@localhost:3306/d"
@@ -62,7 +62,7 @@ def test_a_single_database_url_drives_the_engines(use_url):
 def test_mysql_backtick_identifiers_are_accepted_and_the_limit_keeps_the_dialect(use_url):
     use_url(MY)
     r = parse_and_validate_ast("SELECT `name`, `region` FROM `customers` WHERE `region` = 'North'")
-    assert r.is_valid and r.sanitized_sql.endswith("LIMIT 100")
+    assert r.is_valid and r.sanitized_sql.endswith(f"LIMIT {DEFAULT_SAFETY_LIMIT}")
     assert "`name`" in r.sanitized_sql                 # regenerated for MySQL, not turned into "name" (which MySQL reads as a string)
 
 

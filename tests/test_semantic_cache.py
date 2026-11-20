@@ -177,18 +177,15 @@ def test_admin_cache_endpoints():
     assert res_clear.json()["status"] == "success"
 
 
-@patch("app.routers.query.build_graph")
-def test_e2e_query_semantic_cache_flow(mock_build_graph):
+def test_e2e_query_semantic_cache_flow():
+    from app.answering import get_pipeline
     from app.cache.semantic_cache import get_semantic_cache
+    from tests.helpers import pipeline_writing
     semantic_cache = get_semantic_cache()
     semantic_cache.clear()
 
-    mock_graph = mock_build_graph.return_value
-    mock_graph.invoke.return_value = {
-        "sql": "SELECT id, name FROM customers LIMIT 5;",
-        "validation": {"safe": True, "requires_human": False, "score": 95},
-        "results": {"columns": ["id", "name"], "rows": [{"id": 1, "name": "Alice"}]}
-    }
+    pipeline = pipeline_writing("SELECT customer_id, name FROM customers LIMIT 5;")
+    app.dependency_overrides[get_pipeline] = lambda: pipeline
 
     # 1. First execution: Cache Miss -> Executes graph & stores in cache
     res1 = client.post(
@@ -200,7 +197,7 @@ def test_e2e_query_semantic_cache_flow(mock_build_graph):
     data1 = res1.json()
     assert data1["status"] == "completed"
     assert data1["cached"] is False
-    assert mock_graph.invoke.call_count == 1
+    assert len(pipeline.states) == 1
 
     # 2. Second execution with identical query: Cache HIT! Graph should NOT be called again!
     res2 = client.post(
@@ -213,8 +210,9 @@ def test_e2e_query_semantic_cache_flow(mock_build_graph):
     assert data2["status"] == "completed"
     assert data2["cached"] is True
     assert data2["latency_ms"] < 50.0  # Ultra-fast sub-50ms cache response
-    # Graph invoke count remains 1!
-    assert mock_graph.invoke.call_count == 1
+    # The pipeline was still reached only once
+    assert len(pipeline.states) == 1
 
     # Clean up
+    app.dependency_overrides.pop(get_pipeline, None)
     semantic_cache.clear()

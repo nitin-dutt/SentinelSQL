@@ -13,6 +13,11 @@ os.environ["READONLY_DATABASE_URL"] = ""
 os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["AUDIT_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "audit.db")
 os.environ["HITL_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "hitl_runs.db")
+os.environ["TRACE_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "traces.db")
+os.environ["CONVERSATION_DB_PATH"] = os.path.join(_TEST_TMP_DIR, "conversations.db")
+for _name in ("LLM_PRICES_JSON", "LLM_PRICE_INPUT_PER_MTOK", "LLM_PRICE_OUTPUT_PER_MTOK", "TRACING_ENABLED", "INTENT_MODE", "SQL_CANDIDATES",
+              "ANALYST_CLARIFY", "ANALYST_EXPLORE"):
+    os.environ.pop(_name, None)
 os.environ["AUTH_TOKENS"] = ",".join([
     "test-employee-token:emp-1:employee",
     "test-employee2-token:emp-2:employee",
@@ -32,11 +37,12 @@ from unittest.mock import patch  # noqa: E402
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_env():
     os.environ["ACTIVE_DB"] = "sqlite"
-    from app.db.database import init_db, reset_engines
-    reset_engines()
+    from app.db.database import init_db
+    from app.runtime import reset_runtime_state
+    reset_runtime_state()
     init_db()                       # creates and seeds the 21-table demo database in the temp folder
     yield
-    reset_engines()
+    reset_runtime_state()
 
 
 @pytest.fixture

@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 from app.main import app
 from app.mcp_server import (
-    validate_and_classify_sql,
     mcp_get_database_schema,
     mcp_submit_sql,
     mcp_check_status
@@ -45,48 +44,7 @@ def test_mcp_schema_endpoint():
 
 
 # ==========================================
-# 2. SQL Validation & Risk Classification Tests
-# ==========================================
-
-def test_classify_safe_query():
-    res = validate_and_classify_sql("SELECT name, price FROM products LIMIT 10;")
-    assert res["safe"] is True
-    assert res["requires_human"] is False
-
-
-def test_classify_destructive_drop_blocked():
-    res = validate_and_classify_sql("DROP TABLE customers;")
-    assert res["safe"] is False
-    assert "Destructive SQL operation detected: 'DROP'" in res["reason"]
-
-
-def test_classify_destructive_delete_blocked():
-    res = validate_and_classify_sql("DELETE FROM orders WHERE order_id = 1;")
-    assert res["safe"] is False
-
-
-def test_classify_stacked_statements_blocked():
-    res = validate_and_classify_sql("SELECT 1; DROP TABLE products;")
-    assert res["safe"] is False
-    assert "Multiple stacked SQL statements detected" in res["reason"]
-
-
-def test_classify_sensitive_table_triggers_hitl():
-    res = validate_and_classify_sql("SELECT employee_id, salary FROM salaries LIMIT 10;")
-    assert res["safe"] is True
-    assert res["requires_human"] is True
-    assert "sensitive table" in res["reason"].lower()
-
-
-def test_classify_missing_limit_is_injected_and_auto_executes():
-    res = validate_and_classify_sql("SELECT name, price FROM products;")
-    assert res["safe"] is True
-    assert res["requires_human"] is False
-    assert "LIMIT 100" in res["sanitized_sql"].upper()
-
-
-# ==========================================
-# 3. Submission & Execution Flow Tests
+# 2. Submission & Execution Flow Tests (the policy verdict itself: tests/test_governance.py)
 # ==========================================
 
 def test_mcp_submit_safe_query_auto_executes():

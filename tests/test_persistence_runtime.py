@@ -246,6 +246,7 @@ def test_non_json_values_in_results_do_not_break_persistence(run_store):
 def test_stale_pending_runs_expire(run_store, monkeypatch):
     rid = run_store.save_run({"user_query": "q", "user_id": "u1"})
     monkeypatch.setenv("HITL_PENDING_TTL_HOURS", "0")
+    time.sleep(0.05)   # same clock-tick reason as the retention test below
     assert run_store.get_run(rid)["status"] == "expired"
     assert rid not in run_store.get_pending_runs()
 
@@ -272,9 +273,9 @@ def test_an_expired_run_cannot_be_approved(run_store, monkeypatch):
 
 def test_validation_works_on_a_cp1252_console():
     """The original crash: emoji in print() raised UnicodeEncodeError on a default Windows console."""
-    code = ("from app.agents.sql_validator import SQLValidationAgent\n"
-            "r = SQLValidationAgent().validate('SELECT name FROM customers LIMIT 5', 'q')\n"
-            "print('SAFE' if r['safe'] else 'UNSAFE')\n")
+    code = ("from app.governance import judge\n"
+            "r = judge('SELECT name FROM customers LIMIT 5')\n"
+            "print('UNSAFE' if r.blocked else 'SAFE')\n")
     result = run_python(code, PYTHONIOENCODING="cp1252")
     assert result.returncode == 0, result.stderr
     assert "SAFE" in result.stdout and "UnicodeEncodeError" not in result.stderr
@@ -375,17 +376,16 @@ def test_pipeline_reports_an_llm_outage_as_an_error_not_an_exception():
     with patch("app.graph.workflow.IntentAnalysisAgent") as agent, patch("app.graph.workflow.get_rag_schema_context", return_value="s"):
         agent.return_value.analyze.side_effect = LLMUnavailableError("The language model is unavailable right now (X).")
         out = workflow.build_graph().invoke({"user_query": "show customers", "user_id": "u", "role": "employee"})
-    assert out["validation"]["error"] is True and out["validation"]["safe"] is False
-    assert "unavailable" in out["validation"]["reason"]
+    assert out["stopped"]["status"] == "error" and "unavailable" in out["stopped"]["reason"]
+    assert out.get("outcome") is None                      # no SQL existed, so nothing was run or audited by the pipeline
 
 
 def test_api_returns_status_error_and_audits_it():
     from app.main import app
     from app.utils.audit_logger import get_audit_logs
     client = TestClient(app)
-    failing = {"validation": {"safe": False, "requires_human": False, "reason": "model down", "score": 0, "risk_level": "LOW", "error": True}}
-    with patch("app.routers.query.build_graph") as graph:
-        graph.return_value.invoke.return_value = failing
+    from tests.helpers import pipeline_stopping, use_pipeline
+    with use_pipeline(pipeline_stopping("model down", error=True)):
         r = client.post("/query", json={"query": "unique-error-case"}, headers=EMPLOYEE)
     assert r.status_code == 200 and r.json()["status"] == "error" and r.json()["reason"] == "model down"
     assert get_audit_logs(limit=1)[0]["execution_status"] == "error"

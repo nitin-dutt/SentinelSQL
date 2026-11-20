@@ -301,7 +301,7 @@ def test_query_endpoint_and_cache_end_to_end_on_a_live_database(live, server, tm
     cache = SemanticCache(cache_file=str(tmp_path / "cache.json"), enabled=True)
     sql = "SELECT order_id, amount, order_date FROM orders ORDER BY order_id"
     headers = {"Authorization": "Bearer test-employee-token"}
-    with patch("app.routers.query.get_semantic_cache", return_value=cache), \
+    with patch("app.answering.get_semantic_cache", return_value=cache), \
             patch("app.graph.workflow.get_rag_schema_context", return_value="orders(order_id, amount, order_date)"), \
             patch("app.graph.workflow.IntentAnalysisAgent") as intent, patch("app.graph.workflow.SQLGenerationAgent") as generator:
         intent.return_value.analyze.return_value = QueryIntent(tables=["orders"])
