@@ -12,6 +12,7 @@ import os
 from typing import Callable, Dict, Any, List, Set, Optional
 from app.rag.vector_store import EmbeddedVectorStore
 from app.utils.schemacontext import introspect_schema, get_schema_tables_dict
+from app.settings import settings
 
 
 _DEFAULT_DESCRIPTIONS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "table_descriptions.json")
@@ -19,7 +20,9 @@ _DEFAULT_DESCRIPTIONS_PATH = os.path.join(os.path.dirname(os.path.dirname(__file
 
 def load_table_descriptions() -> Dict[str, str]:
     """Per-table plain-language descriptions used to enrich embeddings. Missing file = no descriptions."""
-    path = os.getenv("TABLE_DESCRIPTIONS_PATH", _DEFAULT_DESCRIPTIONS_PATH)
+    path = settings.pipeline.table_descriptions_file
+    if path is None:
+        path = _DEFAULT_DESCRIPTIONS_PATH
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -144,6 +147,21 @@ class SchemaRAGRetriever:
 
 # Global singleton instance
 _GLOBAL_RETRIEVER = SchemaRAGRetriever()
+_SCOPED_RETRIEVERS: Dict[str, SchemaRAGRetriever] = {}   # one per connected workspace, vectors kept in its own folder
+
+
+def current_retriever() -> SchemaRAGRetriever:
+    """The retriever for the database this request is about: the server's own, or the caller's workspace."""
+    key = settings.scope_key()
+    if not key:
+        return _GLOBAL_RETRIEVER
+    if key not in _SCOPED_RETRIEVERS:
+        _SCOPED_RETRIEVERS[key] = SchemaRAGRetriever(cache_file=os.path.join(settings.scope_dir(), "schema_vectors.json"))
+    return _SCOPED_RETRIEVERS[key]
+
+
+def forget_scope(key: str) -> None:
+    _SCOPED_RETRIEVERS.pop(key, None)
 
 
 def get_rag_schema_context(query: Optional[str] = None, top_k: int = 3) -> str:
@@ -153,5 +171,5 @@ def get_rag_schema_context(query: Optional[str] = None, top_k: int = 3) -> str:
     Otherwise returns full introspected schema context.
     """
     if query:
-        return _GLOBAL_RETRIEVER.retrieve_schema(query=query, top_k=top_k)
+        return current_retriever().retrieve_schema(query=query, top_k=top_k)
     return introspect_schema().get("formatted_context", "")

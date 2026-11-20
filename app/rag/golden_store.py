@@ -7,12 +7,12 @@ Matches incoming natural language prompts via semantic vector similarity to inje
 high-confidence few-shot examples into the SQL Generation Agent.
 """
 
-import os
 import sqlite3
 import threading
 from typing import List, Dict, Any, Optional
 from app.rag.vector_store import EmbeddedVectorStore
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.golden")
 
@@ -23,13 +23,13 @@ _init_lock = threading.Lock()
 
 def _db_path() -> str:
     from app.db.database import internal_sqlite_path
-    return internal_sqlite_path("GOLDEN_DB_PATH")
+    return internal_sqlite_path(settings.stores.golden_db)
 
 
 def _vector_store() -> EmbeddedVectorStore:
     """Dedicated persistent vector store for golden query templates (created on first use)."""
     global _VECTOR_STORE
-    cache_file = os.getenv("GOLDEN_VECTOR_CACHE", ".golden_vectors.json")
+    cache_file = settings.stores.golden_vectors
     if _VECTOR_STORE is None or _VECTOR_STORE.cache_file != cache_file:
         _VECTOR_STORE = EmbeddedVectorStore(cache_file=cache_file)
     return _VECTOR_STORE

@@ -12,13 +12,13 @@ Solves the business-to-technical translation problem:
 - Uses semantic vector matching + keyword extraction to find relevant terms for any prompt.
 """
 
-import os
 import re
 import sqlite3
 import threading
 from typing import List, Dict, Any, Optional
 from app.rag.vector_store import EmbeddedVectorStore
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.dictionary")
 
@@ -29,13 +29,13 @@ _init_lock = threading.Lock()
 
 def _db_path() -> str:
     from app.db.database import internal_sqlite_path
-    return internal_sqlite_path("DICTIONARY_DB_PATH")
+    return internal_sqlite_path(settings.stores.dictionary_db)
 
 
 def _vector_store() -> EmbeddedVectorStore:
     """Dedicated persistent vector store for the business glossary (created on first use)."""
     global _VECTOR_STORE
-    cache_file = os.getenv("DICTIONARY_VECTOR_CACHE", ".dictionary_vectors.json")
+    cache_file = settings.stores.dictionary_vectors
     if _VECTOR_STORE is None or _VECTOR_STORE.cache_file != cache_file:
         _VECTOR_STORE = EmbeddedVectorStore(cache_file=cache_file)
     return _VECTOR_STORE

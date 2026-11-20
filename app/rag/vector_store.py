@@ -18,10 +18,13 @@ import hashlib
 import json
 import math
 import os
+import threading
 import time
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.vectors")
 
@@ -36,7 +39,7 @@ class EmbeddingUnavailableError(RuntimeError):
 
 def _gemini_dimension() -> int:
     """Gemini's default is 3,072 dimensions (41 KB per vector as JSON); 768 is 4x cheaper to store and scan."""
-    return int(os.getenv("GEMINI_EMBEDDING_DIM", "768"))
+    return settings.embeddings.gemini_dimension
 
 
 def compute_content_hash(text: str) -> str:
@@ -69,6 +72,36 @@ def _offline_embedding(text: str, dim: int = 128) -> List[float]:
     return [v / norm for v in vec] if norm > 0 else vec
 
 
+class _VectorCache:
+    """
+    The engine's in-memory vectors, keyed by (backend, text). Bounded: when it is full the least recently used vector
+    goes (EMBEDDING_CACHE_SIZE). It used to be a plain dict that kept one vector per distinct question for the life of
+    the process. Thread-safe, because requests run in a thread pool.
+    """
+
+    def __init__(self, max_size: int):
+        self.max_size = max_size
+        self._data: "OrderedDict[Tuple[str, str], List[float]]" = OrderedDict()
+        self._lock = threading.Lock()
+
+    def get(self, key: Tuple[str, str]) -> Optional[List[float]]:
+        with self._lock:
+            vec = self._data.get(key)
+            if vec is not None:
+                self._data.move_to_end(key)
+            return vec
+
+    def put(self, key: Tuple[str, str], vec: List[float]) -> None:
+        with self._lock:
+            self._data[key] = vec
+            self._data.move_to_end(key)
+            while len(self._data) > self.max_size:
+                self._data.popitem(last=False)
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+
 class EmbeddingEngine:
     """Embeds text via Google Gemini or Ollama, with a clearly-reported offline fallback."""
 
@@ -76,7 +109,7 @@ class EmbeddingEngine:
         self.provider = "offline"
         self.backend_id = OFFLINE_BACKEND     # what a *healthy* call to this engine produces
         self.client = None
-        self._embed_cache: Dict[Tuple[str, str], List[float]] = {}
+        self._embed_cache = _VectorCache(settings.embeddings.cache_size)
         self.remote_calls = 0
         self.fallback_calls = 0
         self.degraded = False
@@ -87,9 +120,9 @@ class EmbeddingEngine:
         self._init_client()
 
     def _init_client(self):
-        gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        explicit_provider = os.getenv("LLM_PROVIDER", "").strip().lower()
-        forced = os.getenv("EMBEDDING_PROVIDER", "auto").strip().lower()   # auto | gemini | ollama | offline
+        gemini_key = settings.models.gemini_api_key
+        explicit_provider = settings.models.provider
+        forced = settings.embeddings.provider   # auto | gemini | ollama | offline
 
         if forced == "offline":
             logger.info("EMBEDDING_PROVIDER=offline: using the offline hash embedding (%s)", OFFLINE_BACKEND)
@@ -132,7 +165,7 @@ class EmbeddingEngine:
     @property
     def strict(self) -> bool:
         """EMBEDDING_STRICT: never fall back to offline vectors; raise instead (benchmarks, fail-closed deployments)."""
-        return os.getenv("EMBEDDING_STRICT", "").strip().lower() in ("1", "true", "yes")
+        return settings.embeddings.strict
 
     @property
     def configured_remote(self) -> bool:
@@ -162,23 +195,25 @@ class EmbeddingEngine:
                 if self.degraded:
                     logger.info("Embeddings recovered: %s is responding again", self.backend_id)
                 self.degraded = False
-                self._embed_cache[(self.backend_id, text)] = vec
+                self._embed_cache.put((self.backend_id, text), vec)
                 return vec, self.backend_id
             except Exception as e:
                 if self.strict:
                     raise EmbeddingUnavailableError(f"{type(e).__name__} from {self.backend_id}: {str(e)[:200]}") from e
                 self._record_failure(f"{type(e).__name__} from {self.backend_id}")
                 # Back off so a dead provider does not add a failing network call to every request
-                self._remote_blocked_until = time.monotonic() + float(os.getenv("EMBEDDING_RETRY_SECONDS", "30"))
+                self._remote_blocked_until = time.monotonic() + settings.embeddings.retry_seconds
 
         if self.configured_remote and self.strict:
             raise EmbeddingUnavailableError(f"{self.backend_id} is unavailable and EMBEDDING_STRICT is set")
         if self.configured_remote:
             self.fallback_calls += 1
         key = (OFFLINE_BACKEND, text)
-        if key not in self._embed_cache:
-            self._embed_cache[key] = _offline_embedding(text)
-        return self._embed_cache[key], OFFLINE_BACKEND
+        vec = self._embed_cache.get(key)
+        if vec is None:
+            vec = _offline_embedding(text)
+            self._embed_cache.put(key, vec)
+        return vec, OFFLINE_BACKEND
 
     def embed_text(self, text: str) -> List[float]:
         """Vector only (backend-agnostic callers). Prefer `embed` when vectors will be stored or compared."""
@@ -216,14 +251,14 @@ class EmbeddingEngine:
                         logger.info("Embeddings recovered: %s is responding again", self.backend_id)
                     self.degraded = False
                     for i, vec in zip(chunk, vectors):
-                        self._embed_cache[(self.backend_id, texts[i])] = vec
+                        self._embed_cache.put((self.backend_id, texts[i]), vec)
                         results[i] = (vec, self.backend_id)
                     continue
                 except Exception as e:
                     if self.strict:
                         raise EmbeddingUnavailableError(f"{type(e).__name__} from {self.backend_id}: {str(e)[:200]}") from e
                     self._record_failure(f"{type(e).__name__} from {self.backend_id}")
-                    self._remote_blocked_until = time.monotonic() + float(os.getenv("EMBEDDING_RETRY_SECONDS", "30"))
+                    self._remote_blocked_until = time.monotonic() + settings.embeddings.retry_seconds
                     can_batch = False
             for i in chunk:                      # single-text path handles fallback tagging and counters
                 results[i] = self.embed(texts[i])
@@ -238,6 +273,8 @@ class EmbeddingEngine:
             "remote_calls": self.remote_calls,
             "fallback_calls": self.fallback_calls,
             "dimension": self.last_dimension,
+            "cached_vectors": len(self._embed_cache),
+            "cache_size": self._embed_cache.max_size,
             "last_error": self.last_error,
             "last_error_at": self.last_error_at,
         }
@@ -254,10 +291,10 @@ def get_embedding_engine() -> EmbeddingEngine:
     """
     global _ENGINE, _ENGINE_SIGNATURE
     signature = (
-        bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")),
-        os.getenv("LLM_PROVIDER", "").strip().lower(),
-        os.getenv("EMBEDDING_PROVIDER", "auto").strip().lower(),
-        os.getenv("GEMINI_EMBEDDING_DIM", "768"),
+        bool(settings.models.gemini_api_key),
+        settings.models.provider,
+        settings.embeddings.provider,
+        settings.embeddings.gemini_dimension_text,
     )
     if _ENGINE is None or signature != _ENGINE_SIGNATURE:
         _ENGINE = EmbeddingEngine()
