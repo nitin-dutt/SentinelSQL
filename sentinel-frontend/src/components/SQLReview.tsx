@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Icon from "./Icon";
+import Verdict from "./Verdict";
 
 type Props = {
   sql: string;
@@ -27,154 +29,86 @@ export default function SQLReview({
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
 
   const isEditMode = mode === "edit";
+  const checkboxId = `save-template-${runId || "default"}`;
 
   return (
-    <div
-      style={{
-        marginBottom: 32,
-        padding: 32,
-        border: "1px solid var(--warning)",
-        borderRadius: 12,
-        background: "rgba(245, 158, 11, 0.1)",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h2 style={{ marginTop: 0, color: "var(--warning)", fontSize: 24, display: "flex", alignItems: "center", gap: 8 }}>
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        Human Approval Required
-      </h2>
-
-      <p style={{ color: "var(--text-main)", marginBottom: 8, lineHeight: 1.6 }}>
-        This query was flagged as potentially risky and requires explicit human
-        approval before execution.
-      </p>
-
-      <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 8 }}>
-        <strong style={{ color: "var(--text-main)" }}>Reason:</strong> {reason}
-      </p>
-
-      {runId && (
-        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 0 }}>
-          <strong style={{ color: "var(--text-main)" }}>Run ID:</strong> <code style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: 3 }}>{runId}</code>
+    <div>
+      <div className="field">
+        <span className="label">Why it was held</span>
+        <p style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <span className="text-warn" style={{ paddingTop: 2 }}><Icon name="alert" /></span>
+          <span>{reason}</span>
         </p>
-      )}
-
-      <hr style={{ margin: "16px 0", border: "none", borderTop: "1px solid rgba(245, 158, 11, 0.2)" }} />
-
-      <label
-        style={{
-          display: "block",
-          fontWeight: 600,
-          marginBottom: 6,
-          color: "var(--text-main)"
-        }}
-      >
-        SQL to be executed
-      </label>
-
-      <textarea
-        rows={8}
-        value={isEditMode ? editedSql : sql}
-        onChange={(e) => setEditedSql(e.target.value)}
-        readOnly={!isEditMode}
-        style={{
-          display: "block",
-          boxSizing: "border-box",
-          width: "100%",
-          fontFamily: "monospace",
-          fontSize: "14px",
-          background: isEditMode ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.2)",
-          border: isEditMode ? "1px solid var(--accent)" : "1px solid var(--border)",
-          color: isEditMode ? "#fff" : "var(--accent-hover)",
-          padding: "12px",
-          borderRadius: "8px",
-          outline: "none",
-          resize: "vertical"
-        }}
-      />
-
-      {/* ⭐ Approach 1: Explicit Business Template Opt-In Checkbox */}
-      <div
-        style={{
-          marginTop: 14,
-          padding: "10px 14px",
-          background: "rgba(255, 255, 255, 0.04)",
-          borderRadius: 8,
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <input
-          type="checkbox"
-          id={`save-template-${runId || "default"}`}
-          checked={saveAsTemplate}
-          onChange={(e) => setSaveAsTemplate(e.target.checked)}
-          style={{ cursor: "pointer", width: 16, height: 16, accentColor: "var(--accent)" }}
-        />
-        <label
-          htmlFor={`save-template-${runId || "default"}`}
-          style={{
-            cursor: "pointer",
-            fontSize: 13,
-            color: "var(--text-main)",
-            userSelect: "none",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span>⭐</span>
-          <span>Save as verified business template for future reference (Few-Shot Memory)</span>
-        </label>
+        <p className="muted small" style={{ marginTop: 4 }}>
+          This query was flagged as potentially risky and runs only after a reviewer approves it.
+          {runId && <> Run ID <code>{runId}</code></>}
+        </p>
       </div>
 
-      <div
-        style={{
-          marginTop: 20,
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
+      <div className="field">
+        <label className="label" htmlFor={`sql-${runId || "default"}`}>SQL to be executed</label>
+        <textarea
+          id={`sql-${runId || "default"}`}
+          className="input input-mono"
+          rows={8}
+          value={isEditMode ? editedSql : sql}
+          onChange={(e) => setEditedSql(e.target.value)}
+          readOnly={!isEditMode}
+          style={{
+            background: "var(--bg-deep)",
+            color: isEditMode ? "var(--text)" : "var(--accent-ink)",
+            borderColor: isEditMode ? "var(--accent-ink)" : undefined,
+          }}
+        />
+      </div>
+
+      <label className="check field-gap" htmlFor={checkboxId}>
+        <input
+          type="checkbox"
+          id={checkboxId}
+          checked={saveAsTemplate}
+          onChange={(e) => setSaveAsTemplate(e.target.checked)}
+        />
+        <span>Save as a verified template, used as a few-shot example for future questions</span>
+      </label>
+
+      <div className="actions" style={{ marginTop: 24 }}>
         {!isEditMode && (
-          <button className="primary" onClick={() => onApprove(saveAsTemplate)} disabled={loading || !!blockedReason} style={{ background: "var(--success)", borderColor: "var(--success)" }}>
-            Approve & Execute
+          <button className="btn btn-primary" onClick={() => onApprove(saveAsTemplate)} disabled={loading || !!blockedReason}>
+            Approve and run
           </button>
         )}
 
         {!isEditMode && (
-          <button onClick={() => setMode("edit")} disabled={loading || !!blockedReason}>
+          <button className="btn" onClick={() => setMode("edit")} disabled={loading || !!blockedReason}>
             Edit SQL
           </button>
         )}
 
         {isEditMode && (
-          <button className="primary" onClick={() => onEdit(editedSql, saveAsTemplate)} disabled={loading || !editedSql.trim()}>
-            Execute Edited SQL
+          <button className="btn btn-primary" onClick={() => onEdit(editedSql, saveAsTemplate)} disabled={loading || !editedSql.trim()}>
+            Run edited SQL
           </button>
         )}
 
         {isEditMode && (
-          <button onClick={() => { setEditedSql(sql); setMode("view"); }} disabled={loading}>
+          <button className="btn" onClick={() => { setEditedSql(sql); setMode("view"); }} disabled={loading}>
             Cancel
           </button>
         )}
 
-        <button onClick={onReject} disabled={loading} style={{ marginLeft: "auto", background: "transparent", color: "var(--error)", borderColor: "var(--error)" }}>
+        <button className="btn btn-danger push-right" onClick={onReject} disabled={loading}>
           Reject
         </button>
       </div>
 
       {blockedReason && (
-        <p style={{ marginTop: 12, fontSize: 14, color: "var(--warning)" }}>{blockedReason}</p>
+        <p className="text-warn" style={{ marginTop: 12 }}>{blockedReason}</p>
       )}
 
       {loading && (
-        <p style={{ marginTop: 12, fontSize: 14, color: "var(--accent)" }}>
-          ⏳ Awaiting execution…
+        <p style={{ marginTop: 12 }}>
+          <Verdict tone="info">running</Verdict>
         </p>
       )}
     </div>

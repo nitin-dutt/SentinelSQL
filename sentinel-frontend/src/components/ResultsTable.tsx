@@ -1,5 +1,5 @@
 type Props = {
-  results: any[] | { columns: string[]; rows: any[] };
+  results: any[] | { columns: string[]; rows: any[]; truncated?: boolean; row_limit?: number };
   /** Optional: prioritize these columns first, in order */
   preferredOrder?: string[];
   /** Optional: formatters per column */
@@ -23,21 +23,14 @@ export default function ResultsTable({
 
   if (!rowsData || rowsData.length === 0) {
     return (
-      <div
-        style={{
-          marginTop: 24,
-          padding: 24,
-          background: "rgba(255, 255, 255, 0.03)",
-          border: "1px solid var(--border)",
-          borderRadius: 8,
-          textAlign: "center",
-        }}
-      >
-        <h3 style={{ margin: 0, color: "var(--text-main)" }}>📊 Results</h3>
-        <p style={{ color: "var(--text-muted)", marginTop: 8 }}>No rows matched this query.</p>
-        <p style={{ color: "var(--text-muted)", marginTop: 4, fontSize: 13 }}>
-          If your question is not about the data in this database (see the table list), the system may have guessed a filter that matches nothing. Try rephrasing it in terms of the tables and columns.
-        </p>
+      <div className="field-gap">
+        <span className="label">Results</span>
+        <div className="notice" style={{ display: "block" }}>
+          <p>No rows matched this query</p>
+          <p className="muted small" style={{ marginTop: 4 }}>
+            If your question is not about the data in this database (see the table list), the system may have guessed a filter that matches nothing. Try rephrasing it in terms of the tables and columns.
+          </p>
+        </div>
       </div>
     );
   }
@@ -83,35 +76,33 @@ export default function ResultsTable({
     return String(value);
   };
 
-  return (
-    <div style={{ marginTop: 24 }}>
-      <h3 style={{ color: "var(--text-main)", marginBottom: 12 }}>📊 Results</h3>
+  // A column whose every value is a number is set right-aligned in tabular figures, header included, so digits line up.
+  const numeric = new Set(
+    columns.filter((col) => {
+      const values = rowsData.map((row: any) => row[col]).filter((v: any) => v !== null && v !== undefined);
+      return values.length > 0 && values.every((v: any) => typeof v === "number");
+    })
+  );
 
-      <div style={{ overflowX: "auto", borderRadius: 8, border: "1px solid var(--border)" }}>
-        <table
-          style={{
-            borderCollapse: "collapse",
-            width: "100%",
-            minWidth: 600,
-            fontSize: 14,
-          }}
-        >
+  return (
+    <div className="field-gap">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span className="label">Results</span>
+        <span className="meta">{rowsData.length} {rowsData.length === 1 ? "row" : "rows"}</span>
+      </div>
+      {isObjectFormat && (results as any).truncated && (
+        <p className="muted small" style={{ margin: "4px 0 8px" }}>
+          Row limit reached: showing the first {(results as any).row_limit ?? rowsData.length} rows. The full answer may have more.
+          Ask for a narrower question (a filter, a count, or a top-N) to see the rest.
+        </p>
+      )}
+
+      <div className="table-wrap" style={{ borderRadius: 8 }}>
+        <table className="table table-hover table-fit">
           <thead>
-            <tr style={{ background: "rgba(15, 23, 42, 0.85)" }}>
+            <tr>
               {columns.map((col: string) => (
-                <th
-                  key={col}
-                  style={{
-                    textAlign: "left",
-                    padding: "12px 16px",
-                    fontWeight: 600,
-                    borderBottom: "1px solid var(--border)",
-                    color: "var(--text-muted)",
-                    fontSize: "12px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px"
-                  }}
-                >
+                <th key={col} className={numeric.has(col) ? "num" : "mono"}>
                   {col}
                 </th>
               ))}
@@ -120,29 +111,9 @@ export default function ResultsTable({
 
           <tbody>
             {rowsData.map((row: any, idx: number) => (
-              <tr
-                key={idx}
-                style={{
-                  background: idx % 2 === 0 ? "rgba(255, 255, 255, 0.02)" : "rgba(255, 255, 255, 0.04)",
-                  transition: "background-color 0.15s ease",
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "rgba(59, 130, 246, 0.12)")}
-                onMouseOut={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "rgba(255, 255, 255, 0.02)" : "rgba(255, 255, 255, 0.04)")}
-              >
+              <tr key={idx}>
                 {columns.map((col: string) => (
-                  <td
-                    key={col}
-                    style={{
-                      padding: "12px 16px",
-                      borderBottom: "1px solid var(--border)",
-                      color: "var(--text-main)",
-                      maxWidth: 300,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    title={String(row[col])}
-                  >
+                  <td key={col} className={numeric.has(col) ? "num" : "truncate"} title={String(row[col])}>
                     {renderCell(col, row[col])}
                   </td>
                 ))}

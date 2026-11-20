@@ -16,6 +16,8 @@ import {
 import SQLReview from "./SQLReview";
 import LoadingIndicator from "./LoadingIndicator";
 import ResultsTable from "./ResultsTable";
+import Icon from "./Icon";
+import Verdict from "./Verdict";
 
 interface AdminDashboardProps {
   onDecisionComplete?: (runId: string, result: any) => void;
@@ -131,7 +133,7 @@ export default function AdminDashboard({ onDecisionComplete, currentUserId }: Ad
   }
 
   async function handleDeleteTemplate(id: number) {
-    if (!confirm(`Are you sure you want to delete Golden Query Template #${id}?`)) {
+    if (!confirm(`Delete verified template #${id}?`)) {
       return;
     }
     setDeletingId(id);
@@ -146,7 +148,7 @@ export default function AdminDashboard({ onDecisionComplete, currentUserId }: Ad
   }
 
   async function handleClearCache() {
-    if (!confirm("Are you sure you want to invalidate all cached query entries?")) {
+    if (!confirm("Clear every cached query entry?")) {
       return;
     }
     setClearingCache(true);
@@ -164,7 +166,7 @@ export default function AdminDashboard({ onDecisionComplete, currentUserId }: Ad
   async function handleAddTerm(e: React.FormEvent) {
     e.preventDefault();
     if (!newTerm.term.trim() || !newTerm.formula_or_rule.trim()) {
-      alert("Please provide both Term name and SQL Formula / Condition.");
+      alert("Enter both a term name and an SQL formula or condition.");
       return;
     }
     setAddingTerm(true);
@@ -182,7 +184,7 @@ export default function AdminDashboard({ onDecisionComplete, currentUserId }: Ad
   }
 
   async function handleDeleteTerm(id: number, termName: string) {
-    if (!confirm(`Are you sure you want to delete '${termName}' from the Data Dictionary?`)) {
+    if (!confirm(`Delete '${termName}' from the business glossary?`)) {
       return;
     }
     setDeletingTermId(id);
@@ -197,448 +199,298 @@ export default function AdminDashboard({ onDecisionComplete, currentUserId }: Ad
   }
 
   if (loading) return <LoadingIndicator />;
-  if (error) return <div style={{ color: "var(--error)", padding: 24 }}>{error}</div>;
+  if (error) return <div className="notice notice-bad" role="alert"><span className="dot dot-bad" aria-hidden="true" /><span>{error}</span></div>;
+
+  const cacheEmpty = (cacheStats?.total_entries ?? 0) === 0;
 
   return (
-    <div className="admin-dashboard animate-fade-in" style={{ padding: 24, maxWidth: 1000, margin: "0 auto", display: "flex", flexDirection: "column", gap: 32 }}>
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 28 }}>Admin Queue</h2>
-            <p style={{ color: "var(--text-muted)", margin: "8px 0 0 0" }}>Review and approve queries flagged by the LLM Validator.</p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {queueNote && <span style={{ color: "var(--text-muted)", fontSize: 14 }}>{queueNote}</span>}
-            <button className="primary" onClick={refreshQueue} disabled={refreshingQueue}>
-              {refreshingQueue ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
+    <>
+      <div className="page-head">
+        <div>
+          <h2 className="page-title">Admin queue</h2>
+          <p className="lede">Review the queries the policy check held, then approve, edit or reject them.</p>
+        </div>
+        <div className="actions">
+          {queueNote && <span className="meta">{queueNote}</span>}
+          <button className="btn" onClick={refreshQueue} disabled={refreshingQueue}>
+            <Icon name="refresh" />
+            {refreshingQueue ? "Refreshing…" : "Refresh"}
+          </button>
         </div>
       </div>
 
       {approved.map(a => (
-        <div key={a.run_id} className="glass-panel animate-fade-in" style={{ padding: 32, borderColor: "var(--success)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <h3 style={{ margin: 0, color: "var(--success)" }}>Approved and executed</h3>
-            <button onClick={() => setApproved(list => list.filter(x => x.run_id !== a.run_id))}>Dismiss</button>
+        <section key={a.run_id} className="card enter">
+          <div className="card-head">
+            <h3 className="card-title">Approved and executed</h3>
+            <div className="actions" style={{ gap: 16 }}>
+              <Verdict tone="ok">approved · executed</Verdict>
+              <button className="btn btn-sm" onClick={() => setApproved(list => list.filter(x => x.run_id !== a.run_id))}>Dismiss</button>
+            </div>
           </div>
-          <p style={{ margin: "12px 0 4px 0" }}><strong>Question:</strong> {a.question}</p>
-          <pre style={{ background: "rgba(0,0,0,0.3)", padding: 12, borderRadius: 8, overflowX: "auto", border: "1px solid var(--border)", color: "#60a5fa" }}>{a.sql}</pre>
+          <div className="field">
+            <span className="label">Question</span>
+            <p className="quote">{a.question}</p>
+          </div>
+          <div className="field">
+            <span className="label">Executed SQL</span>
+            <pre className="code">{a.sql}</pre>
+          </div>
           <ResultsTable results={a.results} />
-          <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 0 }}>
+          <p className="muted small field-gap">
             Salary figures are shown to you because you approved this query. The person who asked still sees them as [CONFIDENTIAL]; emails, SSNs and card numbers stay masked for everyone.
           </p>
-        </div>
+        </section>
       ))}
 
       {queue.length === 0 ? (
-        <div className="glass-panel" style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
-          <h3 style={{ margin: 0 }}>Queue is Empty</h3>
-          <p>No queries require human intervention right now.</p>
+        <div className="card empty">
+          <h3>Queue is empty</h3>
+          <p>No queries are waiting for a reviewer</p>
         </div>
       ) : (
         queue.map(item => (
-          <div key={item.run_id} className="glass-panel" style={{ padding: 32 }}>
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ margin: "0 0 16px 0", color: "var(--accent)" }}>Query Intent</h3>
-              <div style={{ background: "rgba(255,255,255,0.05)", padding: 16, borderRadius: 8, border: "1px solid var(--border)" }}>
-                <strong>User Question:</strong> {item.state.user_query}
-                {item.state.user_id && (
-                  <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
-                    Submitted by <code>{item.state.user_id}</code>{item.state.user_id === currentUserId ? " (you)" : ""}
-                  </div>
-                )}
-              </div>
+          <section key={item.run_id} className="card">
+            <div className="card-head">
+              <h3 className="card-title">Human approval required</h3>
+              <Verdict tone="warn">
+                held{item.state.user_id ? ` · submitted by ${item.state.user_id}${item.state.user_id === currentUserId ? " (you)" : ""}` : ""}
+              </Verdict>
             </div>
-
-            <SQLReview
-              runId={item.run_id}
-              sql={item.state.sql || ""}
-              reason={item.state.validation?.reason || "Flagged for review"}
-              onApprove={(saveAsTemplate) => handleDecision(item.run_id, "approve", undefined, saveAsTemplate)}
-              onEdit={(edited, saveAsTemplate) => handleDecision(item.run_id, "edit", edited, saveAsTemplate)}
-              onReject={() => handleDecision(item.run_id, "reject")}
-              loading={processingId === item.run_id}
-              blockedReason={item.state.user_id && item.state.user_id === currentUserId
-                ? "You submitted this request, so another administrator must approve it (you can still reject it). Sign in as a different reviewer, or ask the question as the employee."
-                : undefined}
-            />
-          </div>
+            <div className="field">
+              <span className="label">Question</span>
+              <p className="quote">{item.state.user_query}</p>
+            </div>
+            <div className="field">
+              <SQLReview
+                runId={item.run_id}
+                sql={item.state.sql || ""}
+                reason={item.state.validation?.reason || "Flagged for review"}
+                onApprove={(saveAsTemplate) => handleDecision(item.run_id, "approve", undefined, saveAsTemplate)}
+                onEdit={(edited, saveAsTemplate) => handleDecision(item.run_id, "edit", edited, saveAsTemplate)}
+                onReject={() => handleDecision(item.run_id, "reject")}
+                loading={processingId === item.run_id}
+                blockedReason={item.state.user_id && item.state.user_id === currentUserId
+                  ? "You submitted this request, so another administrator must approve it (you can still reject it). Sign in as a different reviewer, or ask the question as the employee."
+                  : undefined}
+              />
+            </div>
+          </section>
         ))
       )}
 
-      {/* ⭐ Golden Query Templates Section */}
-      <div style={{ marginTop: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      {/* Verified templates (golden queries) */}
+      <section className="section">
+        <div className="section-head">
           <div>
-            <h3 style={{ margin: 0, fontSize: 22, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>⭐</span> Verified Business Templates
-              <span className="badge" style={{ fontSize: 13, background: "rgba(99, 102, 241, 0.2)", color: "var(--accent)" }}>
-                {goldenQueries.length} Saved
-              </span>
+            <h3 className="section-title">
+              Verified templates
+              <span className="meta">{goldenQueries.length} saved</span>
             </h3>
-            <p style={{ color: "var(--text-muted)", margin: "4px 0 0 0", fontSize: 14 }}>
-              Human-approved golden queries injected as few-shot in-context examples to guarantee generation accuracy.
-            </p>
+            <p className="section-sub">Reviewer-approved queries, given to the model as few-shot examples for similar questions.</p>
           </div>
         </div>
 
         {goldenQueries.length === 0 ? (
-          <div className="glass-panel" style={{ padding: 32, textAlign: "center", color: "var(--text-muted)" }}>
-            <p style={{ margin: 0 }}>
-              No golden query templates saved yet. When approving a query in the Admin Queue, check
-              <strong> "Save as verified business template"</strong> to add it to SentinelSQL's memory.
+          <div className="card empty">
+            <p>
+              No templates saved yet. When approving a query in the admin queue, tick "Save as a verified template" to add it.
             </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {goldenQueries.map(template => (
-              <div
-                key={template.id}
-                className="glass-panel"
-                style={{
-                  padding: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 12,
-                  border: "1px solid rgba(255, 255, 255, 0.08)"
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div>
-                    <span style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                      Template #{template.id} &bull; Added by <strong style={{ color: "var(--text-main)" }}>{template.created_by}</strong>
-                    </span>
-                    <h4 style={{ margin: "4px 0 0 0", fontSize: 16, color: "var(--text-main)" }}>
-                      "{template.natural_language_query}"
-                    </h4>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteTemplate(template.id)}
-                    disabled={deletingId === template.id}
-                    style={{
-                      background: "rgba(239, 68, 68, 0.1)",
-                      border: "1px solid rgba(239, 68, 68, 0.3)",
-                      color: "var(--error)",
-                      fontSize: 12,
-                      padding: "6px 12px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {deletingId === template.id ? "Deleting…" : "🗑️ Delete"}
-                  </button>
+          goldenQueries.map(template => (
+            <div key={template.id} className="card">
+              <div className="card-head" style={{ alignItems: "flex-start", flexWrap: "nowrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <span className="meta">Template #{template.id} · added by {template.created_by}</span>
+                  <p className="quote" style={{ marginTop: 4 }}>{template.natural_language_query}</p>
                 </div>
-
-                <div
-                  style={{
-                    background: "rgba(0, 0, 0, 0.3)",
-                    padding: 12,
-                    borderRadius: 6,
-                    fontFamily: "monospace",
-                    fontSize: 13,
-                    color: "var(--accent-hover)",
-                    overflowX: "auto"
-                  }}
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleDeleteTemplate(template.id)}
+                  disabled={deletingId === template.id}
                 >
-                  {template.verified_sql}
-                </div>
+                  <Icon name="trash" />
+                  {deletingId === template.id ? "Deleting…" : "Delete"}
+                </button>
               </div>
-            ))}
-          </div>
+              <pre className="code">{template.verified_sql}</pre>
+            </div>
+          ))
         )}
-      </div>
+      </section>
 
-      {/* ⚡ Semantic Cache Telemetry & Invalidation Section */}
-      <div style={{ marginTop: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      {/* Semantic cache statistics and clearing */}
+      <section className="section">
+        <div className="section-head">
           <div>
-            <h3 style={{ margin: 0, fontSize: 22, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>⚡</span> Enterprise Semantic Cache
-              <span className="badge" style={{ fontSize: 13, background: "rgba(56, 189, 248, 0.2)", color: "#38bdf8" }}>
-                {cacheStats?.total_entries ?? 0} Cached
-              </span>
+            <h3 className="section-title">
+              Semantic cache
+              <span className="meta">{cacheStats?.total_entries ?? 0} cached</span>
             </h3>
-            <p style={{ color: "var(--text-muted)", margin: "4px 0 0 0", fontSize: 14 }}>
-              Two-tier L1 exact hash + L2 vector cosine similarity cache bypassing LLM & DB latency (under 3ms).
+            <p className="section-sub">
+              Two tiers: an exact-match hash (L1), then vector similarity (L2). A hit returns the stored answer without calling the model or the database.
             </p>
           </div>
 
-          <button
-            onClick={handleClearCache}
-            disabled={clearingCache || (cacheStats?.total_entries ?? 0) === 0}
-            style={{
-              padding: "8px 16px",
-              cursor: clearingCache || (cacheStats?.total_entries ?? 0) === 0 ? "not-allowed" : "pointer",
-              background: "rgba(239, 68, 68, 0.15)",
-              color: "#f87171",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
-              opacity: clearingCache || (cacheStats?.total_entries ?? 0) === 0 ? 0.5 : 1
-            }}
-          >
-            {clearingCache ? "⏳ Clearing..." : "🗑️ Invalidate Cache"}
+          <button className="btn btn-danger" onClick={handleClearCache} disabled={clearingCache || cacheEmpty}>
+            <Icon name="trash" />
+            {clearingCache ? "Clearing…" : "Clear cache"}
           </button>
         </div>
 
         {cacheStats && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
-            <div className="glass-panel" style={{ padding: 16, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>Hit Ratio</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#34d399", marginTop: 4 }}>
-                {cacheStats.hit_ratio_percent}%
+          <div className="stats">
+            {[
+              { label: "Hit ratio", value: `${cacheStats.hit_ratio_percent}%` },
+              { label: "Total hits", value: cacheStats.hits },
+              { label: "L1 exact hits", value: cacheStats.exact_hits },
+              { label: "L2 vector hits", value: cacheStats.semantic_hits },
+              { label: "Misses", value: cacheStats.misses },
+            ].map(stat => (
+              <div key={stat.label} className="card stat">
+                <div className="stat-label">{stat.label}</div>
+                <div className="stat-value" style={{ marginBottom: 0 }}>{stat.value}</div>
               </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: 16, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>Total Hits</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#38bdf8", marginTop: 4 }}>
-                {cacheStats.hits}
-              </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: 16, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>L1 Exact Hits</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--accent)", marginTop: 4 }}>
-                {cacheStats.exact_hits}
-              </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: 16, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>L2 Vector Hits</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#c084fc", marginTop: 4 }}>
-                {cacheStats.semantic_hits}
-              </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: 16, textAlign: "center" }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase" }}>Cache Misses</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--text-muted)", marginTop: 4 }}>
-                {cacheStats.misses}
-              </div>
-            </div>
+            ))}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* 📖 Business Glossary & Data Dictionary Section */}
-      <div style={{ marginTop: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+      {/* Business glossary (data dictionary) */}
+      <section className="section">
+        <div className="section-head">
           <div>
-            <h3 style={{ margin: 0, fontSize: 22, display: "flex", alignItems: "center", gap: 8 }}>
-              <span>📖</span> Business Glossary & Data Dictionary
-              <span className="badge" style={{ fontSize: 13, background: "rgba(168, 85, 247, 0.2)", color: "#c084fc" }}>
-                {dictionaryTerms.length} Rules Active
-              </span>
+            <h3 className="section-title">
+              Business glossary
+              <span className="meta">{dictionaryTerms.length} {dictionaryTerms.length === 1 ? "term" : "terms"}</span>
             </h3>
-            <p style={{ color: "var(--text-muted)", margin: "4px 0 0 0", fontSize: 14 }}>
-              Maps enterprise business terminology (e.g., "Net Revenue", "VIP Tier") into verified SQL formulas and dbt definitions.
+            <p className="section-sub">
+              Maps business terms such as "Net revenue" or "VIP tier" to verified SQL formulas the model must use.
             </p>
           </div>
 
-          <button
-            className="primary"
-            onClick={() => setShowAddTerm(!showAddTerm)}
-            style={{ padding: "8px 16px", cursor: "pointer" }}
-          >
-            {showAddTerm ? "✕ Cancel" : "+ Add Business Metric"}
+          <button className={showAddTerm ? "btn" : "btn btn-primary"} onClick={() => setShowAddTerm(!showAddTerm)}>
+            <Icon name={showAddTerm ? "x" : "plus"} />
+            {showAddTerm ? "Cancel" : "Add term"}
           </button>
         </div>
 
-        {/* Add Term Form */}
         {showAddTerm && (
-          <form
-            onSubmit={handleAddTerm}
-            className="glass-panel"
-            style={{
-              padding: 24,
-              marginBottom: 20,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              border: "1px solid var(--accent)"
-            }}
-          >
-            <h4 style={{ margin: 0, fontSize: 18, color: "var(--accent)" }}>Define New Business Metric / Rule</h4>
+          <form onSubmit={handleAddTerm} className="card stack" style={{ gap: 16 }}>
+            <h4 className="card-title">New term</h4>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            <div className="form-grid">
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
-                  TERM NAME *
-                </label>
+                <label className="label" htmlFor="term-name">Term name (required)</label>
                 <input
+                  id="term-name"
+                  className="input"
                   type="text"
-                  placeholder="e.g. Net Revenue, Churned Customer"
+                  placeholder="Net revenue"
                   value={newTerm.term}
                   onChange={(e) => setNewTerm({ ...newTerm, term: e.target.value })}
                   required
-                  style={{ width: "100%", padding: 10, borderRadius: 6, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border)", color: "#fff" }}
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
-                  CATEGORY
-                </label>
+                <label className="label" htmlFor="term-category">Category</label>
                 <select
+                  id="term-category"
+                  style={{ width: "100%" }}
                   value={newTerm.category}
                   onChange={(e) => setNewTerm({ ...newTerm, category: e.target.value })}
-                  style={{ width: "100%", padding: 10, borderRadius: 6, background: "#1e293b", border: "1px solid var(--border)", color: "#fff" }}
                 >
-                  <option value="metric">Metric (Calculation Formula)</option>
-                  <option value="filter">Filter (WHERE Condition)</option>
-                  <option value="segment">Segment (Cohort Rule)</option>
-                  <option value="model">Model / Entity Definition</option>
+                  <option value="metric">Metric (calculation formula)</option>
+                  <option value="filter">Filter (WHERE condition)</option>
+                  <option value="segment">Segment (cohort rule)</option>
+                  <option value="model">Model or entity definition</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
-                  APPLICABLE TABLES
-                </label>
+                <label className="label" htmlFor="term-tables">Tables it applies to</label>
                 <input
+                  id="term-tables"
+                  className="input input-mono"
                   type="text"
-                  placeholder="e.g. orders, customers"
+                  placeholder="orders, customers"
                   value={newTerm.related_tables}
                   onChange={(e) => setNewTerm({ ...newTerm, related_tables: e.target.value })}
-                  style={{ width: "100%", padding: 10, borderRadius: 6, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border)", color: "#fff" }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
-                SQL FORMULA / CONDITION *
-              </label>
+              <label className="label" htmlFor="term-formula">SQL formula or condition (required)</label>
               <input
+                id="term-formula"
+                className="input input-mono"
                 type="text"
-                placeholder="e.g. SUM(orders.total_amount) - SUM(orders.discount_amount)"
+                placeholder="SUM(orders.total_amount) - SUM(orders.discount_amount)"
                 value={newTerm.formula_or_rule}
                 onChange={(e) => setNewTerm({ ...newTerm, formula_or_rule: e.target.value })}
                 required
-                style={{ width: "100%", padding: 10, fontFamily: "monospace", borderRadius: 6, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border)", color: "var(--accent-hover)" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
-                BUSINESS DEFINITION
-              </label>
+              <label className="label" htmlFor="term-definition">Definition</label>
               <textarea
+                id="term-definition"
+                className="input"
                 rows={2}
-                placeholder="Brief business description explaining how this metric should be calculated..."
+                placeholder="How this metric should be calculated, in a sentence"
                 value={newTerm.definition}
                 onChange={(e) => setNewTerm({ ...newTerm, definition: e.target.value })}
-                style={{ width: "100%", padding: 10, borderRadius: 6, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border)", color: "#fff", resize: "vertical" }}
               />
             </div>
 
-            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-              <button type="button" onClick={() => setShowAddTerm(false)} disabled={addingTerm}>
+            <div className="actions" style={{ justifyContent: "flex-end" }}>
+              <button type="button" className="btn" onClick={() => setShowAddTerm(false)} disabled={addingTerm}>
                 Cancel
               </button>
-              <button type="submit" className="primary" disabled={addingTerm}>
-                {addingTerm ? "Saving..." : "Save Metric Rule"}
+              <button type="submit" className="btn btn-primary" disabled={addingTerm}>
+                {addingTerm ? "Saving…" : "Save term"}
               </button>
             </div>
           </form>
         )}
 
-        {/* Terms List */}
         {dictionaryTerms.length === 0 ? (
-          <div className="glass-panel" style={{ padding: 32, textAlign: "center", color: "var(--text-muted)" }}>
-            <p style={{ margin: 0 }}>No business glossary terms defined yet.</p>
+          <div className="card empty">
+            <p>No glossary terms defined yet</p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {dictionaryTerms.map(term => (
-              <div
-                key={term.id}
-                className="glass-panel"
-                style={{
-                  padding: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 12,
-                  border: "1px solid rgba(255, 255, 255, 0.08)"
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <h4 style={{ margin: 0, fontSize: 18, color: "var(--text-main)" }}>
-                        {term.term}
-                      </h4>
-                      <span
-                        className="badge"
-                        style={{
-                          fontSize: 11,
-                          textTransform: "uppercase",
-                          background:
-                            term.category === "metric"
-                              ? "rgba(16, 185, 129, 0.2)"
-                              : term.category === "filter"
-                              ? "rgba(59, 130, 246, 0.2)"
-                              : "rgba(168, 85, 247, 0.2)",
-                          color:
-                            term.category === "metric"
-                              ? "#34d399"
-                              : term.category === "filter"
-                              ? "#60a5fa"
-                              : "#c084fc",
-                        }}
-                      >
-                        {term.category || "metric"}
-                      </span>
-                      {term.related_tables && (
-                        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                          &bull; Tables: <code style={{ color: "var(--accent)" }}>{term.related_tables}</code>
-                        </span>
-                      )}
-                    </div>
-
-                    {term.definition && (
-                      <p style={{ margin: "6px 0 0 0", color: "var(--text-muted)", fontSize: 14 }}>
-                        {term.definition}
-                      </p>
-                    )}
+          dictionaryTerms.map(term => (
+            <div key={term.id} className="card">
+              <div className="card-head" style={{ alignItems: "flex-start", flexWrap: "nowrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <h4 className="card-title">{term.term}</h4>
+                    <span className="tag">{term.category || "metric"}</span>
+                    {term.related_tables && <span className="meta">tables: {term.related_tables}</span>}
                   </div>
-
-                  <button
-                    onClick={() => handleDeleteTerm(term.id, term.term)}
-                    disabled={deletingTermId === term.id}
-                    style={{
-                      background: "rgba(239, 68, 68, 0.1)",
-                      border: "1px solid rgba(239, 68, 68, 0.3)",
-                      color: "var(--error)",
-                      fontSize: 12,
-                      padding: "6px 12px",
-                      cursor: "pointer",
-                      flexShrink: 0
-                    }}
-                  >
-                    {deletingTermId === term.id ? "Deleting…" : "🗑️ Delete"}
-                  </button>
+                  {term.definition && <p className="muted" style={{ marginTop: 4 }}>{term.definition}</p>}
                 </div>
 
-                <div
-                  style={{
-                    background: "rgba(0, 0, 0, 0.3)",
-                    padding: 12,
-                    borderRadius: 6,
-                    fontFamily: "monospace",
-                    fontSize: 13,
-                    color: "var(--accent-hover)",
-                    overflowX: "auto"
-                  }}
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleDeleteTerm(term.id, term.term)}
+                  disabled={deletingTermId === term.id}
                 >
-                  <span style={{ color: "var(--text-muted)", marginRight: 8 }}>Formula / Rule:</span>
-                  {term.formula_or_rule}
-                </div>
+                  <Icon name="trash" />
+                  {deletingTermId === term.id ? "Deleting…" : "Delete"}
+                </button>
               </div>
-            ))}
-          </div>
+
+              <span className="label">Formula or rule</span>
+              <pre className="code">{term.formula_or_rule}</pre>
+            </div>
+          ))
         )}
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
-

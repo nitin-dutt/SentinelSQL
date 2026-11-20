@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { getAuditLogs, clearAuditLogs, type AuditLogEntry } from "../api/sentinel";
+import Icon from "./Icon";
+import Verdict, { type Tone } from "./Verdict";
+import { getAuditLogs, clearAuditLogs, verifyAuditChain, type AuditLogEntry, type ChainVerification } from "../api/sentinel";
+
+const CHANNEL_LABEL: Record<string, string> = { MCP_AGENT: "MCP agent", WEB_CHAT: "Analyst chat", WEB_UI: "Web UI" };
 
 export default function AuditLogViewer() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [clearing, setClearing] = useState<boolean>(false);
+  const [verifying, setVerifying] = useState<boolean>(false);
+  const [chain, setChain] = useState<ChainVerification | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [ingressFilter, setIngressFilter] = useState<string>("ALL");
@@ -30,8 +36,21 @@ export default function AuditLogViewer() {
     fetchLogs();
   }, [ingressFilter, statusFilter]);
 
+  // Recomputes the hash chain on the server; any edited, removed or reordered row makes it report where the chain breaks.
+  async function handleVerify() {
+    setVerifying(true);
+    setError(null);
+    try {
+      setChain(await verifyAuditChain());
+    } catch (err: any) {
+      setError(err.message || "Could not verify the audit chain");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
   async function handleClearLogs() {
-    if (!window.confirm("Are you sure you want to permanently clear all audit logs? This action cannot be undone.")) {
+    if (!window.confirm("Permanently clear the whole audit log? This cannot be undone.")) {
       return;
     }
     setClearing(true);
@@ -39,7 +58,7 @@ export default function AuditLogViewer() {
     setNotification(null);
     try {
       const res = await clearAuditLogs();
-      setNotification(`Successfully cleared ${res.deleted_count} audit log records.`);
+      setNotification(`Cleared ${res.deleted_count} audit log records`);
       await fetchLogs();
     } catch (err: any) {
       setError(err.message || "Failed to clear audit logs");
@@ -48,185 +67,156 @@ export default function AuditLogViewer() {
     }
   }
 
-  function getRiskBadge(risk: string) {
+  function riskVerdict(risk: string) {
     const r = (risk || "LOW").toUpperCase();
-    if (r === "HIGH") {
-      return <span style={{ background: "rgba(239, 68, 68, 0.2)", color: "#ef4444", padding: "3px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(239, 68, 68, 0.4)" }}>HIGH RISK</span>;
-    }
-    if (r === "MEDIUM") {
-      return <span style={{ background: "rgba(245, 158, 11, 0.2)", color: "#f59e0b", padding: "3px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(245, 158, 11, 0.4)" }}>MEDIUM</span>;
-    }
-    return <span style={{ background: "rgba(16, 185, 129, 0.2)", color: "#10b981", padding: "3px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(16, 185, 129, 0.4)" }}>LOW</span>;
+    const tone: Tone = r === "HIGH" ? "bad" : r === "MEDIUM" ? "warn" : "ok";
+    return <Verdict tone={tone}>{r.toLowerCase()}</Verdict>;
   }
 
-  function getStatusBadge(status: string) {
+  function statusVerdict(status: string) {
     const s = (status || "").toLowerCase();
-    if (s === "cached") {
-      return <span style={{ color: "#38bdf8", fontWeight: 600 }}>⚡ cached</span>;
-    }
-    if (s.includes("approved") || s === "completed") {
-      return <span style={{ color: "#34d399", fontWeight: 600 }}>● {status}</span>;
-    }
-    if (s.includes("requires_human") || s === "pending") {
-      return <span style={{ color: "#fbbf24", fontWeight: 600 }}>⏳ {status}</span>;
-    }
-    return <span style={{ color: "#f87171", fontWeight: 600 }}>✕ {status}</span>;
+    const tone: Tone = s === "cached" ? "info"
+      : s.includes("approved") || s === "completed" ? "ok"
+      : s.includes("requires_human") || s === "pending" ? "warn"
+      : "bad";
+    return <Verdict tone={tone}>{status}</Verdict>;
   }
 
-  function getIngressBadge(ingress: string) {
-    if (ingress === "MCP_AGENT") {
-      return <span style={{ background: "rgba(168, 85, 247, 0.2)", color: "#c084fc", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600, border: "1px solid rgba(168, 85, 247, 0.4)" }}>🤖 MCP AGENT</span>;
-    }
-    return <span style={{ background: "rgba(59, 130, 246, 0.2)", color: "#60a5fa", padding: "3px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 600, border: "1px solid rgba(59, 130, 246, 0.4)" }}>💻 WEB UI</span>;
-  }
+  const busy = loading || clearing;
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ padding: "32px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+    <>
+      <div className="page-head">
         <div>
-          <h2 style={{ margin: "0 0 6px 0", fontSize: "24px" }}>SOC 2 Compliance Audit Log</h2>
-          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
-            Immutable event trail capturing prompt intent, generated SQL, ingress channels, risk evaluations, and execution metrics.
+          <h2 className="page-title">Audit log</h2>
+          <p className="lede">
+            A hash-chained record of every request: the question, the generated SQL, the channel it came through, its risk level and the outcome. Verify chain recomputes the hashes and reports any edited, removed or reordered row.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <button onClick={fetchLogs} style={{ padding: "8px 16px", cursor: "pointer" }} disabled={loading || clearing}>
-            🔄 Refresh
+        <div className="actions">
+          <button className="btn btn-primary" onClick={handleVerify} disabled={busy || verifying}>
+            {verifying ? "Verifying…" : "Verify chain"}
           </button>
-          <button 
-            onClick={handleClearLogs} 
-            disabled={loading || clearing || logs.length === 0}
-            style={{ 
-              padding: "8px 16px", 
-              cursor: (loading || clearing || logs.length === 0) ? "not-allowed" : "pointer",
-              backgroundColor: "rgba(239, 68, 68, 0.15)",
-              color: "#f87171",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
-              opacity: (loading || clearing || logs.length === 0) ? 0.5 : 1
-            }}
-          >
-            {clearing ? "⏳ Clearing..." : "🗑️ Clear All Logs"}
+          <button className="btn" onClick={fetchLogs} disabled={busy}>
+            <Icon name="refresh" />
+            Refresh
+          </button>
+          <button className="btn btn-danger" onClick={handleClearLogs} disabled={busy || logs.length === 0}>
+            <Icon name="trash" />
+            {clearing ? "Clearing…" : "Clear log"}
           </button>
         </div>
       </div>
 
-      {/* Filter Controls */}
-      <div style={{ display: "flex", gap: "16px", marginBottom: "20px", alignItems: "center" }}>
-        <div>
-          <label style={{ fontSize: "12px", color: "var(--text-muted)", marginRight: "8px", fontWeight: 600 }}>INGRESS:</label>
-          <select 
-            value={ingressFilter} 
-            onChange={(e) => setIngressFilter(e.target.value)}
-            style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "#1e293b", color: "#f1f5f9", border: "1px solid var(--border)" }}
-          >
-            <option value="ALL" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>All Channels</option>
-            <option value="WEB_UI" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>Web UI</option>
-            <option value="MCP_AGENT" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>MCP Agent</option>
-          </select>
+      {chain && (
+        <div role="status" className={chain.valid ? "notice notice-ok" : "notice notice-bad"}>
+          <span className={chain.valid ? "dot dot-ok" : "dot dot-bad"} aria-hidden="true" />
+          <span>
+            {chain.valid
+              ? `Chain verified: ${chain.checked} rows recomputed, no tampering found`
+              : `Chain broken at row ${chain.first_invalid_id}${chain.reason ? `: ${chain.reason}` : ""}`}
+          </span>
         </div>
-
-        <div>
-          <label style={{ fontSize: "12px", color: "var(--text-muted)", marginRight: "8px", fontWeight: 600 }}>STATUS:</label>
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ padding: "6px 12px", borderRadius: "6px", backgroundColor: "#1e293b", color: "#f1f5f9", border: "1px solid var(--border)" }}
-          >
-            <option value="ALL" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>All Statuses</option>
-            <option value="completed" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>Completed</option>
-            <option value="cached" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>⚡ Cached</option>
-            <option value="requires_human" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>Requires Human</option>
-            <option value="hitl_approved" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>HITL Approved</option>
-            <option value="hitl_rejected" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>HITL Rejected</option>
-            <option value="rejected" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>Rejected</option>
-            <option value="mcp_rejected" style={{ backgroundColor: "#0f172a", color: "#f1f5f9" }}>MCP Rejected</option>
-          </select>
-        </div>
-      </div>
+      )}
 
       {notification && (
-        <div style={{ padding: "12px 16px", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.4)", borderRadius: "8px", color: "#34d399", marginBottom: "16px" }}>
-          {notification}
+        <div className="notice notice-ok" role="status">
+          <span className="dot dot-ok" aria-hidden="true" />
+          <span>{notification}</span>
         </div>
       )}
 
       {error && (
-        <div style={{ padding: "12px 16px", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.4)", borderRadius: "8px", color: "#f87171", marginBottom: "16px" }}>
-          {error}
+        <div className="notice notice-bad" role="alert">
+          <span className="dot dot-bad" aria-hidden="true" />
+          <span>{error}</span>
         </div>
       )}
 
+      <div className="actions" style={{ gap: 16 }}>
+        <div className="filter">
+          <label className="label" htmlFor="audit-channel">Channel</label>
+          <select id="audit-channel" value={ingressFilter} onChange={(e) => setIngressFilter(e.target.value)}>
+            <option value="ALL">All channels</option>
+            <option value="WEB_UI">Web UI</option>
+            <option value="WEB_CHAT">Analyst chat</option>
+            <option value="MCP_AGENT">MCP agent</option>
+          </select>
+        </div>
+
+        <div className="filter">
+          <label className="label" htmlFor="audit-status">Status</label>
+          <select id="audit-status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="ALL">All statuses</option>
+            <option value="completed">Completed</option>
+            <option value="cached">Cached</option>
+            <option value="requires_human">Requires human</option>
+            <option value="hitl_approved">HITL approved</option>
+            <option value="hitl_rejected">HITL rejected</option>
+            <option value="rejected">Rejected</option>
+            <option value="error">Error</option>
+          </select>
+        </div>
+      </div>
+
       {loading ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-          Loading compliance audit trail...
-        </div>
+        <div className="card empty">Loading the audit log…</div>
       ) : logs.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-          No audit records found matching selected filters.
-        </div>
+        <div className="card empty">No audit records match these filters</div>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+        <div className="table-wrap">
+          <table className="table table-hover">
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--border)", textAlign: "left", color: "var(--text-muted)" }}>
-                <th style={{ padding: "12px 8px" }}>DATE & TIME</th>
-                <th style={{ padding: "12px 8px" }}>INGRESS</th>
-                <th style={{ padding: "12px 8px" }}>USER / AGENT</th>
-                <th style={{ padding: "12px 8px" }}>RISK</th>
-                <th style={{ padding: "12px 8px" }}>STATUS</th>
-                <th style={{ padding: "12px 8px" }}>INTENT / QUERY</th>
-                <th style={{ padding: "12px 8px" }}>SQL STATEMENT</th>
-                <th style={{ padding: "12px 8px" }}>METRICS</th>
+              <tr>
+                <th>Time</th>
+                <th>Channel</th>
+                <th>User or agent</th>
+                <th>Risk</th>
+                <th>Status</th>
+                <th>Question</th>
+                <th>SQL</th>
+                <th className="num">Time taken</th>
+                <th className="num">Rows</th>
               </tr>
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap", fontSize: "12px" }}>
+                <tr key={log.id}>
+                  <td className="nowrap">
                     {log.timestamp ? (
-                      <div>
-                        <div style={{ color: "var(--text-main)", fontWeight: 500 }}>
-                          {new Date(log.timestamp).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                        </div>
-                        <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                          {new Date(log.timestamp).toLocaleTimeString()}
-                        </div>
-                      </div>
-                    ) : "-"}
+                      <>
+                        <div>{new Date(log.timestamp).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</div>
+                        <div className="meta">{new Date(log.timestamp).toLocaleTimeString()}</div>
+                      </>
+                    ) : "–"}
                   </td>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap" }}>
-                    {getIngressBadge(log.ingress_channel)}
+                  <td className="nowrap">
+                    <span className="tag">{CHANNEL_LABEL[log.ingress_channel] ?? "Web UI"}</span>
                   </td>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap" }}>
-                    <strong>{log.user_id}</strong>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{log.client_agent || log.role}</div>
+                  <td className="nowrap">
+                    <div>{log.user_id}</div>
+                    <div className="meta">{log.client_agent || log.role}</div>
                   </td>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap" }}>
-                    {getRiskBadge(log.risk_level)}
+                  <td className="nowrap">{riskVerdict(log.risk_level)}</td>
+                  <td className="nowrap">
+                    {statusVerdict(log.execution_status)}
+                    {log.approved_by && <div className="meta">by {log.approved_by}</div>}
                   </td>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap" }}>
-                    {getStatusBadge(log.execution_status)}
-                    {log.approved_by && (
-                      <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>by: {log.approved_by}</div>
-                    )}
+                  <td className="truncate" title={log.natural_language_query}>
+                    {log.natural_language_query || "–"}
                   </td>
-                  <td style={{ padding: "12px 8px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={log.natural_language_query}>
-                    {log.natural_language_query || "-"}
+                  <td className="truncate mono" style={{ color: "var(--accent-ink)", fontSize: 12 }} title={log.generated_sql}>
+                    {log.generated_sql || "–"}
                   </td>
-                  <td style={{ padding: "12px 8px", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "monospace", color: "#60a5fa" }} title={log.generated_sql}>
-                    {log.generated_sql || "-"}
-                  </td>
-                  <td style={{ padding: "12px 8px", whiteSpace: "nowrap", fontSize: "11px", color: "var(--text-muted)" }}>
-                    <div>⏱ {log.execution_time_ms ? `${log.execution_time_ms}ms` : "-"}</div>
-                    <div>📊 {log.masked_rows_count !== undefined ? `${log.masked_rows_count} rows` : "-"}</div>
-                  </td>
+                  <td className="num">{log.execution_time_ms ? `${log.execution_time_ms.toLocaleString(undefined, { maximumFractionDigits: log.execution_time_ms < 10 ? 1 : 0 })} ms` : "–"}</td>
+                  <td className="num">{log.masked_rows_count !== undefined ? log.masked_rows_count : "–"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-    </div>
+    </>
   );
 }
