@@ -1,4 +1,6 @@
-import os
+import contextvars
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Optional
 import re
 
 import sqlglot
@@ -10,16 +12,14 @@ from app.utils.sql_parser import QUERY_ROOTS
 from app.agents.intent_agent import QueryIntent
 from app.utils.llm_factory import get_llm
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.sql_generator")
 
 
 def _few_shot_count() -> int:
     """How many verified golden examples are retrieved into the prompt (FEWSHOT_TOP_K, default 2; 0 turns them off)."""
-    try:
-        return max(0, int(os.getenv("FEWSHOT_TOP_K", "2")))
-    except ValueError:
-        return 2
+    return settings.pipeline.fewshot_top_k
 
 
 class SQLGenerationAgent:
@@ -27,10 +27,37 @@ class SQLGenerationAgent:
         self.llm = get_llm(role="sql")
 
 
-    def generate_sql(self, intent: QueryIntent, schema_context: str, user_query: str = "") -> str:
+    def generate_sql(self, intent: Optional[QueryIntent], schema_context: str, user_query: str = "") -> str:
+        """`intent` is None on the direct path (INTENT_MODE): the prompt then has no hint block and the SQL follows the question alone."""
+        return self._extract_sql(self.llm.invoke(self.build_prompt(intent, schema_context, user_query)))
+
+    def generate_candidates(self, intent: Optional[QueryIntent], schema_context: str, user_query: str, n: int) -> List[str]:
+        """
+        N independent answers to the same prompt, asked in parallel (SQL_CANDIDATES; see app/agents/candidate_voting.py).
+        The prompt is built once, so retrieval runs once. Replies that are not usable SQL are dropped; if none is usable
+        the first failure is raised, exactly as generate_sql would.
+        """
+        prompt = self.build_prompt(intent, schema_context, user_query)
+
+        def one(_: int):
+            try:
+                return self._extract_sql(self.llm.invoke(prompt))
+            except Exception as e:
+                return e
+
+        with ThreadPoolExecutor(max_workers=n) as pool:
+            # each worker gets a copy of the caller's context, so its model call lands in the request's trace
+            futures = [pool.submit(contextvars.copy_context().run, one, i) for i in range(n)]
+            replies = [f.result() for f in futures]
+        candidates = [r for r in replies if isinstance(r, str)]
+        if not candidates:
+            raise replies[0]
+        return candidates
+
+    def build_prompt(self, intent: Optional[QueryIntent], schema_context: str, user_query: str = "") -> str:
         few_shot_block = ""
         dictionary_block = ""
-        query_text = user_query or " ".join(intent.tables + intent.metrics + intent.filters)
+        query_text = user_query or (" ".join(intent.tables + intent.metrics + intent.filters) if intent else "")
         if query_text:
             try:
                 from app.rag.golden_store import format_few_shot_examples
@@ -48,12 +75,23 @@ class SQLGenerationAgent:
             except Exception:
                 pass
 
-        limit_rule = f"Include LIMIT {intent.limit}." if intent.limit else "Do not add a LIMIT unless the question asks for a specific number of rows."
-        prompt = f"""
+        limit_rule = f"Include LIMIT {intent.limit}." if intent and intent.limit else "Do not add a LIMIT unless the question asks for a specific number of rows."
+        if intent is not None:
+            hint_sentence = " The structured intent is a hint\nextracted from the question; if it disagrees with the question, follow the question."
+            hint_block = f"""
+Intent (hint):
+Tables: {intent.tables}
+Metrics: {intent.metrics}
+Group By: {intent.group_by}
+Filters: {intent.filters}
+"""
+            filters_rule = ' If "Filters" is empty, omit the WHERE clause.'
+        else:
+            hint_sentence, hint_block, filters_rule = "", "", ""
+        return f"""
 You are an expert SQL generator.
 
-Write one valid {sql_dialect_label()} SELECT query that answers the question below, using {sql_dialect_label()} syntax and functions. The structured intent is a hint
-extracted from the question; if it disagrees with the question, follow the question.
+Write one valid {sql_dialect_label()} SELECT query that answers the question below, using {sql_dialect_label()} syntax and functions.{hint_sentence}
 Do not invent tables or columns.
 Do not use DELETE, UPDATE, INSERT, DROP.
 {limit_rule}
@@ -62,26 +100,17 @@ Rules for generation:
 1. SELECT only the columns the question asks for, using explicit column names. Never use SELECT *, and do not add extra columns. Inside an EXISTS subquery write SELECT 1.
 2. Match the question literally. Use DISTINCT when it asks for the different/distinct/unique values or which values exist (for example "which years"); do not add DISTINCT just because a join could repeat rows.
 3. Use JOINs to bring in columns from other tables. To test that related rows exist or do not exist ("who have friends", "that do not have a cat", "with no orders", "without"), use IN / NOT IN / EXISTS / NOT EXISTS instead of a join, so rows are not duplicated or wrongly matched. Example: "students who do not have a cat" must exclude every student who owns any cat, so use NOT IN (subquery); a join with <> 'cat' keeps students who own a dog and a cat.
-4. Fully qualify column names when more than one table is involved. If "Filters" is empty, omit the WHERE clause.
+4. Fully qualify column names when more than one table is involved.{filters_rule}
 5. If an applicable formula or rule is provided in the Data Dictionary, use its exact SQL expression.
 6. Output ONLY the raw SQL query. Do not add any conversational text or apologies.
 {dictionary_block}
 {few_shot_block}
 Question:
 {user_query}
-
-Intent (hint):
-Tables: {intent.tables}
-Metrics: {intent.metrics}
-Group By: {intent.group_by}
-Filters: {intent.filters}
-
+{hint_block}
 Schema:
 {schema_context}
 """
-
-        raw = self.llm.invoke(prompt)
-        return self._extract_sql(raw)
 
     def repair_sql(self, user_query: str, schema_context: str, failed_sql: str, error: str) -> str:
         """
