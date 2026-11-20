@@ -14,66 +14,46 @@ Expiry is applied lazily on every access, so no background job is needed.
 """
 
 import json
-import os
 import sqlite3
-import threading
 import time
 from typing import Dict, Optional
 from uuid import uuid4
 
+from app.settings import settings
 from app.utils.logger import get_logger
+from app.utils.sqlite_store import SqliteStore, delete_older_than
 
 logger = get_logger("sentinel.hitl")
 
-_INITIALIZED: set = set()
-_init_lock = threading.Lock()
-
-
 def _path() -> str:
-    return os.getenv("HITL_DB_PATH", "hitl_runs.db")
+    return settings.stores.review_db
 
 
-def _pending_ttl() -> float:
-    return float(os.getenv("HITL_PENDING_TTL_HOURS", "72")) * 3600
+def _create(conn: sqlite3.Connection) -> None:
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS hitl_runs (
+            run_id TEXT PRIMARY KEY,
+            status TEXT NOT NULL,
+            user_id TEXT,
+            state_json TEXT NOT NULL,
+            created_at REAL NOT NULL,
+            updated_at REAL NOT NULL
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_hitl_status ON hitl_runs(status)")
 
 
-def _finished_ttl() -> float:
-    return float(os.getenv("HITL_FINISHED_TTL_HOURS", "24")) * 3600
-
-
-def _connect() -> sqlite3.Connection:
-    path = _path()
-    conn = sqlite3.connect(path, timeout=10)
-    conn.row_factory = sqlite3.Row
-    if path not in _INITIALIZED:
-        with _init_lock:
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS hitl_runs (
-                    run_id TEXT PRIMARY KEY,
-                    status TEXT NOT NULL,
-                    user_id TEXT,
-                    state_json TEXT NOT NULL,
-                    created_at REAL NOT NULL,
-                    updated_at REAL NOT NULL
-                )
-            """)
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_hitl_status ON hitl_runs(status)")
-            conn.commit()
-            _INITIALIZED.add(path)
-    return conn
+_STORE = SqliteStore(_path, _create)
+_connect = _STORE.connect
 
 
 def _purge(conn: sqlite3.Connection) -> None:
     now = time.time()
     conn.execute(
         "UPDATE hitl_runs SET status = 'expired', updated_at = ? WHERE status = 'pending' AND created_at < ?",
-        (now, now - _pending_ttl()),
+        (now, now - settings.review.pending_ttl_seconds),
     )
-    conn.execute(
-        "DELETE FROM hitl_runs WHERE status != 'pending' AND updated_at < ?",
-        (now - _finished_ttl(),),
-    )
+    delete_older_than(conn, "hitl_runs", "updated_at", settings.review.finished_ttl_seconds, where="status != 'pending'")
     conn.commit()
 
 

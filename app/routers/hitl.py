@@ -1,34 +1,41 @@
-"""Human-in-the-Loop review decisions."""
+"""
+Human-in-the-Loop review decisions.
 
-import time
+This router owns who may decide and when (admin only, decide once, separation of duties) and the reviewer's rejection.
+Running an approved or edited query is `run` in app/governance.py with an `Approval`: the SQL is judged again, executed,
+the review run is updated and the audit record names the approver.
+"""
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.schemas import HITLRequest, HITLResponse
 from app.auth import Actor, require_roles, self_approval_allowed, ROLE_ADMIN
-from app.db.database import execute_readonly_query
+from app.governance import BLOCKED, COMPLETED, Approval, record, run
 from app.hitl.web_store import get_run, update_run
-from app.utils.audit_logger import log_audit_event
 from app.utils.logger import get_logger
-from app.utils.masking import apply_data_masking
-from app.utils.sql_parser import parse_and_validate_ast
 
 logger = get_logger("sentinel.hitl")
 router = APIRouter()
+
+# Review decisions have always been recorded under these ingress columns.
+_CHANNEL, _CLIENT_AGENT = "WEB_UI", "sentinel-internal"
 
 
 @router.post("/hitl/decision", response_model=HITLResponse)
 def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_ADMIN))):
     approver_id = actor.user_id
-    role = actor.role
-    start_time = time.perf_counter()
     try:
         state = get_run(req.run_id)
     except KeyError:
         return HITLResponse(status="rejected", reason="Invalid or expired run_id")
 
+    # The audit records of a review are filed under the person who asked, with the reviewer in `approved_by`.
     submitter_id = state.get("user_id")
-    audit_user = submitter_id or approver_id
+    submitter = Actor(user_id=submitter_id or approver_id, role=state.get("role") or actor.role)
+
+    def note(status: str) -> None:
+        record(actor=submitter, channel=_CHANNEL, client_agent=_CLIENT_AGENT, question=state.get("user_query"), status=status,
+               sql=state.get("sql"), score=0, risk_level="HIGH", run_id=req.run_id, approved_by=approver_id)
 
     # A run can be decided exactly once; re-approving would silently re-execute it.
     run_status = state.get("status", "pending")
@@ -38,21 +45,13 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
     # Separation of duties: the person who asked may not approve (or edit and run) their own request.
     # Withdrawing it by rejecting is always allowed: it can only stop a query, never run one.
     if req.decision != "reject" and submitter_id and submitter_id == approver_id and not self_approval_allowed():
-        log_audit_event(
-            run_id=req.run_id, user_id=submitter_id, role=role, user_query=state.get("user_query"),
-            generated_sql=state.get("sql"), confidence_score=0, execution_status="hitl_self_approval_blocked",
-            approved_by=approver_id, risk_level="HIGH"
-        )
+        note("hitl_self_approval_blocked")
         raise HTTPException(status_code=403, detail="You cannot approve a query you submitted; another administrator must review it.")
 
     # Human rejects the query
     if req.decision == "reject":
         update_run(req.run_id, status="rejected", reason="Query rejected by human reviewer")
-        log_audit_event(
-            run_id=req.run_id, user_id=audit_user, role=role, user_query=state.get("user_query"),
-            generated_sql=state.get("sql"), confidence_score=0, execution_status="hitl_rejected",
-            approved_by=approver_id, risk_level="HIGH"
-        )
+        note("hitl_rejected")
         return HITLResponse(status="rejected", reason="Query rejected by human reviewer")
 
     # Human edits SQL
@@ -64,49 +63,18 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
         # Human approves original SQL
         sql_to_execute = state.get("sql")
 
-    # Approval clears the human-review requirement, never the hard rules: whatever the
-    # reviewer approves or types still has to pass the AST policy (single SELECT, no
-    # DDL/DML, no Cartesian joins, LIMIT enforcement). The validated, sanitized SQL is what runs.
-    ast_res = parse_and_validate_ast(sql_to_execute or "")
-    if not ast_res.is_valid:
-        update_run(req.run_id, status="failed", reason=ast_res.reason)
-        log_audit_event(
-            run_id=req.run_id, user_id=audit_user, role=role, user_query=state.get("user_query"),
-            generated_sql=sql_to_execute, confidence_score=0, execution_status="hitl_blocked_by_policy",
-            approved_by=approver_id, risk_level="HIGH"
-        )
-        return HITLResponse(status="rejected", reason=f"Blocked by policy: {ast_res.reason}")
-    sql_to_execute = ast_res.sanitized_sql
+    # Approval clears the human-review requirement, never the hard rules: whatever the reviewer approves or types still
+    # has to pass the policy (single SELECT, no DDL/DML, no Cartesian joins, LIMIT enforcement), and the sanitized SQL is
+    # what runs. The reviewer sees salary-class values; the copy stored for the submitter has the normal masking.
+    outcome = run(sql_to_execute or "", actor=submitter, channel=_CHANNEL, client_agent=_CLIENT_AGENT,
+                  question=state.get("user_query") or "", approval=Approval(run_id=req.run_id, approved_by=approver_id))
+    if outcome.status == BLOCKED:
+        return HITLResponse(status="rejected", reason=f"Blocked by policy: {outcome.reason}")
+    if outcome.status != COMPLETED:
+        return HITLResponse(status="rejected", reason=outcome.reason)
+    sql_to_execute = outcome.sql
 
-    try:
-        # The reviewer who approved a held query sees salary-class values; PII and secrets stay masked.
-        reviewer_results = execute_readonly_query(sql_to_execute, reveal_financial=True)
-    except Exception as e:
-        update_run(req.run_id, status="failed", reason=str(e))
-        log_audit_event(
-            run_id=req.run_id, user_id=audit_user, role=role, user_query=state.get("user_query"),
-            generated_sql=sql_to_execute, confidence_score=0, execution_status="hitl_execution_failed",
-            approved_by=approver_id, risk_level="HIGH"
-        )
-        return HITLResponse(status="rejected", reason=str(e))
-
-    latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
-    # What is stored is what the submitter will read when they check the run, so it gets the normal masking.
-    results = apply_data_masking(reviewer_results, sql=sql_to_execute)
-    if isinstance(reviewer_results, dict) and reviewer_results.get("truncated") and isinstance(results, dict):
-        results["truncated"] = True
-    rows_count = len(results.get("rows", [])) if results and isinstance(results, dict) else 0
-
-    # Persist the SQL that actually ran (edited and/or LIMIT-sanitized) so pollers see it.
-    update_run(req.run_id, status="completed", results=results, sql=sql_to_execute)
-    log_audit_event(
-        run_id=req.run_id, user_id=audit_user, role=role, user_query=state.get("user_query"),
-        generated_sql=sql_to_execute, confidence_score=100, execution_status="hitl_approved",
-        approved_by=approver_id, execution_time_ms=latency_ms, masked_rows_count=rows_count,
-        risk_level="HIGH"
-    )
-
-    # Explicit Golden Query Template opt-in (admin-only route; SQL already passed the AST gate above)
+    # Explicit Golden Query Template opt-in (admin-only route; SQL already passed the policy gate in `run`)
     if req.save_as_template and state.get("user_query") and sql_to_execute:
         from app.rag.golden_store import save_golden_query
         try:
@@ -117,4 +85,4 @@ def hitl_decision(req: HITLRequest, actor: Actor = Depends(require_roles(ROLE_AD
         except Exception as e:
             logger.warning("Failed to save golden template: %s", e)
 
-    return HITLResponse(status="completed", sql=sql_to_execute, results=reviewer_results)
+    return HITLResponse(status="completed", sql=sql_to_execute, results=outcome.results)
