@@ -29,6 +29,7 @@ class QueryResponse(BaseModel):
     cache_match_type: Optional[str] = None       # exact | semantic
     cache_similarity: Optional[float] = None
     cache_original_query: Optional[str] = None   # the earlier question whose answer is being reused
+    trace_id: Optional[str] = None               # the request's trace (admins can open it in the observability screen)
 
 
 # -------- HITL Decision --------

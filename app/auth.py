@@ -18,11 +18,11 @@ process and so tests can set them per-test.
 
 import hmac
 import logging
-import os
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional
 
 from fastapi import Depends, HTTPException, Request
+from app.settings import settings
 
 logger = logging.getLogger("sentinel.auth")
 
@@ -41,7 +41,7 @@ class Actor:
 def load_token_registry() -> Dict[str, Actor]:
     """Parses AUTH_TOKENS into {token: Actor}. Malformed entries are skipped loudly."""
     registry: Dict[str, Actor] = {}
-    for item in os.getenv("AUTH_TOKENS", "").split(","):
+    for item in settings.access.auth_tokens.split(","):
         item = item.strip()
         if not item:
             continue
@@ -63,6 +63,10 @@ def authenticate_token(token: str) -> Optional[Actor]:
     for known, actor in load_token_registry().items():
         if hmac.compare_digest(known.encode("utf-8"), token.encode("utf-8")):
             match = actor
+    if match is None:
+        # Sessions the launch page started: a connected workspace, or (APP_ENV=dev only) a no-token development login.
+        from app import workspaces
+        match = workspaces.actor_for_token(token)
     return match
 
 
@@ -100,4 +104,4 @@ def require_roles(*roles: str) -> Callable[..., Actor]:
 
 def self_approval_allowed() -> bool:
     """Separation of duties: by default a reviewer may not approve a run they submitted."""
-    return os.getenv("HITL_ALLOW_SELF_APPROVAL", "false").strip().lower() in ("1", "true", "yes")
+    return settings.review.allow_self_approval
