@@ -11,11 +11,14 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/query": backend,
+        "/chat": backend,
         "/hitl": backend,
         "/admin": backend,
         "/auth": backend,
         "/schema": backend,
         "/demo": backend,
+        "/launch": backend,
+        "/mcp": backend,
         "/dictionary": backend,
       },
     },

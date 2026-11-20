@@ -101,6 +101,112 @@ export async function submitQuery(query: string): Promise<QueryResponse> {
   return res.json();
 }
 
+export interface AgentStep {
+  tool: string;
+  args: Record<string, string>;
+  result: string;
+}
+
+/** A /chat answer: a /query answer plus the conversation it belongs to and, sometimes, a clarifying question. */
+export type ChatResponse = {
+  status: "completed" | "requires_human" | "rejected" | "error" | "needs_clarification";
+  conversation_id: string;
+  standalone_question?: string | null;
+  clarification?: { question: string; options: string[] } | null;
+  agent_steps?: AgentStep[];
+  sql?: string | null;
+  results?: any;
+  run_id?: string | null;
+  reason?: string | null;
+  confidence_score?: number | null;
+  cached?: boolean;
+  latency_ms?: number | null;
+  cache_match_type?: "exact" | "semantic" | null;
+  cache_similarity?: number | null;
+  cache_original_query?: string | null;
+  trace_id?: string | null;
+};
+
+/** Sends one message of a conversation. Without `conversationId` the server starts a new conversation. */
+export async function submitChat(message: string, conversationId?: string | null): Promise<ChatResponse> {
+  const res = await fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(conversationId ? { message, conversation_id: conversationId } : { message }),
+  });
+  if (res.status === 401) throw new AuthError();
+  if (res.status === 403) throw new Error("Your role is not allowed to run queries");
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.detail === "string" ? body.detail : "Backend error while submitting the question");
+  }
+  return res.json();
+}
+
+export interface LatencyDist {
+  n: number;
+  p50_ms: number | null;
+  p95_ms: number | null;
+  mean_ms: number | null;
+}
+
+export interface ObservabilitySummary {
+  enabled: boolean;
+  window_hours: number;
+  requests: number;
+  pipeline_requests: number;
+  cache_hits: number;
+  cache_hit_pct: number | null;
+  statuses: Record<string, number>;
+  total_ms: LatencyDist;
+  model_ms: LatencyDist;
+  gateway_ms: LatencyDist;
+  cache_hit_ms: LatencyDist;
+  stages: (LatencyDist & { stage: string; kind: "model" | "gateway"; share_of_requests_pct: number })[];
+  models: { model: string; calls: number; input_tokens: number; output_tokens: number; p50_ms: number | null; p95_ms: number | null; cost_usd: number | null }[];
+  model_calls_per_request: number | null;
+  tokens_per_request: { input: number; output: number } | null;
+  tokens_estimated: boolean;
+  cost_per_1000_requests_usd: number | null;
+  price_configured: boolean;
+}
+
+export interface TraceRow {
+  trace_id: string;
+  ts: number;
+  channel: string;
+  user_id: string | null;
+  question: string | null;
+  status: string;
+  total_ms: number;
+  model_ms: number;
+  model_calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  tokens_estimated: boolean;
+  cost_usd: number | null;
+  stages_ms?: Record<string, number>;
+}
+
+export interface TraceDetail extends TraceRow {
+  spans: { name: string; start_ms: number; ms: number; depth: number; error?: string }[];
+  calls: { stage: string; model: string; ms: number; input_tokens: number; output_tokens: number; estimated: boolean; ok: boolean; cost_usd: number | null }[];
+  attrs: Record<string, unknown>;
+}
+
+async function adminGet<T>(path: string, failure: string): Promise<T> {
+  const res = await fetch(path, { headers: authHeaders() });
+  if (res.status === 401) throw new AuthError();
+  if (!res.ok) throw new Error(failure);
+  return res.json();
+}
+
+export const getObservabilitySummary = (hours: number) =>
+  adminGet<ObservabilitySummary>(`/admin/observability/summary?hours=${hours}`, "Could not load the observability summary");
+export const getTraces = (limit = 30) => adminGet<TraceRow[]>(`/admin/observability/traces?limit=${limit}`, "Could not load traces");
+export const getTrace = (id: string) =>
+  adminGet<TraceDetail>(`/admin/observability/traces/${encodeURIComponent(id)}`, "Could not load the trace");
+
 export async function submitDecision(payload: {
   run_id: string;
   decision: "approve" | "edit" | "reject";
@@ -392,4 +498,121 @@ export async function fetchRunStatus(runId: string): Promise<RunStatus> {
   if (res.status === 404) throw new Error("This request was not found. It may have expired.");
   if (!res.ok) throw new Error("Could not check the request status");
   return res.json();
+}
+
+export interface ChainVerification {
+  valid: boolean;
+  checked: number;
+  first_invalid_id?: number;
+  reason?: string;
+}
+
+/** Recomputes the audit hash chain on the server and reports whether it is intact. */
+export async function verifyAuditChain(): Promise<ChainVerification> {
+  const res = await fetch("/admin/audit-logs/verify", { headers: authHeaders() });
+  if (res.status === 401) throw new AuthError();
+  if (!res.ok) throw new Error("Could not verify the audit chain");
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------------------------
+// Launch page: entering the sample database without a token, and connecting your own database.
+
+const ROLES_KEY = "sentinel.roles";
+
+export type Role = "employee" | "admin" | "external_ai";
+/** The session tokens the launch page was given, by role. One person plays every role in a demo or a workspace. */
+export type RoleTokens = Partial<Record<Role, string>>;
+
+export function getRoleTokens(): RoleTokens {
+  try {
+    return JSON.parse(sessionStorage.getItem(ROLES_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function setRoleTokens(tokens: RoleTokens | null): void {
+  try {
+    if (tokens) sessionStorage.setItem(ROLES_KEY, JSON.stringify(tokens));
+    else sessionStorage.removeItem(ROLES_KEY);
+  } catch {
+    /* storage unavailable: the role switch will not survive a reload */
+  }
+}
+
+export interface WorkspaceInfo {
+  id: string;
+  label: string;
+  dialect: string;
+  tables: number;
+  questions_used: number;
+  question_quota: number;
+  idle_minutes_allowed: number;
+}
+
+export interface LaunchInfo {
+  mode: "dev" | "demo" | "standard";
+  sample: { one_click: boolean; roles: Role[]; dialect?: string; tables?: number };
+  connect: { enabled: boolean; question_quota: number; idle_minutes: number; max_tables: number; private_hosts: boolean };
+  examples: string[];
+  limits: null | { rate_per_minute: number; daily_cap: number; remaining_today: number; max_question_chars: number; notice: string };
+}
+
+export async function fetchLaunchInfo(): Promise<LaunchInfo | null> {
+  try {
+    const res = await fetch("/launch/info");
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function detail(res: Response, fallback: string): Promise<string> {
+  const body = await res.json().catch(() => null);
+  return typeof body?.detail === "string" ? body.detail : fallback;
+}
+
+/** Enters the sample database as `role` without typing a token (dev and demo servers only). */
+export async function enterSample(role: Role): Promise<Session | null> {
+  const res = await fetch("/launch/sample", { method: "POST" });
+  if (!res.ok) throw new Error(await detail(res, "This server requires an access token"));
+  const tokens: RoleTokens = (await res.json()).tokens;
+  const token = tokens[role];
+  if (!token) throw new Error("That role is not offered on this server");
+  setRoleTokens(tokens);
+  return login(token);
+}
+
+/** Connects the visitor's own database and enters its workspace as the tester. */
+export async function connectDatabase(url: string): Promise<Session | null> {
+  const res = await fetch("/launch/connect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) throw new Error(await detail(res, "Could not connect to the database"));
+  const tokens: RoleTokens = (await res.json()).tokens;
+  setRoleTokens(tokens);
+  return login(tokens.employee ?? "");
+}
+
+/** Becomes another role of the same demo or workspace. */
+export async function switchRole(role: Role): Promise<Session | null> {
+  const token = getRoleTokens()[role];
+  if (!token) return null;
+  setToken(token);
+  return fetchSession();
+}
+
+/** The workspace this session belongs to, or null on the server's own database. */
+export async function fetchWorkspace(): Promise<WorkspaceInfo | null> {
+  const res = await fetch("/launch/session", { headers: authHeaders() });
+  if (!res.ok) return null;
+  return (await res.json()).workspace ?? null;
+}
+
+/** Closes the visitor's workspace now: the server drops the connection, the tokens and every file kept for it. */
+export async function disconnectWorkspace(): Promise<void> {
+  await fetch("/launch/workspace", { method: "DELETE", headers: authHeaders() }).catch(() => undefined);
 }
