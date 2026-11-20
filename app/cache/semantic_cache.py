@@ -48,6 +48,7 @@ from app.db.urls import sql_dialect
 from app.cache.constraints import extract_constraints
 from app.rag.vector_store import EmbeddingEngine, cosine_similarity, get_embedding_engine
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.cache")
 
@@ -89,12 +90,12 @@ class SemanticCache:
         self._engine = engine
         self._version_provider = version_provider or default_cache_version
 
-        env_enabled = os.getenv("SEMANTIC_CACHE_ENABLED", "true").lower() in ("true", "1", "yes")
-        self.enabled = enabled if enabled is not None else env_enabled
-        self.threshold = threshold if threshold is not None else float(os.getenv("SEMANTIC_CACHE_THRESHOLD", "0.92"))
-        self.default_ttl = ttl_seconds if ttl_seconds is not None else int(os.getenv("SEMANTIC_CACHE_TTL_SECONDS", "3600"))
-        self.max_entries = max_entries if max_entries is not None else int(os.getenv("SEMANTIC_CACHE_MAX_ENTRIES", "500"))
-        self.save_interval = float(os.getenv("SEMANTIC_CACHE_SAVE_INTERVAL_SECONDS", "2"))
+        # Read once, when the cache is built (reset_runtime_state in app/runtime.py builds a new one).
+        self.enabled = enabled if enabled is not None else settings.cache.enabled
+        self.threshold = threshold if threshold is not None else settings.cache.threshold
+        self.default_ttl = ttl_seconds if ttl_seconds is not None else settings.cache.ttl_seconds
+        self.max_entries = max_entries if max_entries is not None else settings.cache.max_entries
+        self.save_interval = settings.cache.save_interval_seconds
 
         self.entries: Dict[str, Dict[str, Any]] = {}
         self.exact_map: Dict[str, str] = {}   # f"{role}:{normalized_query}" -> entry_id
@@ -250,8 +251,11 @@ class SemanticCache:
             if entry and self._usable_locked(entry_id, entry, now, current_version):
                 return self._hit_payload(entry, "exact", 1.0, now)
 
-        # ---- Embed OUTSIDE the lock: this can be a network call (CAC-04)
-        query_vec, backend = self.engine.embed(clean_query)
+        # ---- Embed OUTSIDE the lock: this can be a network call (CAC-04).
+        # The question is embedded as it was typed, not in its normalized form: schema retrieval, the glossary and the
+        # golden examples embed the same text later in the request, so they reuse this vector from the engine's cache
+        # instead of paying for a second remote call. (The exact-match tier above still uses the normalized text.)
+        query_vec, backend = self.engine.embed(query)
         question_constraints = extract_constraints(query)
         question_text = clean_query
 
@@ -305,7 +309,7 @@ class SemanticCache:
 
         clean_query = self.normalize_query(query)
         ttl = ttl_seconds if ttl_seconds is not None else self.default_ttl
-        vector, backend = self.engine.embed(clean_query)      # outside the lock
+        vector, backend = self.engine.embed(query)            # outside the lock; as typed, like get()
         version = self._current_version()
         constraints = sorted(extract_constraints(query))
         literals = _string_literals(sql)
@@ -391,11 +395,21 @@ class SemanticCache:
 
 # Singleton instance
 _GLOBAL_SEMANTIC_CACHE: Optional[SemanticCache] = None
+_SCOPED_CACHES: Dict[str, SemanticCache] = {}   # one per connected workspace: answers never cross between databases
+
+
+def forget_scope(key: str) -> None:
+    _SCOPED_CACHES.pop(key, None)
 
 
 def get_semantic_cache() -> SemanticCache:
     """Returns the shared global instance of the SemanticCache."""
     global _GLOBAL_SEMANTIC_CACHE
+    key = settings.scope_key()
+    if key:
+        if key not in _SCOPED_CACHES:
+            _SCOPED_CACHES[key] = SemanticCache(cache_file=os.path.join(settings.scope_dir(), "semantic_cache.json"))
+        return _SCOPED_CACHES[key]
     if _GLOBAL_SEMANTIC_CACHE is None:
         _GLOBAL_SEMANTIC_CACHE = SemanticCache()
         atexit.register(_GLOBAL_SEMANTIC_CACHE.flush)
