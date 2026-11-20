@@ -28,6 +28,40 @@ jobs:
           EMBEDDING_PROVIDER: offline
         run: pytest -q -m "not pg_mysql"
 
+  evals:
+    name: Evaluation gate (red team, security, PII; no model needed)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install pinned dependencies
+        run: pip install -r requirements.lock
+      - name: Red team with new attack variants for this run (the seed is the run id, printed for replay)
+        env:
+          EMBEDDING_PROVIDER: offline
+          REDTEAM_SEED: ${{ github.run_id }}
+        run: python -m benchmarks.run redteam --no-llm
+      - name: Security suite, SQL ingress (held-out attacks and benign queries)
+        env:
+          EMBEDDING_PROVIDER: offline
+        run: python -m benchmarks.run security --no-llm
+      - name: PII masking suite
+        env:
+          EMBEDDING_PROVIDER: offline
+        run: python -m benchmarks.run pii --no-llm
+      - name: Fail the build if containment, masking or the committed accuracy results regressed
+        run: python -m benchmarks.gate
+      - name: Keep the red-team result (escapes are listed in full, with the seed)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redteam-result
+          path: benchmarks/results/redteam.json
+
   databases:
     name: Live PostgreSQL and MySQL tests
     runs-on: ubuntu-latest

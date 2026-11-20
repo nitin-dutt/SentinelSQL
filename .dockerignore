@@ -30,3 +30,23 @@ scripts/generate_security_cases.py
 # the frontend is built inside the image
 sentinel-frontend/node_modules
 sentinel-frontend/dist
+
+# docs, demo recordings, personal plans, caches and local dev files are not needed in the image
+docs
+demo_video
+DEMO.md
+DEMO_TESTS.md
+*_plan.md
+phase*.md
+PHASE_*.md
+ROADMAP.md
+BENCHMARK_REPORT.md
+README.previous.md
+Interview_points.txt
+benchmarks/cache
+requirements-dev.txt
+.github
+.vscode
+.idea
+.coverage
+htmlcov
