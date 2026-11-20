@@ -12,7 +12,6 @@ Visitors sign in with shared demo tokens, listed by GET /demo/info. Only the use
 operator's own admin token is never exposed. Counters live in memory (one process); a restart resets them.
 """
 
-import os
 import threading
 import time
 from collections import defaultdict, deque
@@ -23,11 +22,12 @@ from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.auth import load_token_registry
+from app.settings import settings
 
 router = APIRouter()
 
 # Review decisions are not limited: they cost no model call, and a reviewer legitimately works through several in a row.
-RATE_LIMITED_PATHS = ("/query", "/mcp/submit")
+RATE_LIMITED_PATHS = ("/query", "/chat", "/mcp/submit")
 MAX_QUERY_CHARS = 300
 
 # Questions the UI offers as one-click examples; each one shows a different behaviour of the gateway (DEMO.md has the full script).
@@ -41,14 +41,7 @@ EXAMPLE_QUESTIONS = [
 
 
 def demo_enabled() -> bool:
-    return os.getenv("DEMO_MODE", "false").strip().lower() in ("1", "true", "yes")
-
-
-def _int_env(name: str, default: int) -> int:
-    try:
-        return max(0, int(os.getenv(name, str(default))))
-    except ValueError:
-        return default
+    return settings.demo.enabled
 
 
 class _Budget:
@@ -65,7 +58,7 @@ class _Budget:
             self._day, self._used = today, 0
 
     def cap(self) -> int:
-        return _int_env("DEMO_DAILY_QUERY_CAP", 150)
+        return settings.demo.daily_query_cap
 
     def used(self) -> int:
         with self._lock:
@@ -120,7 +113,7 @@ limiter = _RateLimiter()
 
 def client_address(request: Request) -> str:
     """The caller's address. Behind a proxy (Render, Fly, ...) set DEMO_TRUST_PROXY=true to use the first X-Forwarded-For hop."""
-    if os.getenv("DEMO_TRUST_PROXY", "false").strip().lower() in ("1", "true", "yes"):
+    if settings.demo.trust_proxy:
         forwarded = request.headers.get("x-forwarded-for", "")
         if forwarded:
             return forwarded.split(",")[0].strip()
@@ -158,7 +151,7 @@ def install(app: FastAPI) -> None:
         if path.startswith("/admin") and method not in ("GET", "HEAD", "OPTIONS"):
             return _refuse(403, "This is a public demo: administrative changes are disabled.")
         if method == "POST" and path in RATE_LIMITED_PATHS:
-            limit = _int_env("DEMO_RATE_PER_MINUTE", 6)
+            limit = settings.demo.rate_per_minute
             if not limiter.allow(client_address(request), limit):
                 return _refuse(429, f"Too many requests: the demo allows {limit} per minute per visitor. Please wait a moment.",
                                {"Retry-After": "30"})
@@ -170,7 +163,7 @@ def demo_info():
     """Public. Tells the UI whether this is a demo, which shared logins to offer and how much of today's budget is left."""
     if not demo_enabled():
         return {"demo": False}
-    public = {u.strip() for u in os.getenv("DEMO_PUBLIC_USERS", "").split(",") if u.strip()}
+    public = settings.demo.public_users
     logins = [
         {"user_id": actor.user_id, "role": actor.role, "token": token}
         for token, actor in load_token_registry().items()
@@ -178,11 +171,11 @@ def demo_info():
     ]
     return {
         "demo": True,
-        "notice": os.getenv("DEMO_NOTICE", "Public demo on a small sample company database. Nothing you type is stored beyond the audit log."),
+        "notice": settings.demo.notice,
         "logins": sorted(logins, key=lambda item: item["role"]),
         "questions_remaining_today": budget.remaining(),
         "daily_cap": budget.cap(),
-        "rate_per_minute": _int_env("DEMO_RATE_PER_MINUTE", 6),
+        "rate_per_minute": settings.demo.rate_per_minute,
         "max_question_chars": MAX_QUERY_CHARS,
         "examples": EXAMPLE_QUESTIONS,
     }

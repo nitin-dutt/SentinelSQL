@@ -6,39 +6,22 @@ governance firewall for external frontier LLMs (e.g. Claude Desktop, Cursor, Dev
 
 Exposes tools:
 1. get_database_schema(): Safely inspect database schema.
-2. submit_sql_for_execution(sql, rationale): Intercepts, validates, masks PII, and routes high-risk queries to HITL queue.
+2. submit_sql_for_execution(sql, rationale): Runs the SQL through the governed sequence (`run` in app/governance.py):
+   policy verdict, review hold for high-risk queries, read-only execution with PII masking, one audit record.
 3. check_query_status(run_id): Polls for execution results after human administrator approval.
 """
 
-import os
-import re
 from typing import Dict, Any, Optional
 
-from app.db.database import execute_readonly_query
-from app.utils.schemacontext import get_schema_context
-from app.hitl.web_store import save_run, get_run
-from app.utils.audit_logger import log_audit_event
-
-from app.utils.sql_parser import parse_and_validate_ast
+from app.auth import Actor
+from app.governance import BLOCKED, COMPLETED, HELD, run
+from app.hitl.web_store import get_run
+from app.observability.tracing import set_status, start_trace
 from app.utils.logger import get_logger
+from app.utils.schemacontext import get_schema_context
+from app.settings import settings
 
 logger = get_logger("sentinel.mcp")
-
-
-def validate_and_classify_sql(sql: str) -> Dict[str, Any]:
-    """
-    Validates SQL safety and classifies risk level using deterministic AST parsing.
-    """
-    ast_res = parse_and_validate_ast(sql)
-    return {
-        "safe": ast_res.is_valid,
-        "requires_human": ast_res.requires_human,
-        "reason": ast_res.reason,
-        "risk_level": ast_res.risk_level,
-        "sanitized_sql": ast_res.sanitized_sql,
-        "tables": ast_res.tables_accessed
-    }
-
 
 
 def mcp_get_database_schema() -> str:
@@ -49,10 +32,23 @@ def mcp_get_database_schema() -> str:
     return get_schema_context()
 
 
-DEFAULT_MCP_CLIENT_ID = os.getenv("MCP_CLIENT_ID", "mcp-stdio")
+DEFAULT_MCP_CLIENT_ID = settings.access.mcp_client_id      # read once, when the server module is imported
 
 
 def mcp_submit_sql(
+    sql: str,
+    rationale: str = "",
+    client_id: Optional[str] = None,
+    role: str = "external_ai",
+) -> Dict[str, Any]:
+    """Traced wrapper: one trace per submission (stages: gate, execution), then the governed submission below."""
+    with start_trace("MCP_AGENT", client_id or DEFAULT_MCP_CLIENT_ID, role, rationale or "[MCP] SQL submission"):
+        outcome = _submit_sql(sql=sql, rationale=rationale, client_id=client_id, role=role)
+        set_status(outcome.get("status", "unknown"))
+        return outcome
+
+
+def _submit_sql(
     sql: str,
     rationale: str = "",
     client_id: Optional[str] = None,
@@ -62,106 +58,28 @@ def mcp_submit_sql(
     Submits a SQL query for governance inspection and execution.
     - Low-risk reads: Executed immediately; PII is dynamically masked.
     - High-risk / sensitive: Paused and placed into the Admin Approval Queue.
+    The sequence itself (verdict, hold, execution, masking, audit) is `run`; this function only words the reply.
     """
-    client_id = client_id or DEFAULT_MCP_CLIENT_ID
-    classification = validate_and_classify_sql(sql)
-
-    # 1. Rejected queries
-    if not classification["safe"]:
-        log_audit_event(
-            user_id=client_id,
-            role=role,
-            user_query=f"[MCP] {rationale}" if rationale else "[MCP] SQL Execution",
-            generated_sql=sql,
-            confidence_score=0,
-            execution_status="mcp_rejected",
-            ingress_channel="MCP_AGENT",
-            client_agent="external-mcp-client",
-            risk_level="HIGH"
-        )
-        return {
-            "status": "rejected",
-            "sql": sql,
-            "reason": classification["reason"]
-        }
-
-    # 2. Queries requiring Human-in-the-Loop approval
-    sql_to_run = classification.get("sanitized_sql", sql)
-    if classification["requires_human"]:
-        state = {
-            "user_query": f"[MCP Agent] {rationale}" if rationale else "[MCP Agent] Tool Execution Request",
-            "sql": sql_to_run,
-            "user_id": client_id,
-            "role": role,
-            "validation": {
-                "safe": True,
-                "requires_human": True,
-                "reason": classification["reason"],
-                "score": 75
-            }
-        }
-        run_id = save_run(state, status="pending")
-
-        log_audit_event(
-            run_id=run_id,
-            user_id=client_id,
-            role=role,
-            user_query=state["user_query"],
-            generated_sql=sql_to_run,
-            confidence_score=75,
-            execution_status="requires_human",
-            ingress_channel="MCP_AGENT",
-            client_agent="external-mcp-client",
-            risk_level=classification.get("risk_level", "MEDIUM")
-        )
-
+    outcome = run(
+        sql,
+        actor=Actor(user_id=client_id or DEFAULT_MCP_CLIENT_ID, role=role),
+        channel="MCP_AGENT",
+        client_agent="external-mcp-client",
+        question=f"[MCP] {rationale}" if rationale else "[MCP] SQL Execution",
+    )
+    if outcome.status == COMPLETED:
+        return {"status": "completed", "sql": outcome.sql, "results": outcome.results}   # the SQL that actually ran
+    if outcome.status == HELD:
         return {
             "status": "requires_human",
-            "run_id": run_id,
-            "sql": sql_to_run,
-            "reason": classification["reason"],
+            "run_id": outcome.run_id,
+            "sql": outcome.sql,
+            "reason": outcome.reason,
             "message": "Query paused for Admin review in SentinelSQL Dashboard. Call check_query_status(run_id) to retrieve data once approved."
         }
-
-    # 3. Safe low-risk queries: Execute immediately with PII masking
-    try:
-        results = execute_readonly_query(sql_to_run)
-        rows_count = len(results.get("rows", [])) if results and isinstance(results, dict) else 0
-        log_audit_event(
-            user_id=client_id,
-            role=role,
-            user_query=f"[MCP] {rationale}" if rationale else "[MCP] SQL Execution",
-            generated_sql=sql_to_run,
-            confidence_score=100,
-            execution_status="completed",
-            ingress_channel="MCP_AGENT",
-            client_agent="external-mcp-client",
-            risk_level="LOW",
-            masked_rows_count=rows_count
-        )
-        return {
-            "status": "completed",
-            "sql": sql,
-            "results": results
-        }
-    except Exception as e:
-        log_audit_event(
-            user_id=client_id,
-            role=role,
-            user_query=f"[MCP] {rationale}" if rationale else "[MCP] SQL Execution",
-            generated_sql=sql,
-            confidence_score=0,
-            execution_status="mcp_failed",
-            ingress_channel="MCP_AGENT",
-            client_agent="external-mcp-client",
-            risk_level="HIGH"
-        )
-
-        return {
-            "status": "failed",
-            "sql": sql,
-            "reason": str(e)
-        }
+    if outcome.status == BLOCKED:
+        return {"status": "rejected", "sql": sql, "reason": outcome.reason}
+    return {"status": "failed", "sql": outcome.sql, "reason": outcome.reason}
 
 
 def mcp_check_status(run_id: str, requester_id: Optional[str] = None, requester_role: str = "external_ai") -> Dict[str, Any]:

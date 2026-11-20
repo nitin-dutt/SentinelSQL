@@ -11,10 +11,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app import demo
+from app import demo, workspaces
 from app.db.database import check_connection, init_db
-from app.routers import admin, hitl, mcp, query, system
+from app.routers import admin, chat, hitl, mcp, query, system
 from app.utils.logger import get_logger
+from app.settings import settings
 
 logger = get_logger("sentinel.main")
 
@@ -23,15 +24,17 @@ logger = get_logger("sentinel.main")
 async def lifespan(_app: FastAPI):
     check_connection()  # fail fast, with a clear message, if the database is unreachable
     init_db()           # seeds the bundled demo database only (see database.seed_demo_data_enabled)
+    workspaces.startup()  # clears folders left by an earlier process; warns when APP_ENV=dev
     logger.info("SentinelSQL API ready")
     yield
 
 
 app = FastAPI(title="SentinelSQL API", lifespan=lifespan)
 
-for _router in (system.router, query.router, hitl.router, admin.router, mcp.router):
+for _router in (system.router, query.router, chat.router, hitl.router, admin.router, mcp.router):
     app.include_router(_router)
 demo.install(app)  # public-demo limits; inert unless DEMO_MODE=true
+workspaces.install(app)  # launch page: sample sessions and visitors' own databases (see app/workspaces.py)
 
 
 def mount_ui(target: FastAPI, directory: str) -> bool:
@@ -46,29 +49,6 @@ def mount_ui(target: FastAPI, directory: str) -> bool:
 
 
 # UI_DIST_DIR points at the built frontend (set in the Docker image); in development Vite serves the UI instead, so nothing is mounted.
-if os.getenv("UI_DIST_DIR"):
-    mount_ui(app, os.environ["UI_DIST_DIR"])
+if settings.stores.ui_dist_dir:
+    mount_ui(app, settings.stores.ui_dist_dir)
 
-
-# -----------------------
-# CLI Entry Point
-# -----------------------
-
-def main():
-    from app.graph.workflow import build_graph
-
-    init_db()
-    user_query = input("Ask a question: ")
-    final_state = build_graph().invoke({
-        "user_query": user_query,
-        "intent": None,
-        "sql": None,
-        "validation": None,
-        "results": None,
-    })
-    print("\nFinal Results:")
-    print(final_state.get("results") or (final_state.get("validation") or {}).get("reason"))
-
-
-if __name__ == "__main__":
-    main()
