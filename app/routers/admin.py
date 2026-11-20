@@ -86,18 +86,50 @@ def get_embedding_health_endpoint(actor: Actor = Depends(_admin)):
     """
     from app.rag.golden_store import get_vector_store as golden_store
     from app.rag.data_dictionary import get_vector_store as dictionary_store
-    from app.rag.schema_retriever import _GLOBAL_RETRIEVER
+    from app.rag.schema_retriever import current_retriever
     from app.rag.vector_store import get_embedding_engine
     return {
         "engine": get_embedding_engine().status(),
         "indexes": {
-            "schema": _GLOBAL_RETRIEVER.vector_store.status(),
+            "schema": current_retriever().vector_store.status(),
             "golden_queries": golden_store().status(),
             "data_dictionary": dictionary_store().status(),
         },
         "semantic_cache": {k: v for k, v in get_semantic_cache().get_stats().items()
                            if k in ("total_entries", "entries_with_other_embedding_backend")},
     }
+
+
+# ------------------------------------------------------------------ observability (traces, latency, tokens, cost)
+
+@router.get("/admin/observability/summary")
+def observability_summary_endpoint(hours: float = 24.0, channel: Optional[str] = None, actor: Actor = Depends(_admin)):
+    """p50/p95 per pipeline stage, model time versus gateway time, tokens per request and cost per 1,000 requests."""
+    from app.observability import tracing
+    return {"enabled": tracing.tracing_enabled(), **tracing.summary(hours=hours, channel=channel)}
+
+
+@router.get("/admin/observability/traces")
+def observability_traces_endpoint(limit: int = 50, channel: Optional[str] = None, status: Optional[str] = None,
+                                  actor: Actor = Depends(_admin)):
+    from app.observability import tracing
+    return tracing.list_traces(limit=limit, channel=channel, status=status)
+
+
+@router.get("/admin/observability/traces/{trace_id}")
+def observability_trace_endpoint(trace_id: str, actor: Actor = Depends(_admin)):
+    """One request in full: every span with its start offset and duration, and every model call with tokens and cost."""
+    from app.observability import tracing
+    trace = tracing.get_trace(trace_id)
+    if trace is None:
+        raise HTTPException(status_code=404, detail="Trace not found (it may have been rotated out)")
+    return trace
+
+
+@router.delete("/admin/observability/traces")
+def clear_observability_traces_endpoint(actor: Actor = Depends(_admin)):
+    from app.observability import tracing
+    return {"status": "success", "deleted_count": tracing.clear_traces()}
 
 
 # ------------------------------------------------------------------ golden query templates
